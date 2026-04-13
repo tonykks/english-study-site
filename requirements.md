@@ -1,224 +1,488 @@
-# Project Goal
+# Final Requirements Template (Complete Learning Page)
 
-Build a modern, professional English study webpage with comprehensive navigation system, interactive flip-card word cards, and integrated YouTube video.
+## Goal
+Build a production-quality single-page English study app that is:
+- fully data-driven from `data/*.txt`,
+- visually polished (modern educational platform style),
+- mobile-friendly and accessible,
+- performance-optimized,
+- reusable as a template for new content sets.
 
-Create a complete learning platform that seamlessly connects with the main hub and provides excellent user experience.
+This template must preserve and include all implemented features below.
 
-# Input Data Structure
+---
 
-The script expects files directly in the `data` folder:
-- data/00_meta.txt (must include video_url and video_id)
-- data/01_intro.txt  
-- data/02_core.txt
-- data/03_summary.txt
-- data/04_full_script.txt
-- data/05_wordcard.txt
+## Input Data Contract
 
-# Required Output Files
+Place files directly in the local `data/` folder:
+- `data/00_meta.txt`
+- `data/01_intro.txt`
+- `data/02_core.txt`
+- `data/03_summary.txt`
+- `data/04_full_script.txt`
+- `data/05_wordcard.txt`
 
-Create these files in the current working directory:
-- index.html (complete study page with navigation)
-- style.css (Tailwind + custom styles + navigation)
-- script.js (full functionality + navigation handlers)
+### `00_meta.txt` required keys
+- `title`
+- `level`
+- `source`
+- `video_url`
+- `video_id`
 
-# Navigation System Requirements
+### `00_meta.txt` optional keys
+- `description`
+- `duration`
+- `channel`
+- `notes`
+- any additional key-value (render as meta chips)
 
-## Header Navigation
-Create a comprehensive header with the following elements:
+### `01_intro.txt`
+- key-value format (`en`, `kr`)
 
-### Brand Section
-- Logo: 🎓 icon in gradient circle
-- Title: "English Study Hub"
-- Subtitle: "쉐도잉과 암기를 위한 영어 학습"
+### `02_core.txt`, `03_summary.txt`, `04_full_script.txt`
+- block format:
+  - `[Section Name]`
+  - `en: ...`
+  - `kr: ...`
 
-### Navigation Buttons
-- **홈으로 버튼**: Links to `../../../../index.html`
-- **다른 콘텐츠 드롭다운**: Shows available content by level
-- **모바일 메뉴**: Hamburger menu for mobile devices
+### `05_wordcard.txt`
+- repeated card blocks:
+  - `[Card N]`
+  - `headword`
+  - `part_of_speech`
+  - `meaning_kr`
+  - `definition_en`
+  - `definition_kr_literal`
+  - `example_en`
+  - `example_kr_literal`
 
-### Breadcrumb Navigation
-Display hierarchical navigation:
-`홈 > 듣기 연습 > Level X > [Content Title]`
+---
 
-## Footer Navigation
-- Prominent "메인으로 돌아가기" button
-- Site description and copyright
-- Additional quick links
+## Output Files (Required)
 
-# Page Layout Structure
+Generate in current working directory:
+- `index.html`
+- `style.css`
+- `script.js`
+- `service-worker.js`
 
-```html
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <!-- Meta tags, Tailwind CSS, custom styles -->
-</head>
-<body class="bg-gray-50 min-h-screen">
+Use:
+- Tailwind CSS CDN + custom CSS
+- plain JavaScript (no framework/build tool)
 
-    <!-- Sticky Navigation Header -->
-    <header class="bg-white shadow-lg border-b-2 border-indigo-200 sticky top-0 z-50">
-        <!-- Navigation content -->
-    </header>
+---
 
-    <!-- Breadcrumb -->
-    <div class="bg-gray-100 border-b border-gray-200">
-        <!-- Breadcrumb navigation -->
-    </div>
+## Core Feature Checklist
 
-    <!-- Main Content Container -->
-    <main class="max-w-7xl mx-auto px-4 py-6">
-        
-        <!-- Video Section -->
-        <section class="mb-8">
-            <!-- YouTube embedded player -->
-        </section>
+### ✅ Global Navigation + Platform Integration
+- Sticky top header with brand:
+  - logo icon
+  - "English Study Hub"
+  - subtitle
+- Desktop nav:
+  - home button (`../../../../index.html`)
+  - dropdown for other content levels
+- Mobile nav:
+  - hamburger button
+  - expandable menu links
+- Breadcrumb:
+  - `홈 > 듣기 연습 > Level X > [Title]`
+  - level/title set dynamically from meta
+- Footer:
+  - prominent "메인으로 돌아가기"
+  - quick links and platform text
 
-        <!-- Page Title & Meta -->
-        <section class="mb-8">
-            <!-- Title, level, source info -->
-        </section>
+### ✅ YouTube Integration
+- Top-of-page responsive 16:9 player
+- `video_id` from meta (fallback: extract from `video_url`)
+- include title/channel/duration labels
+- mobile optimized embed container
 
-        <!-- Tab Navigation -->
-        <nav class="mb-8">
-            <!-- Tab buttons -->
-        </nav>
+### ✅ Tabs + Content Rendering
+- Tabs:
+  - Intro
+  - Core Sentences
+  - Summary
+  - Full Script
+  - Word Cards
+- keyboard-support tab navigation
+- sticky tabs
+- smooth tab panel transitions
+- render all content from `data/*.txt` only
 
-        <!-- Content Area -->
-        <section class="mb-12">
-            <!-- All tab content -->
-        </section>
+### ✅ TTS (Speech Synthesis)
+- browser `speechSynthesis` API, English voice preference
+- TTS buttons on:
+  - Intro EN
+  - each Core sentence
+  - each Summary item
+  - each Full Script paragraph
+  - Word Card word/definition/example
+- features:
+  - active speaking button highlight
+  - stop-on-reclick behavior
+  - global stop button
+  - speed selector (`0.85x`, `0.95x`, `1.0x`, `1.1x`)
+  - status line (`aria-live`) for speaking updates
 
-    </main>
+### ✅ Enhanced Word Cards (3D Flip + Controls)
+- card front:
+  - headword
+  - bookmark button
+  - TTS icon
+  - difficulty label
+- card back:
+  - part_of_speech | meaning_kr
+  - definition_en + TTS
+  - definition_kr_literal
+  - example_en + TTS
+  - example_kr_literal
+- interaction:
+  - smooth 3D flip animation
+  - click / Enter / Space to flip
+  - Escape to close flip
+  - prevent flip when TTS/bookmark clicked
+- Word Card control panel:
+  - flip all
+  - reset
+  - shuffle
+  - smart review
+  - share progress
+  - TTS speed + stop
 
-    <!-- Footer Navigation -->
-    <footer class="bg-white border-t border-gray-200">
-        <!-- Footer content with back button -->
-    </footer>
+### ✅ UX Enhancements
+- dashboard block:
+  - total cards
+  - flipped cards
+  - favorites
+  - badges
+  - session timer
+  - online/offline status
+- badges:
+  - first flips
+  - bookmark usage
+  - deep reading
+  - focus time
+- search/filter:
+  - text search (word/meaning/example)
+  - difficulty filter
+  - bookmark filter
+  - clear filters
+- share:
+  - Web Share API
+  - clipboard fallback
 
-</body>
-</html>
-Detailed Navigation ImplementationSticky Header HTML Structure<header class="bg-white shadow-lg border-b-2 border-indigo-200 sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 py-4">
-        <div class="flex items-center justify-between">
-            <!-- Logo/Brand Section -->
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
-                    <span class="text-white font-bold text-lg">🎓</span>
-                </div>
-                <div>
-                    <h1 class="text-xl font-bold text-gray-800">English Study Hub</h1>
-                    <p class="text-xs text-gray-500">쉐도잉과 암기를 위한 영어 학습</p>
-                </div>
-            </div>
-            
-            <!-- Desktop Navigation -->
-            <nav class="hidden md:flex items-center space-x-4">
-                <a href="../../../../index.html" 
-                   class="flex items-center space-x-2 px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-                    </svg>
-                    <span class="font-semibold">홈으로</span>
-                </a>
-                
-                <!-- Dropdown Menu -->
-                <div class="relative group">
-                    <button class="flex items-center space-x-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                        </svg>
-                        <span>다른 콘텐츠</span>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
-                    </button>
-                    
-                    <!-- Dropdown Content -->
-                    <div class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                        <div class="py-2">
-                            <div class="px-3 py-2 text-xs font-semibold text-gray-500 border-b border-gray-200">Level 1 - 기초</div>
-                            <a href="#" class="block px-4 py-2 text-sm text-gray-400 cursor-not-allowed">준비 중...</a>
-                            
-                            <div class="px-3 py-2 text-xs font-semibold text-gray-500 border-b border-gray-200 mt-1">Level 2 - 중급</div>
-                            <a href="#" class="block px-4 py-2 text-sm text-gray-400 cursor-not-allowed">준비 중...</a>
-                            
-                            <div class="px-3 py-2 text-xs font-semibold text-gray-500 border-b border-gray-200 mt-1">Level 3 - 고급</div>
-                            <a href="../../../../index.html#levels" class="block px-4 py-2 text-sm text-indigo-600 font-semibold hover:bg-indigo-50">다른 Level 3 콘텐츠 보기</a>
-                        </div>
-                    </div>
-                </div>
-            </nav>
-            
-            <!-- Mobile Menu Button -->
-            <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                </svg>
-            </button>
-        </div>
-        
-        <!-- Mobile Menu (Hidden by default) -->
-        <div id="mobile-menu" class="md:hidden mt-4 pb-4 border-t border-gray-200 hidden">
-            <div class="space-y-2 pt-4">
-                <a href="../../../../index.html" class="block px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
-                    🏠 홈으로 돌아가기
-                </a>
-                <a href="../../../../index.html#levels" class="block px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
-                    📚 다른 학습 콘텐츠
-                </a>
-            </div>
-        </div>
-    </div>
-</header>
-Breadcrumb Navigation<div class="bg-gray-100 border-b border-gray-200">
-    <div class="max-w-7xl mx-auto px-4 py-3">
-        <nav class="flex items-center space-x-2 text-sm">
-            <a href="../../../../index.html" class="text-indigo-600 hover:text-indigo-800 font-medium">홈</a>
-            <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-            </svg>
-            <span class="text-gray-500">듣기 연습</span>
-            <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-            </svg>
-            <span class="text-gray-500" id="breadcrumb-level">Level 3</span>
-            <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-            </svg>
-            <span class="text-gray-800 font-medium" id="breadcrumb-title">Loading...</span>
-        </nav>
-    </div>
-</div>
-Footer Navigation<footer class="bg-white border-t border-gray-200 mt-12">
-    <div class="max-w-7xl mx-auto px-4 py-8">
-        <div class="flex flex-col md:flex-row items-center justify-between">
-            <!-- Back to Main Button -->
-            <div class="mb-6 md:mb-0">
-                <a href="../../../../index.html" 
-                   class="inline-flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold rounded-xl hover:from-indigo-600 hover:to-purple-700 transition-all shadow-lg transform hover:scale-105">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-                    </svg>
-                    <span>메인으로 돌아가기</span>
-                </a>
-            </div>
-            
-            <!-- Site Info -->
-            <div class="text-center md:text-right">
-                <p class="text-gray-600 mb-2">영어 학습의 새로운 경험을 만나보세요</p>
-                <p class="text-sm text-gray-500">© 2024 English Study Hub. Made with ❤️</p>
-            </div>
-        </div>
-        
-        <!-- Additional Links -->
-        <div class="mt-8 pt-6 border-t border-gray-200 text-center">
-            <div class="flex flex-wrap justify-center gap-6 text-sm text-gray-500">
-                <a href="../../../../index.html#guide" class="hover:text-indigo-600 transition-colors">사용법</a>
-                <span>|</span>
-                <a href="../../../../index.html#levels" class="hover:text-indigo-600 transition-colors">다른 콘텐츠</a>
-                <span>|</span>
-                <a href="../../../../index.html" class="hover:text-indigo-600 transition-colors">홈페이지</a>
-            </div>
-        </div>
-    </div>
-</footer>
+### ✅ Performance
+- batch rendering with `DocumentFragment`
+- event delegation for Word Card interactions
+- avoid repeated heavy DOM listeners
+- localStorage persistence for user state
+- cached offline assets via service worker
+
+### ✅ Accessibility
+- skip-to-content link
+- semantic sections + role attributes
+- `aria-live` for TTS status
+- keyboard operable tabs/cards/menu
+- `aria-expanded` state on flip cards
+- visible focus states
+- reduced-motion support
+
+### ✅ Mobile Optimization
+- responsive layout across breakpoints
+- touch-friendly controls (min tap target)
+- horizontally scrollable tabs on small screens
+- mobile menu and compact controls
+
+---
+
+## State Persistence Requirements
+
+Persist in localStorage:
+- flipped cards
+- favorites
+- difficulty map
+- earned badges
+- review scores
+- accumulated study seconds
+- selected theme (light/dark)
+
+State should restore on reload.
+
+---
+
+## Offline Requirements
+
+Implement `service-worker.js` to cache:
+- html/css/js files
+- all six data files
+- offline-friendly revisit behavior
+
+Show online/offline indicator in UI.
+
+---
+
+## Visual Requirements
+
+- clean, modern educational UI
+- balanced spacing and card hierarchy
+- high readability for EN/KR mixed content
+- subtle transitions; no noisy animation
+- dark mode support with readable contrast
+
+---
+
+## Parsing and Data Robustness
+
+Parser must:
+- normalize line endings
+- support multiline values
+- support case-insensitive keys (`en`/`EN`, `kr`/`KR`)
+- gracefully handle missing values with fallback text
+- never assume JSON
+
+Error handling:
+- user-friendly message in UI
+- console detail for debugging
+
+---
+
+## Final Acceptance Criteria
+
+The generated page is accepted only if all are true:
+1. Loads all `data/*.txt` content correctly.
+2. YouTube embed works from meta `video_id`/`video_url`.
+3. All tabs, TTS controls, and flip cards work on desktop/mobile.
+4. Word Card controls (flip/reset/shuffle/search/filter/smart-review) work.
+5. Dashboard stats and badges update during use.
+6. State persists after refresh.
+7. Keyboard-only navigation is usable.
+8. Offline revisit works after first load.
+9. No framework/build step required.
+10. Ready to reuse for new content sets with same file format.
+
+---
+
+## Generator Instruction (For Future Content)
+
+When generating a new content page from this template:
+- reuse same architecture and quality level,
+- keep all feature modules enabled by default,
+- change only data-driven content and relative navigation paths if needed,
+- do not remove UX/accessibility/performance features.
+
+---
+
+## Test Plan (Systematic)
+
+Use this plan whenever a new content page is generated from this template.
+
+### 1) Test Environment Matrix
+
+#### Desktop Browsers
+- Chrome (latest stable)
+- Edge (latest stable)
+- Firefox (latest stable)
+
+#### Mobile Browsers
+- Android Chrome (latest stable)
+- iOS Safari (latest stable)
+
+#### Viewports
+- Mobile: 360x800, 390x844
+- Tablet: 768x1024
+- Desktop: 1366x768, 1920x1080
+
+### 2) Functional Test Cases
+
+#### A. Data Loading
+- Given valid `data/00~05.txt`, page loads all sections without manual edits.
+- Missing file case shows user-friendly error UI and keeps console detail.
+- Meta fallback works if optional fields are absent.
+
+#### B. Navigation
+- Header links navigate correctly.
+- Desktop dropdown opens and links are clickable.
+- Mobile menu toggle works and links are reachable.
+- Breadcrumb level/title matches meta values.
+- Footer "메인으로 돌아가기" works.
+
+#### C. YouTube
+- Valid `video_id` renders embed player.
+- If `video_id` missing, `video_url` parsing fallback works.
+- Invalid ID shows safe placeholder message.
+- Video remains 16:9 in all viewport sizes.
+
+#### D. Tabs and Content
+- All tabs switch without layout break.
+- Keyboard arrows move between tabs.
+- Tab panel only shows selected panel.
+- Intro/Core/Summary/Full Script content count matches source files.
+
+#### E. TTS
+- TTS plays English text in all supported sections.
+- Speed selector applies new playback rate.
+- Stop button cancels active speech.
+- Re-click behavior stops or switches correctly.
+- Visual state (`is-speaking`) updates on start/end/error.
+
+#### F. Word Cards
+- Flip animation works on click and keyboard (Enter/Space).
+- Escape closes flipped state.
+- TTS/bookmark click does not trigger flip.
+- Controls work:
+  - flip all
+  - reset
+  - shuffle
+  - smart review
+  - share progress
+- Search/filter/bookmark filters combine correctly.
+- Smart review ordering updates card list.
+
+#### G. State Persistence
+- Refresh preserves:
+  - flipped cards
+  - bookmarks
+  - difficulties
+  - badges
+  - theme
+  - accumulated study time
+
+#### H. Session and Dashboard
+- Timer increments every second.
+- Stats reflect real interactions.
+- Badge area updates when conditions are met.
+- Online/offline indicator changes with network state.
+
+#### I. Offline Support
+- Service worker registers successfully.
+- After first load, cached assets open offline.
+- Data text files are served from cache when network is down.
+
+### 3) Regression Test Suite (Quick)
+
+Run this after every change:
+1. Page opens without console errors.
+2. YouTube renders.
+3. Tabs switch (mouse + keyboard).
+4. TTS plays/stops.
+5. Word card flip + bookmark + filter works.
+6. Refresh preserves state.
+7. Mobile menu toggles.
+8. Dark mode toggles and persists.
+
+---
+
+## Automated Quality Verification Checklist
+
+Treat this as pass/fail gates before release.
+
+### Gate A: Structure and Data
+- [ ] `index.html`, `style.css`, `script.js`, `service-worker.js` exist.
+- [ ] `data/00~05.txt` paths are correct.
+- [ ] No hardcoded story body content in HTML.
+
+### Gate B: Interaction Integrity
+- [ ] No broken IDs/selectors used by script.
+- [ ] No duplicate event handlers for the same control.
+- [ ] Word card controls remain functional after shuffle/filter.
+
+### Gate C: Accessibility
+- [ ] Skip link exists and is keyboard reachable.
+- [ ] Interactive elements have clear labels or aria-label.
+- [ ] `aria-live` status updates for TTS.
+- [ ] Focus ring is visible for keyboard users.
+- [ ] Color contrast remains readable in light/dark mode.
+
+### Gate D: Performance
+- [ ] Batch rendering uses `DocumentFragment` for list-heavy sections.
+- [ ] Word card interactions use event delegation.
+- [ ] No blocking synchronous loops on large lists.
+- [ ] Initial render remains responsive on mobile device profile.
+
+### Gate E: Compatibility
+- [ ] Works in Chrome/Edge/Firefox desktop.
+- [ ] Works in Android Chrome + iOS Safari.
+- [ ] No layout overflow at defined breakpoints.
+
+---
+
+## Cross-Browser Compatibility Procedure
+
+For each target browser:
+1. Hard refresh page.
+2. Verify YouTube loads.
+3. Verify text file fetch and rendering.
+4. Verify speech synthesis availability and graceful fallback.
+5. Verify sticky header/tabs and mobile menu behavior.
+6. Verify localStorage persistence.
+7. Verify service worker cache behavior (where supported).
+
+Log results as:
+- Browser / Version
+- Pass/Fail per module
+- Notes (UI deviation, console warnings, unsupported APIs)
+
+---
+
+## Accessibility Validation Procedure
+
+### Keyboard-only
+- Tab through all actionable controls.
+- Confirm no keyboard trap.
+- Confirm Enter/Space actions (tabs/cards/buttons).
+- Confirm Escape behavior on word cards.
+
+### Screen Reader Readability (basic)
+- Check meaningful labels for:
+  - menu buttons
+  - TTS buttons
+  - word cards
+  - controls
+- Confirm dynamic status via `aria-live` for TTS.
+
+### Motion & Visual
+- Enable reduced-motion OS setting.
+- Confirm animations are reduced/disabled.
+- Validate contrast in both themes.
+
+---
+
+## Performance Benchmarks and Measurement
+
+### Target Benchmarks
+- Initial interactive render: under 2.5s on mid-range desktop.
+- Tab switch perceived response: under 150ms.
+- Word card action (flip/filter): under 120ms perceived.
+- No major jank during scroll on mobile.
+
+### Measurement Method
+- Use browser DevTools Performance panel:
+  - record first load
+  - record tab switch
+  - record shuffle/filter on word cards
+- Use Lighthouse (optional):
+  - Performance: target 80+
+  - Accessibility: target 90+
+  - Best Practices: target 90+
+
+### Optimization Actions if Below Target
+- Reduce repeated DOM queries in hot paths.
+- Re-check event delegation coverage.
+- Minimize forced layout/reflow in animations.
+- Keep cache list minimal but sufficient.
+
+---
+
+## Release Readiness Checklist (Final)
+
+Release only when all are true:
+- [ ] All functional tests passed.
+- [ ] Regression quick suite passed.
+- [ ] Accessibility procedure passed.
+- [ ] Cross-browser matrix completed.
+- [ ] Performance benchmarks met or documented with mitigation.
+- [ ] No critical console errors.
+- [ ] Template remains reusable for new content without code rewrites.
+
+This requirements file is the canonical quality template for future auto-generated content pages.
