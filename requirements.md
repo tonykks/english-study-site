@@ -104,6 +104,7 @@ Use:
   - Core Sentences
   - Summary
   - Full Script
+  - Hangman Game
   - Word Cards
 - keyboard-support tab navigation
 - sticky tabs
@@ -171,6 +172,47 @@ Use:
 - share:
   - Web Share API
   - clipboard fallback
+
+### ✅ Hangman Game (Word Order Trainer)
+- Tab position:
+  - 6th tab, next to Word Cards (`🎮 Hangman Game`)
+- Theme/visual:
+  - dark navy game area
+  - left hangman graphic + right play zone
+- Data source:
+  - use `Core Sentences` EN/KR pairs
+- Core gameplay:
+  - show Korean sentence (`KR`) as prompt
+  - show shuffled English words from target sentence (`EN`)
+  - learner clicks words in correct English order
+  - if clicked word matches current expected position:
+    - word moves to upper answer slots
+    - word is removed from lower word pool
+  - if clicked word is wrong:
+    - no move to answer area
+    - wrong count increases
+    - wrong visual feedback (shake) + wrong SFX
+- Scoring:
+  - success round: +1 score
+  - failed round (hangman completed): +0
+  - progress shown as `X/Y` sentence rounds
+- Controls (single bottom row):
+  - 선택 초기화
+  - 정답 체크
+  - 다음 문장
+  - 점수 초기화
+- Hangman status:
+  - STEP displayed as `wrongCount / maxSteps`
+  - hangman SVG body parts reveal by wrong count
+- Audio feedback:
+  - correct word click sound
+  - victory sound on round clear (contrasts with death sound)
+  - wrong sound on regular mistakes
+  - separate death sound on final failure step
+- Persistence:
+  - score and current round index in localStorage
+- Mobile:
+  - responsive layout and button usability preserved
 
 ### ✅ Performance
 - batch rendering with `DocumentFragment`
@@ -318,6 +360,7 @@ Use this plan whenever a new content page is generated from this template.
 - Keyboard arrows move between tabs.
 - Tab panel only shows selected panel.
 - Intro/Core/Summary/Full Script content count matches source files.
+- Hangman tab exists and is reachable as 6th tab.
 
 #### E. TTS
 - TTS plays English text in all supported sections.
@@ -359,6 +402,25 @@ Use this plan whenever a new content page is generated from this template.
 - After first load, cached assets open offline.
 - Data text files are served from cache when network is down.
 
+#### J. Hangman Game
+- Korean prompt line displays only KR translation from current Core sentence.
+- No duplicate instructional Korean text below prompt.
+- Shuffled word chips are selectable and reorder exercise is playable.
+- Correct word click:
+  - chip disappears from pool
+  - chip appears in next answer slot
+  - correct SFX plays
+- Wrong word click:
+  - chip shakes
+  - wrong SFX plays
+  - hangman step increments
+- Final failure step:
+  - death SFX plays (distinct from wrong/correct)
+- Round completion:
+  - victory SFX plays
+  - score +1 only on clear
+- Bottom control row has all 4 buttons in one line (space permitting).
+
 ### 3) Regression Test Suite (Quick)
 
 Run this after every change:
@@ -367,9 +429,10 @@ Run this after every change:
 3. Tabs switch (mouse + keyboard).
 4. TTS plays/stops.
 5. Word card flip + bookmark + filter works.
-6. Refresh preserves state.
-7. Mobile menu toggles.
-8. Dark mode toggles and persists.
+6. Hangman: order selection / sound feedback / score works.
+7. Refresh preserves state.
+8. Mobile menu toggles.
+9. Dark mode toggles and persists.
 
 ---
 
@@ -386,6 +449,8 @@ Treat this as pass/fail gates before release.
 - [ ] No broken IDs/selectors used by script.
 - [ ] No duplicate event handlers for the same control.
 - [ ] Word card controls remain functional after shuffle/filter.
+- [ ] Hangman order-selection logic matches expected-word progression.
+- [ ] Hangman pool removal/answer insertion works without duplication.
 
 ### Gate C: Accessibility
 - [ ] Skip link exists and is keyboard reachable.
@@ -397,6 +462,7 @@ Treat this as pass/fail gates before release.
 ### Gate D: Performance
 - [ ] Batch rendering uses `DocumentFragment` for list-heavy sections.
 - [ ] Word card interactions use event delegation.
+- [ ] Hangman interaction remains responsive during rapid wrong clicks.
 - [ ] No blocking synchronous loops on large lists.
 - [ ] Initial render remains responsive on mobile device profile.
 
@@ -417,6 +483,7 @@ For each target browser:
 5. Verify sticky header/tabs and mobile menu behavior.
 6. Verify localStorage persistence.
 7. Verify service worker cache behavior (where supported).
+8. Verify Web Audio SFX behavior (correct/wrong/death/win) and fallback stability.
 
 Log results as:
 - Browser / Version

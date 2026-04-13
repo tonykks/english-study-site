@@ -5,6 +5,7 @@ let activeUtterance = null;
 let selectedVoice = null;
 let ttsRate = 0.95;
 let currentWordCards = [];
+let sfxContext = null;
 const STORAGE_KEY = "english-study-crisis-state-v1";
 const appState = {
   flipped: new Set(),
@@ -15,6 +16,16 @@ const appState = {
   totalStudySeconds: 0,
   theme: "light",
   reviewScores: {}
+};
+const hangmanState = {
+  items: [],
+  index: 0,
+  selectedWords: [],
+  poolWords: [],
+  wrongCount: 0,
+  score: 0,
+  maxSteps: 7,
+  finished: false
 };
 
 function normalizeText(text) {
@@ -30,6 +41,146 @@ function escapeHtml(value) {
     .replace(/'/g, "&#39;");
 }
 
+function playWrongSfx() {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    if (!sfxContext) sfxContext = new AudioCtx();
+    const osc = sfxContext.createOscillator();
+    const gain = sfxContext.createGain();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(220, sfxContext.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(130, sfxContext.currentTime + 0.18);
+    gain.gain.setValueAtTime(0.001, sfxContext.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.12, sfxContext.currentTime + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, sfxContext.currentTime + 0.2);
+    osc.connect(gain);
+    gain.connect(sfxContext.destination);
+    osc.start();
+    osc.stop(sfxContext.currentTime + 0.21);
+  } catch (error) {
+    console.warn("wrong sfx unavailable", error);
+  }
+}
+
+function playDeathSfx() {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    if (!sfxContext) sfxContext = new AudioCtx();
+
+    const now = sfxContext.currentTime;
+    const master = sfxContext.createGain();
+    master.gain.setValueAtTime(0.001, now);
+    master.gain.exponentialRampToValueAtTime(0.18, now + 0.02);
+    master.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+    master.connect(sfxContext.destination);
+
+    // Dark descending tone
+    const osc1 = sfxContext.createOscillator();
+    const osc2 = sfxContext.createOscillator();
+    osc1.type = "triangle";
+    osc2.type = "sawtooth";
+    osc1.frequency.setValueAtTime(280, now);
+    osc1.frequency.exponentialRampToValueAtTime(90, now + 0.45);
+    osc2.frequency.setValueAtTime(180, now);
+    osc2.frequency.exponentialRampToValueAtTime(55, now + 0.45);
+
+    const lowpass = sfxContext.createBiquadFilter();
+    lowpass.type = "lowpass";
+    lowpass.frequency.setValueAtTime(1200, now);
+    lowpass.frequency.exponentialRampToValueAtTime(280, now + 0.5);
+
+    osc1.connect(lowpass);
+    osc2.connect(lowpass);
+    lowpass.connect(master);
+
+    osc1.start(now);
+    osc2.start(now);
+    osc1.stop(now + 0.48);
+    osc2.stop(now + 0.48);
+
+    // Short impact hit near the end
+    const impact = sfxContext.createOscillator();
+    const impactGain = sfxContext.createGain();
+    impact.type = "square";
+    impact.frequency.setValueAtTime(85, now + 0.36);
+    impactGain.gain.setValueAtTime(0.001, now + 0.35);
+    impactGain.gain.exponentialRampToValueAtTime(0.12, now + 0.37);
+    impactGain.gain.exponentialRampToValueAtTime(0.001, now + 0.52);
+    impact.connect(impactGain);
+    impactGain.connect(master);
+    impact.start(now + 0.35);
+    impact.stop(now + 0.53);
+  } catch (error) {
+    console.warn("death sfx unavailable", error);
+  }
+}
+
+function playCorrectSfx() {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    if (!sfxContext) sfxContext = new AudioCtx();
+
+    const now = sfxContext.currentTime;
+    const gain = sfxContext.createGain();
+    gain.gain.setValueAtTime(0.001, now);
+    gain.gain.exponentialRampToValueAtTime(0.14, now + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
+    gain.connect(sfxContext.destination);
+
+    const oscA = sfxContext.createOscillator();
+    const oscB = sfxContext.createOscillator();
+    oscA.type = "sine";
+    oscB.type = "triangle";
+    oscA.frequency.setValueAtTime(660, now);
+    oscA.frequency.exponentialRampToValueAtTime(880, now + 0.18);
+    oscB.frequency.setValueAtTime(990, now + 0.03);
+    oscB.frequency.exponentialRampToValueAtTime(1320, now + 0.2);
+    oscA.connect(gain);
+    oscB.connect(gain);
+    oscA.start(now);
+    oscB.start(now + 0.03);
+    oscA.stop(now + 0.2);
+    oscB.stop(now + 0.24);
+  } catch (error) {
+    console.warn("correct sfx unavailable", error);
+  }
+}
+
+function playWinSfx() {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    if (!sfxContext) sfxContext = new AudioCtx();
+
+    const now = sfxContext.currentTime;
+    const master = sfxContext.createGain();
+    master.gain.setValueAtTime(0.001, now);
+    master.gain.exponentialRampToValueAtTime(0.18, now + 0.02);
+    master.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+    master.connect(sfxContext.destination);
+
+    const notes = [523.25, 659.25, 783.99, 1046.5]; // C5 E5 G5 C6
+    notes.forEach((freq, idx) => {
+      const osc = sfxContext.createOscillator();
+      const gain = sfxContext.createGain();
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(freq, now + idx * 0.1);
+      gain.gain.setValueAtTime(0.001, now + idx * 0.1);
+      gain.gain.exponentialRampToValueAtTime(0.12, now + idx * 0.1 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.1 + 0.15);
+      osc.connect(gain);
+      gain.connect(master);
+      osc.start(now + idx * 0.1);
+      osc.stop(now + idx * 0.1 + 0.16);
+    });
+  } catch (error) {
+    console.warn("win sfx unavailable", error);
+  }
+}
+
 function saveState() {
   const payload = {
     flipped: Array.from(appState.flipped),
@@ -38,7 +189,11 @@ function saveState() {
     badges: Array.from(appState.badges),
     totalStudySeconds: appState.totalStudySeconds,
     theme: appState.theme,
-    reviewScores: appState.reviewScores
+    reviewScores: appState.reviewScores,
+    hangman: {
+      score: hangmanState.score,
+      index: hangmanState.index
+    }
   };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
 }
@@ -55,9 +210,202 @@ function loadState() {
     appState.totalStudySeconds = parsed.totalStudySeconds || 0;
     appState.theme = parsed.theme || "light";
     appState.reviewScores = parsed.reviewScores || {};
+    hangmanState.score = parsed.hangman?.score || 0;
+    hangmanState.index = parsed.hangman?.index || 0;
   } catch (error) {
     console.warn("state load failed", error);
   }
+}
+
+function getHangmanCurrentItem() {
+  if (!hangmanState.items.length) return null;
+  return hangmanState.items[hangmanState.index % hangmanState.items.length];
+}
+
+function renderHangmanSentence() {
+  const sentenceNode = document.getElementById("hangman-sentence");
+  const item = getHangmanCurrentItem();
+  if (!sentenceNode || !item) return;
+  const targetWords = item.en.toUpperCase().split(/\s+/).filter(Boolean);
+  const selected = hangmanState.selectedWords;
+  let html = "";
+  for (let i = 0; i < targetWords.length; i += 1) {
+    const text = selected[i] || "____";
+    html += `<span style="display:inline-block;margin-right:6px;margin-bottom:6px;padding:3px 8px;border:1px dashed #5f76a4;border-radius:8px;">${escapeHtml(text)}</span>`;
+  }
+  sentenceNode.innerHTML = html;
+}
+
+function renderHangmanStats() {
+  const step = document.getElementById("hangman-step");
+  const score = document.getElementById("hangman-score");
+  const progress = document.getElementById("hangman-progress");
+  const item = getHangmanCurrentItem();
+  const total = item ? item.en.split(/\s+/).filter(Boolean).length : 0;
+  if (step) step.textContent = `${hangmanState.wrongCount} / ${hangmanState.maxSteps}`;
+  if (score) score.textContent = String(hangmanState.score);
+  if (progress) progress.textContent = `${Math.min(hangmanState.index + 1, hangmanState.items.length)} / ${hangmanState.items.length}`;
+}
+
+function renderHangmanHint() {
+  const hint = document.getElementById("hangman-hint");
+  const item = getHangmanCurrentItem();
+  if (!hint || !item) return;
+  hint.textContent = item.kr || "-";
+}
+
+function renderHangmanWordChips() {
+  const root = document.getElementById("hangman-word-buttons");
+  if (!root) return;
+  root.innerHTML = "";
+  hangmanState.poolWords.forEach((entry) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "hangman-word-chip";
+    btn.textContent = entry.word;
+    btn.disabled = hangmanState.finished;
+    btn.addEventListener("click", () => {
+      if (hangmanState.finished) return;
+      const item = getHangmanCurrentItem();
+      if (!item) return;
+      const targetWords = item.en.toUpperCase().split(/\s+/).filter(Boolean);
+      const targetIdx = hangmanState.selectedWords.length;
+      const expected = targetWords[targetIdx];
+      if (entry.word === expected) {
+        hangmanState.selectedWords.push(entry.word);
+        hangmanState.poolWords = hangmanState.poolWords.filter((w) => w.id !== entry.id);
+        playCorrectSfx();
+        setHangmanStatus("정답 위치 단어입니다! 계속 선택하세요.");
+        renderHangmanSentence();
+        renderHangmanWordChips();
+        renderHangmanFigure();
+        renderHangmanStats();
+        checkHangmanResult();
+      } else {
+        hangmanState.wrongCount += 1;
+        if (hangmanState.wrongCount >= hangmanState.maxSteps) {
+          playDeathSfx();
+        } else {
+          playWrongSfx();
+        }
+        btn.classList.add("shake-wrong");
+        setHangmanStatus("틀린 위치입니다. 다시 선택해보세요.");
+        setTimeout(() => {
+          renderHangmanWordChips();
+          renderHangmanFigure();
+          renderHangmanStats();
+          checkHangmanResult();
+        }, 180);
+        return;
+      }
+    });
+    root.appendChild(btn);
+  });
+}
+
+function renderHangmanFigure() {
+  const parts = Array.from(document.querySelectorAll("#hangman-svg .hg-part"));
+  parts.forEach((part) => {
+    const step = Number(part.getAttribute("data-step"));
+    part.classList.toggle("active", hangmanState.wrongCount >= step);
+  });
+}
+
+function setHangmanStatus(message, mode = "") {
+  const node = document.getElementById("hangman-status");
+  const wrap = document.getElementById("hangman-game");
+  if (!node || !wrap) return;
+  node.textContent = message;
+  node.classList.remove("win", "lose");
+  wrap.classList.remove("game-celebrate", "game-shake");
+  if (mode) {
+    node.classList.add(mode);
+    wrap.classList.add(mode === "win" ? "game-celebrate" : "game-shake");
+    setTimeout(() => wrap.classList.remove("game-celebrate", "game-shake"), 450);
+  }
+}
+
+function checkHangmanResult() {
+  const item = getHangmanCurrentItem();
+  if (!item) return;
+  const target = item.en.toUpperCase().split(/\s+/).filter(Boolean);
+  if (hangmanState.selectedWords.length === target.length) {
+    hangmanState.finished = true;
+    hangmanState.score += 1;
+    playWinSfx();
+    setHangmanStatus("정답! 어순이 정확합니다. +1점", "win");
+    saveState();
+    renderHangmanStats();
+    return;
+  }
+  if (hangmanState.wrongCount >= hangmanState.maxSteps) {
+    hangmanState.finished = true;
+    setHangmanStatus(`행맨이 완성되어 실패했습니다. 정답: ${target.join(" ")}`, "lose");
+    saveState();
+    renderHangmanStats();
+  }
+}
+
+function startHangmanRound() {
+  const item = getHangmanCurrentItem();
+  if (!item) return;
+  const words = item.en.toUpperCase().split(/\s+/).filter(Boolean);
+  hangmanState.poolWords = words.map((word, idx) => ({ id: `${idx}-${word}`, word })).sort(() => Math.random() - 0.5);
+  hangmanState.selectedWords = [];
+  hangmanState.wrongCount = 0;
+  hangmanState.finished = false;
+  setHangmanStatus("단어를 어순대로 선택하세요.");
+  renderHangmanSentence();
+  renderHangmanHint();
+  renderHangmanFigure();
+  renderHangmanWordChips();
+  renderHangmanStats();
+}
+
+function setupHangman(items) {
+  hangmanState.items = items.map((item) => ({ en: item.en || "", kr: item.kr || "" })).filter((item) => item.en);
+  if (!hangmanState.items.length) return;
+  hangmanState.index = hangmanState.index % hangmanState.items.length;
+  const nextBtn = document.getElementById("hangman-next-btn");
+  const resetBtn = document.getElementById("hangman-reset-btn");
+  const checkBtn = document.getElementById("hangman-check-btn");
+  const clearBtn = document.getElementById("hangman-clear-btn");
+  const playerNode = document.getElementById("hangman-player");
+  if (playerNode) playerNode.textContent = "PLAYER 1";
+
+  nextBtn?.addEventListener("click", () => {
+    hangmanState.index = (hangmanState.index + 1) % hangmanState.items.length;
+    saveState();
+    startHangmanRound();
+  });
+  resetBtn?.addEventListener("click", () => {
+    hangmanState.score = 0;
+    hangmanState.index = 0;
+    saveState();
+    startHangmanRound();
+  });
+  checkBtn?.addEventListener("click", () => {
+    checkHangmanResult();
+    if (!hangmanState.finished) {
+      setHangmanStatus("아직 완성되지 않았습니다. 어순대로 계속 선택하세요.");
+    }
+  });
+  clearBtn?.addEventListener("click", () => {
+    const item = getHangmanCurrentItem();
+    if (!item) return;
+    const words = item.en.toUpperCase().split(/\s+/).filter(Boolean);
+    hangmanState.poolWords = words.map((word, idx) => ({ id: `${idx}-${word}`, word })).sort(() => Math.random() - 0.5);
+    hangmanState.selectedWords = [];
+    hangmanState.wrongCount = 0;
+    hangmanState.finished = false;
+    setHangmanStatus("선택을 초기화했습니다.");
+    renderHangmanSentence();
+    renderHangmanWordChips();
+    renderHangmanFigure();
+    renderHangmanStats();
+  });
+
+  startHangmanRound();
 }
 
 function updateOnlineStatus() {
@@ -887,6 +1235,7 @@ async function init() {
     renderEnKrList("core-content", core, "Core Sentences 데이터가 없습니다.");
     renderEnKrList("summary-content", summary, "Summary 데이터가 없습니다.");
     renderFullScript(script);
+    setupHangman(core);
     renderWordCards(words);
 
     console.log("[StudyPage] Loaded", {

@@ -123,12 +123,13 @@
     </section>
 
     <nav class="study-tabs sticky z-20 mb-4 rounded-2xl border border-stone-200 bg-white/95 p-2 shadow-sm backdrop-blur" aria-label="학습 탭" role="tablist">
-      <div class="tabs-scroll flex gap-2 overflow-x-auto md:grid md:grid-cols-5">
+      <div class="tabs-scroll flex gap-2 overflow-x-auto md:grid md:grid-cols-6">
         <button class="tab-btn active" data-tab="intro" role="tab" aria-selected="true" aria-controls="tab-intro" id="tab-btn-intro">📌 Intro</button>
         <button class="tab-btn" data-tab="core" role="tab" aria-selected="false" aria-controls="tab-core" id="tab-btn-core">💡 Core</button>
         <button class="tab-btn" data-tab="summary" role="tab" aria-selected="false" aria-controls="tab-summary" id="tab-btn-summary">📝 Summary</button>
         <button class="tab-btn" data-tab="script" role="tab" aria-selected="false" aria-controls="tab-script" id="tab-btn-script">📖 Full Script</button>
         <button class="tab-btn" data-tab="wordcards" role="tab" aria-selected="false" aria-controls="tab-wordcards" id="tab-btn-wordcards">🧠 Word Cards</button>
+        <button class="tab-btn" data-tab="hangman" role="tab" aria-selected="false" aria-controls="tab-hangman" id="tab-btn-hangman">🎮 Hangman Game</button>
       </div>
     </nav>
 
@@ -151,6 +152,50 @@
       <section id="tab-script" class="tab-panel rounded-2xl border border-stone-200 bg-white p-4 shadow-md md:p-6" role="tabpanel" aria-labelledby="tab-btn-script">
         <h2 class="mb-4 text-xl font-bold text-gray-900">Full Script</h2>
         <div id="script-content" class="space-y-3"></div>
+      </section>
+
+      <section id="tab-hangman" class="tab-panel rounded-2xl border border-stone-200 bg-white p-4 shadow-md md:p-6" role="tabpanel" aria-labelledby="tab-btn-hangman">
+        <h2 class="mb-4 text-xl font-bold text-gray-900">Hangman Game</h2>
+        <div id="hangman-game" class="hangman-wrap">
+          <div class="hangman-topbar">
+            <div class="hangman-stat"><span>PLAYER</span><strong id="hangman-player">PLAYER 1</strong></div>
+            <div class="hangman-stat"><span>SCORE</span><strong id="hangman-score">0</strong></div>
+            <div class="hangman-stat"><span>STEP</span><strong id="hangman-step">0 / 7</strong></div>
+            <div class="hangman-stat"><span>PROGRESS</span><strong id="hangman-progress">0 / 0</strong></div>
+          </div>
+
+          <div class="hangman-main">
+            <div class="hangman-drawing-box">
+              <svg id="hangman-svg" viewBox="0 0 200 220" aria-label="hangman graphic">
+                <line x1="20" y1="200" x2="120" y2="200" class="hg-base" />
+                <line x1="40" y1="200" x2="40" y2="20" class="hg-base" />
+                <line x1="40" y1="20" x2="130" y2="20" class="hg-base" />
+                <line x1="130" y1="20" x2="130" y2="45" class="hg-base" />
+                <circle cx="130" cy="62" r="16" class="hg-part" data-step="1" />
+                <line x1="130" y1="78" x2="130" y2="124" class="hg-part" data-step="2" />
+                <line x1="130" y1="92" x2="107" y2="110" class="hg-part" data-step="3" />
+                <line x1="130" y1="92" x2="153" y2="110" class="hg-part" data-step="4" />
+                <line x1="130" y1="124" x2="112" y2="155" class="hg-part" data-step="5" />
+                <line x1="130" y1="124" x2="148" y2="155" class="hg-part" data-step="6" />
+                <line x1="124" y1="58" x2="128" y2="58" class="hg-part" data-step="7" />
+                <line x1="132" y1="58" x2="136" y2="58" class="hg-part" data-step="7" />
+              </svg>
+            </div>
+
+            <div class="hangman-play-box">
+              <p id="hangman-status" class="hangman-status" aria-live="polite">단어를 어순대로 선택하세요.</p>
+              <p id="hangman-hint" class="hangman-hint">-</p>
+              <div id="hangman-sentence" class="hangman-sentence"></div>
+              <div id="hangman-word-buttons" class="hangman-word-buttons"></div>
+            </div>
+          </div>
+          <div class="hangman-actions hangman-actions-bottom">
+            <button id="hangman-clear-btn" type="button" class="hangman-btn">선택 초기화</button>
+            <button id="hangman-check-btn" type="button" class="hangman-btn">정답 체크</button>
+            <button id="hangman-next-btn" type="button" class="hangman-btn">다음 문장</button>
+            <button id="hangman-reset-btn" type="button" class="hangman-btn hangman-btn-danger">점수 초기화</button>
+          </div>
+        </div>
       </section>
 
       <section id="tab-wordcards" class="tab-panel rounded-2xl border border-stone-200 bg-white p-4 shadow-md md:p-6" role="tabpanel" aria-labelledby="tab-btn-wordcards">
