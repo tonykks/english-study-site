@@ -177,6 +177,10 @@ function setHeroMeta(meta) {
   document.getElementById("hero-level").textContent = `Level: ${meta.level || "-"}`;
   document.getElementById("hero-source").textContent = meta.source ? `Source: ${meta.source}` : "Source: -";
   document.getElementById("hero-desc").textContent = meta.description || "영어 쉐도잉 학습을 위한 자동 생성 페이지입니다.";
+  const breadcrumbLevel = document.getElementById("breadcrumb-level");
+  const breadcrumbTitle = document.getElementById("breadcrumb-title");
+  if (breadcrumbLevel) breadcrumbLevel.textContent = meta.level || "Level 3";
+  if (breadcrumbTitle) breadcrumbTitle.textContent = meta.title || "Learning Content";
 
   const extra = Object.entries(meta).filter(([key]) => !META_KEYS.has(key));
   const target = document.getElementById("hero-meta");
@@ -390,6 +394,16 @@ function setupTabs() {
   });
 }
 
+function setupMobileMenu() {
+  const mobileBtn = document.getElementById("mobile-menu-btn");
+  const mobileMenu = document.getElementById("mobile-menu");
+  if (!mobileBtn || !mobileMenu) return;
+
+  mobileBtn.addEventListener("click", () => {
+    mobileMenu.classList.toggle("hidden");
+  });
+}
+
 function showError(message) {
   console.error("[StudyPageError]", message);
   const main = document.querySelector("main");
@@ -422,6 +436,7 @@ async function loadText(name) {
 
 async function init() {
   setupTabs();
+  setupMobileMenu();
 
   try {
     const [metaTxt, introTxt, coreTxt, summaryTxt, scriptTxt, cardTxt] = await Promise.all([

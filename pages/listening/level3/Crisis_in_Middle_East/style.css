@@ -43,6 +43,10 @@
   color: white;
 }
 
+.study-tabs {
+  top: 0.75rem;
+}
+
 .tab-panel {
   display: none;
   animation: fadeIn 0.28s ease-in-out;
@@ -202,5 +206,11 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@media (min-width: 768px) {
+  .study-tabs {
+    top: 1rem;
   }
 }
