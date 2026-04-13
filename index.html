@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>영어공부 사이트</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .main-nav {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .nav-btn {
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: white;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .nav-btn.active {
+            background: white;
+            color: #667eea;
+        }
+        
+        .content-section {
+            display: none;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .content-section.active {
+            display: block;
+        }
+        
+        .level-nav {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .level-btn {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .level-btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-1px);
+        }
+        
+        .level-btn.active {
+            background: #4c63d2;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .content-card {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+        
+        .content-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .content-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .content-card p {
+            color: #666;
+            margin-bottom: 15px;
+        }
+        
+        .content-card a {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+        }
+        
+        .content-card a:hover {
+            background: #5a6fd8;
+        }
+        
+        .level-content {
+            display: none;
+        }
+        
+        .level-content.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .main-nav {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .level-nav {
+                flex-wrap: wrap;
+            }
+            
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 영어공부 사이트</h1>
+            <p class="subtitle">듣기 연습과 필수 문법으로 영어 실력 향상하기</p>
+        </header>
+
+        <nav class="main-nav">
+            <button class="nav-btn active" onclick="showSection('listening')">🎧 듣기 연습</button>
+            <button class="nav-btn" onclick="showSection('grammar')">📝 필수 문법</button>
+        </nav>
+
+        <!-- 듣기 연습 섹션 -->
+        <section id="listening-section" class="content-section active">
+            <h2 style="text-align: center; margin-bottom: 20px; color: #667eea;">🎧 듣기 연습</h2>
+            
+            <div class="level-nav">
+                <button class="level-btn active" onclick="showLevel('listening', 'level1')">Level 1</button>
+                <button class="level-btn" onclick="showLevel('listening', 'level2')">Level 2</button>
+                <button class="level-btn" onclick="showLevel('listening', 'level3')">Level 3</button>
+            </div>
+
+            <!-- Level 1 듣기 -->
+            <div id="listening-level1" class="level-content active">
+                <h3>Level 1 - 기초 듣기</h3>
+                <div class="content-grid">
+                    <div class="content-card">
+                        <h3>Daily Conversation</h3>
+                        <p>기본적인 일상 대화 듣기 연습</p>
+                        <a href="listening/level1/daily_conversation.html">학습하기</a>
+                    </div>
+                    <div class="content-card">
+                        <h3>Simple Stories</h3>
+                        <p>간단한 이야기를 통한 듣기 연습</p>
+                        <a href="listening/level1/simple_stories.html">학습하기</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Level 2 듣기 -->
+            <div id="listening-level2" class="level-content">
+                <h3>Level 2 - 중급 듣기</h3>
+                <div class="content-grid">
+                    <div class="content-card">
+                        <h3>News Summary</h3>
+                        <p>간단한 뉴스 요약 듣기</p>
+                        <a href="listening/level2/news_summary.html">학습하기</a>
+                    </div>
+                    <div class="content-card">
+                        <h3>Interview Practice</h3>
+                        <p>인터뷰 대화 듣기 연습</p>
+                        <a href="listening/level2/interview_practice.html">학습하기</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Level 3 듣기 -->
+            <div id="listening-level3" class="level-content">
+                <h3>Level 3 - 고급 듣기</h3>
+                <div class="content-grid">
+                    <div class="content-card">
+                        <h3>The Girl Who Never Give Up</h3>
+                        <p>포기하지 않는 소녀 이야기</p>
+                        <a href="https://tonykks.github.io/english/advanced/practice/01_The_Girl_Who_Never_Give_Up.html">학습하기</a>
+                    </div>
+                    <div class="content-card">
+                        <h3>Business Presentation</h3>
+                        <p>비즈니스 프레젠테이션 듣기</p>
+                        <a href="listening/level3/business_presentation.html">학습하기</a>
+                    </div>
+                    <div class="content-card">
+                        <h3>Academic Lecture</h3>
+                        <p>학술 강의 듣기 연습</p>
+                        <a href="listening/level3/academic_lecture.html">학습하기</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 필수 문법 섹션 -->
+        <section id="grammar-section" class="content-section">
+            <h2 style="text-align: center; margin-bottom: 20px; color: #667eea;">📝 필수 문법</h2>
+            
+            <div class="level-nav">
+                <button class="level-btn active" onclick="showLevel('grammar', 'basic')">기초 문법</button>
+                <button class="level-btn" onclick="showLevel('grammar', 'intermediate')">중급 문법</button>
+                <button class="level-btn" onclick="showLevel('grammar', 'advanced')">고급 문법</button>
+            </div>
+
+            <!-- 기초 문법 -->
+            <div id="grammar-basic" class="level-content active">
+                <h3>기초 문법 - 영어 어순감각 기초</h3>
+                <div class="content-grid">
+                    <div class="content-card">
+                        <h3>5형식 기본 구조</h3>
+                        <p>영어 문장의 기본 구조 이해하기</p>
+                        <a href="grammar/basic/sentence_structure.html">학습하기</a>
+                    </div>
+                    <div class="content-card">
+                        <h3>시제의 기본</h3>
+                        <p>현재, 과거, 미래 시제 마스터</p>
+                        <a href="grammar/basic/basic_tenses.html">학습하기</a>
+                    </div>
+                    <div class="content-card">
+                        <h3>be동사 vs 일반동사</h3>
+                        <p>동사의 종류와 사용법</p>
+                        <a href="grammar/basic/verbs.html">학습하기</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 중급 문법 -->
+            <div id="grammar-intermediate" class="level-content">
+                <h3>중급 문법 - 어순감각 발전</h3>
+                <div class="content-grid">
+                    <div class="content-card">
+                        <h3>관계사 완전정복</h3>
+                        <p>관계대명사, 관계부사 활용</p>
+                        <a href="grammar/intermediate/relatives.html">학습하기</a>
+                    </div>
+                    <div class="content-card">
+                        <h3>분사와 분사구문</h3>
+                        <p>현재분사, 과거분사의 이해</p>
+                        <a href="grammar/intermediate/participles.html">학습하기</a>
+                    </div>
+                    <div class="content-card">
+                        <h3>가정법</h3>
+                        <p>가정법 과거, 과거완료</p>
+                        <a href="grammar/intermediate/conditionals.html">학습하기</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 고급 문법 -->
+            <div id="grammar-advanced" class="level-content">
+                <h3>고급 문법 - 완벽한 어순감각</h3>
+                <div class="content-grid">
+                    <div class="content-card">
+                        <h3>도치와 강조구문</h3>
+                        <p>특수 구문으로 표현력 UP</p>
+                        <a href="grammar/advanced/inversion.html">학습하기</a>
+                    </div>
+                    <div class="content-card">
+                        <h3>복합 관계사</h3>
+                        <p>whoever, whatever 등</p>
+                        <a href="grammar/advanced/compound_relatives.html">학습하기</a>
+                    </div>
+                    <div class="content-card">
+                        <h3>생략과 대용</h3>
+                        <p>자연스러운 영어 표현</p>
+                        <a href="grammar/advanced/ellipsis.html">학습하기</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        function showSection(sectionName) {
+            // 모든 섹션 숨기기
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(section => section.classList.remove('active'));
+            
+            // 모든 네비게이션 버튼 비활성화
+            const navBtns = document.querySelectorAll('.nav-btn');
+            navBtns.forEach(btn => btn.classList.remove('active'));
+            
+            // 선택된 섹션 보이기
+            document.getElementById(sectionName + '-section').classList.add('active');
+            
+            // 선택된 버튼 활성화
+            event.target.classList.add('active');
+        }
+        
+        function showLevel(section, level) {
+            // 해당 섹션의 모든 레벨 콘텐츠 숨기기
+            const levelContents = document.querySelectorAll(`#${section}-section .level-content`);
+            levelContents.forEach(content => content.classList.remove('active'));
+            
+            // 해당 섹션의 모든 레벨 버튼 비활성화
+            const levelBtns = document.querySelectorAll(`#${section}-section .level-btn`);
+            levelBtns.forEach(btn => btn.classList.remove('active'));
+            
+            // 선택된 레벨 콘텐츠 보이기
+            document.getElementById(`${section}-${level}`).classList.add('active');
+            
+            // 선택된 버튼 활성화
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>
