@@ -1,0 +1,89 @@
+[Card 1]
+headword: conflict
+part_of_speech: noun
+meaning_kr: 분쟁
+definition_en: a serious disagreement or fighting between groups or countries
+definition_kr_literal: 집단들이나 나라들 사이의 심각한 불일치 또는 싸움
+example_en: This return to conflict made the lives of many people in Yemen very hard.
+example_kr_literal: 이러한 분쟁으로의 복귀는 예멘의 많은 사람들의 삶을 매우 어렵게 만들었다.
+
+[Card 2]
+headword: tension
+part_of_speech: noun
+meaning_kr: 긴장
+definition_en: a nervous or difficult situation between people, groups, or countries
+definition_kr_literal: 사람들, 집단들, 또는 나라들 사이의 긴장되거나 어려운 상황
+example_en: This creates tension and can lead to conflict.
+example_kr_literal: 이것은 긴장을 만들고 분쟁으로 이어질 수 있다.
+
+[Card 3]
+headword: unstable
+part_of_speech: adjective
+meaning_kr: 불안정한
+definition_en: not steady, not safe, or likely to change badly
+definition_kr_literal: 안정적이지 않고, 안전하지 않거나, 나쁘게 변할 가능성이 있는
+example_en: These new situations made the region very unstable.
+example_kr_literal: 이러한 새로운 상황들은 그 지역을 매우 불안정하게 만들었다.
+
+[Card 4]
+headword: emerge
+part_of_speech: verb
+meaning_kr: 나타나다
+definition_en: to appear or become known
+definition_kr_literal: 나타나거나 알려지게 되다
+example_en: New groups and leaders began to emerge, and this caused new questions about the future of the country.
+example_kr_literal: 새로운 집단들과 지도자들이 나타나기 시작했고, 이것은 그 나라의 미래에 대한 새로운 질문들을 일으켰다.
+
+[Card 5]
+headword: protest
+part_of_speech: noun
+meaning_kr: 시위
+definition_en: a public action showing disagreement and asking for change
+definition_kr_literal: 반대를 보여 주고 변화를 요구하는 공공 행동
+example_en: These gatherings were protests.
+example_kr_literal: 이러한 모임들은 시위였다.
+
+[Card 6]
+headword: currency
+part_of_speech: noun
+meaning_kr: 화폐
+definition_en: the money used in a country
+definition_kr_literal: 한 나라에서 사용되는 돈
+example_en: The value of the Iranian currency, the Rial, dropped greatly.
+example_kr_literal: 이란 화폐인 리알의 가치는 크게 떨어졌다.
+
+[Card 7]
+headword: retaliation
+part_of_speech: noun
+meaning_kr: 보복
+definition_en: an action done to strike back after being hurt or attacked
+definition_kr_literal: 상처를 입거나 공격받은 후 되갚기 위해 하는 행동
+example_en: The attacks were a clear and strong message of revenge.
+example_kr_literal: 그 공격들은 분명하고 강한 복수의 메시지였다.
+
+[Card 8]
+headword: crucial
+part_of_speech: adjective
+meaning_kr: 중요한
+definition_en: extremely important
+definition_kr_literal: 극도로 중요한
+example_en: It closed a crucial sea passage known as the Strait of Hormuz.
+example_kr_literal: 그것은 호르무즈 해협으로 알려진 중요한 해상 통로를 닫았다.
+
+[Card 9]
+headword: shortage
+part_of_speech: noun
+meaning_kr: 부족
+definition_en: a state of not having enough of something
+definition_kr_literal: 어떤 것을 충분히 가지지 못한 상태
+example_en: Without a steady and reliable supply, many countries would face serious energy shortages.
+example_kr_literal: 꾸준하고 신뢰할 수 있는 공급이 없으면, 많은 나라들은 심각한 에너지 부족에 직면할 것이다.
+
+[Card 10]
+headword: stable
+part_of_speech: adjective
+meaning_kr: 안정적인
+definition_en: firm, peaceful, and not likely to change suddenly
+definition_kr_literal: 단단하고, 평화롭고, 갑자기 변할 가능성이 없는
+example_en: The Middle East will look very different in the next few years, but the path to a stable and peaceful future is long and needs much effort from all sides.
+example_kr_literal: 중동은 앞으로 몇 년 안에 매우 다르게 보일 것이지만, 안정적이고 평화로운 미래로 가는 길은 길고 모든 편에서 많은 노력이 필요하다.
