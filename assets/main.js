@@ -1,12 +1,23 @@
-const BASE_DIR = "data";
+const CONTENT_PARAM_KEY = "content";
+const DEFAULT_CONTENT = "Crisis_in_Middle_East";
+const bodyDataset = document.body?.dataset || {};
+const pathSegments = window.location.pathname.split("/").filter(Boolean);
+const inferredContentId = pathSegments.at(-1) === "index.html" && pathSegments.length >= 2
+  ? decodeURIComponent(pathSegments.at(-2))
+  : "";
+const contentId = bodyDataset.contentId || new URLSearchParams(window.location.search).get(CONTENT_PARAM_KEY) || inferredContentId || DEFAULT_CONTENT;
+const BASE_DIR = bodyDataset.baseDir || (inferredContentId ? "." : `data/${contentId}`);
+const SERVICE_WORKER_PATH = bodyDataset.swPath || "./service-worker.js";
 const META_KEYS = new Set(["title", "level", "description", "source"]);
+const STORAGE_KEY = `english-study-${contentId}-state-v1`;
+
 let activeSpeechButton = null;
 let activeUtterance = null;
 let selectedVoice = null;
 let ttsRate = 0.95;
 let currentWordCards = [];
 let sfxContext = null;
-const STORAGE_KEY = "english-study-crisis-state-v1";
+
 const appState = {
   flipped: new Set(),
   favorites: new Set(),
@@ -17,6 +28,7 @@ const appState = {
   theme: "light",
   reviewScores: {}
 };
+
 const hangmanState = {
   items: [],
   index: 0,
@@ -76,7 +88,6 @@ function playDeathSfx() {
     master.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
     master.connect(sfxContext.destination);
 
-    // Dark descending tone
     const osc1 = sfxContext.createOscillator();
     const osc2 = sfxContext.createOscillator();
     osc1.type = "triangle";
@@ -100,7 +111,6 @@ function playDeathSfx() {
     osc1.stop(now + 0.48);
     osc2.stop(now + 0.48);
 
-    // Short impact hit near the end
     const impact = sfxContext.createOscillator();
     const impactGain = sfxContext.createGain();
     impact.type = "square";
@@ -162,7 +172,7 @@ function playWinSfx() {
     master.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
     master.connect(sfxContext.destination);
 
-    const notes = [523.25, 659.25, 783.99, 1046.5]; // C5 E5 G5 C6
+    const notes = [523.25, 659.25, 783.99, 1046.5];
     notes.forEach((freq, idx) => {
       const osc = sfxContext.createOscillator();
       const gain = sfxContext.createGain();
@@ -240,8 +250,6 @@ function renderHangmanStats() {
   const step = document.getElementById("hangman-step");
   const score = document.getElementById("hangman-score");
   const progress = document.getElementById("hangman-progress");
-  const item = getHangmanCurrentItem();
-  const total = item ? item.en.split(/\s+/).filter(Boolean).length : 0;
   if (step) step.textContent = `${hangmanState.wrongCount} / ${hangmanState.maxSteps}`;
   if (score) score.textContent = String(hangmanState.score);
   if (progress) progress.textContent = `${Math.min(hangmanState.index + 1, hangmanState.items.length)} / ${hangmanState.items.length}`;
@@ -296,7 +304,6 @@ function renderHangmanWordChips() {
           renderHangmanStats();
           checkHangmanResult();
         }, 180);
-        return;
       }
     });
     root.appendChild(btn);
@@ -528,19 +535,6 @@ function parseTaggedBlocks(text) {
   return blocks;
 }
 
-function parseWordCards(text) {
-  const blocks = parseTaggedBlocks(text);
-  return blocks.map((block) => {
-    const card = { label: block.label };
-    const body = [block.en ? `en: ${block.en}` : "", block.kr ? `kr: ${block.kr}` : ""]
-      .filter(Boolean)
-      .join("\n");
-    const kv = parseKeyValueText(body);
-    Object.assign(card, kv);
-    return card;
-  }).filter((card) => card.label.toLowerCase().startsWith("card"));
-}
-
 function clearSpeakingState(button) {
   if (!button) return;
   button.classList.remove("is-speaking");
@@ -669,6 +663,20 @@ function extractVideoIdFromUrl(url) {
   return direct ? direct[1] : "";
 }
 
+function normalizeMeta(meta) {
+  if (!meta || typeof meta !== "object") return {};
+  const normalized = { ...meta };
+  const notes = String(normalized.notes || "");
+  if (!normalized.video_url) {
+    const match = notes.match(/video_url\s*:\s*(https?:\/\/[^\s;]+)/i);
+    if (match) normalized.video_url = match[1].trim();
+  }
+  if (!normalized.video_id) {
+    normalized.video_id = extractVideoIdFromUrl(normalized.video_url || "");
+  }
+  return normalized;
+}
+
 function renderVideo(meta) {
   const wrap = document.getElementById("video-frame-wrap");
   const label = document.getElementById("video-label");
@@ -678,7 +686,7 @@ function renderVideo(meta) {
 
   if (!videoId) {
     label.textContent = "video_id가 없어 YouTube 임베드를 표시할 수 없습니다.";
-    wrap.innerHTML = `<div class="video-placeholder">video_id가 필요합니다.</div>`;
+    wrap.innerHTML = "<div class=\"video-placeholder\">video_id가 필요합니다.</div>";
     return;
   }
 
@@ -768,7 +776,7 @@ function renderFullScript(items) {
   root.innerHTML = "";
 
   if (!items.length) {
-    root.innerHTML = `<article class="content-item"><p class="content-kr">Full Script 데이터가 없습니다.</p></article>`;
+    root.innerHTML = "<article class=\"content-item\"><p class=\"content-kr\">Full Script 데이터가 없습니다.</p></article>";
     return;
   }
 
@@ -828,7 +836,7 @@ function renderWordCards(cards) {
   currentWordCards = [...cards];
 
   if (!cards.length) {
-    root.innerHTML = `<article class="word-card"><p class="content-kr">Word Card 데이터가 없습니다.</p></article>`;
+    root.innerHTML = "<article class=\"word-card\"><p class=\"content-kr\">Word Card 데이터가 없습니다.</p></article>";
     return;
   }
 
@@ -1152,7 +1160,7 @@ function setupOfflineSupport() {
   window.addEventListener("online", updateOnlineStatus);
   window.addEventListener("offline", updateOnlineStatus);
   if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("./service-worker.js").catch((error) => {
+    navigator.serviceWorker.register(SERVICE_WORKER_PATH).catch((error) => {
       console.warn("service worker registration failed", error);
     });
   }
@@ -1188,6 +1196,10 @@ async function loadText(name) {
   return decodeContent(buffer);
 }
 
+function normalizeCoreLabel(items, prefix) {
+  return items.filter((item) => new RegExp(`^${prefix}`, "i").test(item.label || ""));
+}
+
 async function init() {
   loadState();
   setupTabs();
@@ -1218,16 +1230,16 @@ async function init() {
       loadText("05_wordcard.txt")
     ]);
 
-    const meta = parseKeyValueText(metaTxt);
+    const meta = normalizeMeta(parseKeyValueText(metaTxt));
     const intro = parseKeyValueText(introTxt);
     const coreAll = parseTaggedBlocks(coreTxt);
     const summaryAll = parseTaggedBlocks(summaryTxt);
     const scriptAll = parseTaggedBlocks(scriptTxt);
     const words = parseWordCardsByKV(cardTxt);
 
-    const core = coreAll.filter((item) => /^sentence/i.test(item.label));
-    const summary = summaryAll.filter((item) => /^part/i.test(item.label));
-    const script = scriptAll.filter((item) => /^paragraph/i.test(item.label));
+    const core = normalizeCoreLabel(coreAll, "sentence");
+    const summary = normalizeCoreLabel(summaryAll, "part");
+    const script = normalizeCoreLabel(scriptAll, "paragraph");
 
     renderVideo(meta);
     setHeroMeta(meta);
@@ -1237,15 +1249,8 @@ async function init() {
     renderFullScript(script);
     setupHangman(core);
     renderWordCards(words);
-
-    console.log("[StudyPage] Loaded", {
-      core: core.length,
-      summary: summary.length,
-      script: script.length,
-      words: words.length
-    });
   } catch (error) {
-    showError(`데이터를 불러오지 못했습니다. Live Server 또는 로컬 서버에서 실행해 주세요. (${error.message})`);
+    showError(`데이터를 불러오지 못했습니다. 데이터 경로를 확인해 주세요. (${error.message})`);
   }
 }
 

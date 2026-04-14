@@ -3,4 +3,5 @@ level: Level 3
 source: Crisis in Middle East Learn English Through Story Level 3_final.txt
 video_url: https://youtu.be/0uLVfDXz_k4?si=gHP-Hq1WPLV9J89T
 video_id: 0uLVfDXz_k4
+channel: Learn English Through Story
 notes: literal Korean translation; full script preserved; timestamps removed; formatted for webpage automation

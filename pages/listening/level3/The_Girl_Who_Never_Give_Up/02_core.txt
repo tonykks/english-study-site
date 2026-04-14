@@ -1,0 +1,36 @@
+[Sentence 1]
+EN: My name is Maya, and I grew up in a small town where almost everyone knows each other.
+KR: 내 이름은 마야이고, 나는 거의 모두가 서로를 아는 작은 마을에서 자랐습니다.
+[Sentence 2]
+EN: Drawing had always been my favorite thing in the world.
+KR: 그림 그리기는 언제나 세상에서 내가 가장 좋아하는 것이었습니다.
+[Sentence 3]
+EN: You see, I wanted to become an artist.
+KR: 있잖아요, 나는 화가가 되고 싶었습니다.
+[Sentence 4]
+EN: But after a few minutes, I took a deep breath and picked up my pencil.
+KR: 하지만 몇 분 후, 나는 깊게 숨을 들이쉬고 연필을 집어 들었습니다.
+[Sentence 5]
+EN: "Maya," he said gently, "this is wonderful."
+KR: “마야,” 그가 부드럽게 말했습니다. “이건 정말 훌륭하구나.”
+[Sentence 6]
+EN: "The most important thing is whether you believe in it."
+KR: “가장 중요한 것은 네가 그것을 믿느냐 하는 거야.”
+[Sentence 7]
+EN: For the first time, I decided that maybe, just maybe, my dream deserved a chance.
+KR: 처음으로, 나는 어쩌면 정말 어쩌면 내 꿈이 기회를 가질 자격이 있다고 결심했습니다.
+[Sentence 8]
+EN: Maybe my drawings were only good for a small town like mine.
+KR: 어쩌면 내 그림들은 나 같은 작은 마을에서만 괜찮은 것인지도 몰랐습니다.
+[Sentence 9]
+EN: "You only have to be brave enough to try."
+KR: “너는 그저 시도할 만큼 충분히 용감하기만 하면 돼.”
+[Sentence 10]
+EN: "I... I would like to enter the competition," I said softly.
+KR: “저는... 저는 대회에 참가하고 싶어요,” 내가 부드럽게 말했습니다.
+[Sentence 11]
+EN: "The winner is Maya Patel from Riverside High School!"
+KR: “우승자는 리버사이드 고등학교의 마야 파텔입니다!”
+[Sentence 12]
+EN: And every dream begins with one simple decision: believing that you are capable.
+KR: 그리고 모든 꿈은 하나의 단순한 결정으로 시작합니다. 바로 당신이 할 수 있다고 믿는 것입니다.

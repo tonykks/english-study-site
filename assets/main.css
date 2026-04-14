@@ -373,11 +373,6 @@
   gap: 0.45rem;
 }
 
-.hangman-actions-inline {
-  justify-content: center;
-  margin-top: 0.2rem;
-}
-
 .hangman-actions-bottom {
   margin-top: 0.7rem;
   justify-content: flex-start;
@@ -402,15 +397,6 @@
 .hangman-key:hover,
 .hangman-word-chip:hover {
   background: #1d3560;
-}
-
-.hangman-key.used {
-  opacity: 0.45;
-}
-
-.hangman-word-chip.active {
-  border-color: #93c5fd;
-  background: #1e3a6c;
 }
 
 .hangman-word-chip.shake-wrong {

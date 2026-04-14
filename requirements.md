@@ -2,7 +2,7 @@
 
 ## Goal
 Build a production-quality single-page English study app that is:
-- fully data-driven from `data/*.txt`,
+- fully data-driven from per-content folder `00~05.txt`,
 - visually polished (modern educational platform style),
 - mobile-friendly and accessible,
 - performance-optimized,
@@ -14,13 +14,13 @@ This template must preserve and include all implemented features below.
 
 ## Input Data Contract
 
-Place files directly in the local `data/` folder:
-- `data/00_meta.txt`
-- `data/01_intro.txt`
-- `data/02_core.txt`
-- `data/03_summary.txt`
-- `data/04_full_script.txt`
-- `data/05_wordcard.txt`
+Place files inside a content folder that follows the existing pages structure:
+- `pages/listening/levelX/<content_folder>/00_meta.txt`
+- `pages/listening/levelX/<content_folder>/01_intro.txt`
+- `pages/listening/levelX/<content_folder>/02_core.txt`
+- `pages/listening/levelX/<content_folder>/03_summary.txt`
+- `pages/listening/levelX/<content_folder>/04_full_script.txt`
+- `pages/listening/levelX/<content_folder>/05_wordcard.txt`
 
 ### `00_meta.txt` required keys
 - `title`
@@ -60,11 +60,12 @@ Place files directly in the local `data/` folder:
 
 ## Output Files (Required)
 
-Generate in current working directory:
-- `index.html`
-- `style.css`
-- `script.js`
-- `service-worker.js`
+Generate/maintain with shared-asset architecture:
+- Content page: `pages/listening/levelX/<content_folder>/<content_folder>.html` (primary file name rule)
+- Compatibility page: `pages/listening/levelX/<content_folder>/index.html` (same structure or redirect to primary file)
+- Shared CSS: `assets/css/main.css`
+- Shared JS: `assets/js/main.js`
+- Root `service-worker.js` for shared/offline cache
 
 Use:
 - Tailwind CSS CDN + custom CSS
@@ -109,7 +110,7 @@ Use:
 - keyboard-support tab navigation
 - sticky tabs
 - smooth tab panel transitions
-- render all content from `data/*.txt` only
+- render all content from same-folder `./00~05.txt` only
 
 ### ✅ TTS (Speech Synthesis)
 - browser `speechSynthesis` API, English voice preference
@@ -292,7 +293,7 @@ Error handling:
 ## Final Acceptance Criteria
 
 The generated page is accepted only if all are true:
-1. Loads all `data/*.txt` content correctly.
+1. Loads all same-folder `00~05.txt` content correctly.
 2. YouTube embed works from meta `video_id`/`video_url`.
 3. All tabs, TTS controls, and flip cards work on desktop/mobile.
 4. Word Card controls (flip/reset/shuffle/search/filter/smart-review) work.
@@ -310,6 +311,8 @@ The generated page is accepted only if all are true:
 When generating a new content page from this template:
 - reuse same architecture and quality level,
 - keep all feature modules enabled by default,
+- create the page file using `<content_folder>.html` naming rule (not only `index.html`),
+- keep `index.html` compatibility in the same folder if legacy links exist,
 - change only data-driven content and relative navigation paths if needed,
 - do not remove UX/accessibility/performance features.
 
@@ -338,7 +341,7 @@ Use this plan whenever a new content page is generated from this template.
 ### 2) Functional Test Cases
 
 #### A. Data Loading
-- Given valid `data/00~05.txt`, page loads all sections without manual edits.
+- Given valid `pages/listening/levelX/<content_folder>/00~05.txt`, page loads all sections without manual edits.
 - Missing file case shows user-friendly error UI and keeps console detail.
 - Meta fallback works if optional fields are absent.
 
@@ -441,8 +444,9 @@ Run this after every change:
 Treat this as pass/fail gates before release.
 
 ### Gate A: Structure and Data
-- [ ] `index.html`, `style.css`, `script.js`, `service-worker.js` exist.
-- [ ] `data/00~05.txt` paths are correct.
+- [ ] `pages/listening/levelX/<content_folder>/<content_folder>.html` exists.
+- [ ] `assets/css/main.css`, `assets/js/main.js`, and root `service-worker.js` exist.
+- [ ] same-folder `00~05.txt` paths are correct.
 - [ ] No hardcoded story body content in HTML.
 
 ### Gate B: Interaction Integrity
