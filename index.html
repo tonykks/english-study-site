@@ -172,67 +172,93 @@
 
                     <!-- Level 3 Content -->
                     <div id="listening-level3" class="level-content">
-                        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover">
-                                <div class="p-6">
-                                    <div class="flex items-center justify-between mb-4">
-                                        <span class="px-3 py-1 bg-red-100 text-red-600 text-xs font-bold rounded-full">Level 3</span>
-                                        <span class="text-2xl">🎯</span>
-                                    </div>
-                                    <h3 class="text-xl font-bold text-gray-800 mb-3">Crisis in Middle East Learn English Through Story</h3>
-                                    <p class="text-gray-600 mb-6">중동 위기 상황을 통한 고급 영어 학습</p>
-                                    <a href="pages/listening/level3/Crisis_in_Middle_East/Crisis_in_Middle_East.html" 
-                                       class="inline-flex items-center space-x-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-6 py-3 rounded-xl font-bold hover:from-indigo-600 hover:to-purple-700 transition-all transform hover:scale-105">
-                                        <span>학습하기</span>
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-                                        </svg>
-                                    </a>
+                        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                            <!-- Crisis in Middle East 카드 -->
+                            <div class="group flex flex-col rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:border-indigo-300 hover:shadow-lg">
+                                <div class="mb-4 flex items-center justify-between">
+                                    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-red-400 to-red-600 text-xl">🎯</div>
+                                    <span class="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-700">Level 3</span>
                                 </div>
+                                <h3 class="mb-2 text-lg font-bold text-gray-900">Crisis in Middle East Learn English Through Story</h3>
+                                <p class="mb-4 text-sm text-gray-600 flex-grow">중동 위기 상황을 통한 고급 영어 학습</p>
+                                <div class="mb-4 flex flex-wrap gap-2">
+                                    <span class="rounded-full bg-red-50 px-2 py-1 text-xs text-red-600">고급 문법</span>
+                                    <span class="rounded-full bg-orange-50 px-2 py-1 text-xs text-orange-600">시사</span>
+                                    <span class="rounded-full bg-blue-50 px-2 py-1 text-xs text-blue-600">토론</span>
+                                </div>
+                                <a href="pages/listening/level3/Crisis_in_Middle_East/Crisis_in_Middle_East.html" 
+                                class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-red-500 to-red-600 px-4 py-3 font-semibold text-white transition hover:from-red-600 hover:to-red-700 mt-auto">
+                                    <span>📚</span><span>학습 시작</span>
+                                </a>
                             </div>
 
-                            <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover">
-                                <div class="p-6">
-                                    <div class="flex items-center justify-between mb-4">
-                                        <span class="px-3 py-1 bg-red-100 text-red-600 text-xs font-bold rounded-full">Level 3</span>
-                                        <span class="text-2xl">✨</span>
-                                    </div>
-                                    <h3 class="text-xl font-bold text-gray-800 mb-3">The Girl Who Never Give Up</h3>
-                                    <p class="text-gray-600 mb-6">포기하지 않는 소녀 이야기로 배우는 고급 영어</p>
-                                    <a href="pages/listening/level3/The_Girl_Who_Never_Give_Up/The_Girl_Who_Never_Give_Up.html" 
-                                       class="inline-flex items-center space-x-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-6 py-3 rounded-xl font-bold hover:from-indigo-600 hover:to-purple-700 transition-all transform hover:scale-105">
-                                        <span>학습하기</span>
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-                                        </svg>
-                                    </a>
+                            <!-- The Girl Who Never Give Up 카드 -->
+                            <div class="group flex flex-col rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:border-indigo-300 hover:shadow-lg">
+                                <div class="mb-4 flex items-center justify-between">
+                                    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-purple-400 to-purple-600 text-xl">✨</div>
+                                    <span class="rounded-full bg-purple-50 px-3 py-1 text-xs font-semibold text-purple-700">Level 3</span>
                                 </div>
+                                <h3 class="mb-2 text-lg font-bold text-gray-900">The Girl Who Never Give Up</h3>
+                                <p class="mb-4 text-sm text-gray-600 flex-grow">포기하지 않는 소녀 이야기로 배우는 고급 영어</p>
+                                <div class="mb-4 flex flex-wrap gap-2">
+                                    <span class="rounded-full bg-purple-50 px-2 py-1 text-xs text-purple-600">동기부여</span>
+                                    <span class="rounded-full bg-pink-50 px-2 py-1 text-xs text-pink-600">스토리</span>
+                                    <span class="rounded-full bg-indigo-50 px-2 py-1 text-xs text-indigo-600">감정표현</span>
+                                </div>
+                                <a href="pages/listening/level3/The_Girl_Who_Never_Give_Up/The_Girl_Who_Never_Give_Up.html" 
+                                class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 px-4 py-3 font-semibold text-white transition hover:from-purple-600 hover:to-purple-700 mt-auto">
+                                    <span>📚</span><span>학습 시작</span>
+                                </a>
                             </div>
 
-                            <div class="bg-gray-100 rounded-2xl shadow-lg overflow-hidden opacity-60">
-                                <div class="p-6">
-                                    <div class="flex items-center justify-between mb-4">
-                                        <span class="px-3 py-1 bg-gray-200 text-gray-500 text-xs font-bold rounded-full">Level 3</span>
-                                        <span class="text-2xl">🔜</span>
+                            <!-- 준비 중 콘텐츠 -->
+                            <div class="group flex flex-col rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 p-6 text-center">
+                                <div class="text-4xl mb-3">🏗️</div>
+                                <h4 class="font-bold text-gray-600 mb-2">더 많은 콘텐츠</h4>
+                                <p class="text-sm text-gray-500 flex-grow">준비 중입니다</p>
+                                <div class="mt-4">
+                                    <div class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gray-300 px-4 py-3 font-semibold text-gray-500 cursor-not-allowed">
+                                        <span>🔜</span><span>준비 중...</span>
                                     </div>
-                                    <h3 class="text-xl font-bold text-gray-600 mb-3">Academic Lecture</h3>
-                                    <p class="text-gray-500 mb-6">학술 강의 듣기 연습</p>
-                                    <button class="bg-gray-300 text-gray-500 px-6 py-3 rounded-xl font-bold cursor-not-allowed">
-                                        준비 중...
-                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Other Levels (Coming Soon) -->
                     <div id="listening-level1" class="level-content hidden">
-                        <div class="text-center py-20">
-                            <div class="text-6xl mb-4">🚧</div>
-                            <h3 class="text-2xl font-bold text-gray-600 mb-4">Level 1 콘텐츠 준비 중</h3>
-                            <p class="text-gray-500">곧 새로운 학습 콘텐츠를 만나보실 수 있습니다!</p>
+                        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                          <!-- 새로운 Level 1 콘텐츠 카드 -->
+                          <div class="group flex flex-col rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:border-indigo-300 hover:shadow-lg">
+                            <div class="mb-4 flex items-center justify-between">
+                              <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-green-400 to-emerald-500 text-xl">🌍</div>
+                              <span class="rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-700">Level 1</span>
+                            </div>
+                            <h3 class="mb-2 text-lg font-bold text-gray-900">The Middle East's Greatest Contributions</h3>
+                            <p class="mb-4 text-sm text-gray-600 flex-grow">중동 지역의 위대한 기여들을 통해 영어를 학습해보세요.</p>
+                            <div class="mb-4 flex flex-wrap gap-2">
+                              <span class="rounded-full bg-blue-50 px-2 py-1 text-xs text-blue-600">기초 단어</span>
+                              <span class="rounded-full bg-purple-50 px-2 py-1 text-xs text-purple-600">문화</span>
+                              <span class="rounded-full bg-orange-50 px-2 py-1 text-xs text-orange-600">역사</span>
+                            </div>
+                            <a href="pages/listening/level1/The_Middle_East's_Greatest_Contributions/The_Middle_East's_Greatest_Contributions.html" 
+                               class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 px-4 py-3 font-semibold text-white transition hover:from-green-600 hover:to-emerald-700 mt-auto">
+                              <span>📚</span><span>학습 시작</span>
+                            </a>
+                          </div>
+                      
+                          <!-- 준비 중 메시지 (기존 스타일로) -->
+                          <div class="group flex flex-col rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 p-6 text-center">
+                            <div class="text-4xl mb-3">🏗️</div>
+                            <h4 class="font-bold text-gray-600 mb-2">더 많은 콘텐츠</h4>
+                            <p class="text-sm text-gray-500 flex-grow">준비 중입니다</p>
+                            <div class="mt-4">
+                              <div class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gray-300 px-4 py-3 font-semibold text-gray-500 cursor-not-allowed">
+                                <span>🔜</span><span>준비 중...</span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                    </div>
+                      </div>
 
                     <div id="listening-level2" class="level-content hidden">
                         <div class="text-center py-20">

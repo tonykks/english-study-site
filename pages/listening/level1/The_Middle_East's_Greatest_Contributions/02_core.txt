@@ -1,0 +1,47 @@
+[Sentence 1]
+EN: Today I want to tell you a very special story about the Middle East.
+KR: 오늘 나는 중동에 대한 아주 특별한 이야기를 해주고 싶다.
+
+[Sentence 2]
+EN: Thousands of years ago, in a land called Mesopotamia, something very important happened.
+KR: 수천 년 전, 메소포타미아라고 불리는 땅에서 매우 중요한 일이 일어났다.
+
+[Sentence 3]
+EN: Because of the rivers, people could stay in one place instead of moving all the time.
+KR: 강들 덕분에 사람들은 계속 이동하는 대신 한곳에 머물 수 있었다.
+
+[Sentence 4]
+EN: The Sumerians created one of the first writing systems in history.
+KR: 수메르인들은 역사상 최초의 문자 체계 중 하나를 만들었다.
+
+[Sentence 5]
+EN: King Hammurabi created one of the first written law codes in history.
+KR: 함무라비 왕은 역사상 최초의 성문 법전 중 하나를 만들었다.
+
+[Sentence 6]
+EN: Trade connected Egypt and Mesopotamia with other regions.
+KR: 무역은 이집트와 메소포타미아를 다른 지역들과 연결했다.
+
+[Sentence 7]
+EN: The Middle East became a bridge between continents.
+KR: 중동은 대륙들을 잇는 다리가 되었다.
+
+[Sentence 8]
+EN: The Middle East became the birthplace of some of the world's most important religions.
+KR: 중동은 세계에서 가장 중요한 종교들 중 일부의 발상지가 되었다.
+
+[Sentence 9]
+EN: Faith gave people hope when life was difficult.
+KR: 삶이 어려울 때 믿음은 사람들에게 희망을 주었다.
+
+[Sentence 10]
+EN: The Middle East became a center for trade, culture, and learning.
+KR: 중동은 무역, 문화, 배움의 중심지가 되었다.
+
+[Sentence 11]
+EN: They preserved ancient Greek and Roman texts and added new discoveries in mathematics, astronomy, and medicine.
+KR: 그들은 고대 그리스와 로마의 문헌을 보존했고 수학, 천문학, 의학에 새로운 발견을 더했다.
+
+[Sentence 12]
+EN: History teaches us that the Middle East has always faced challenges, yet it survives.
+KR: 역사는 중동이 언제나 도전에 직면해 왔지만 여전히 살아남는다고 우리에게 가르쳐 준다.
