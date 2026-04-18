@@ -1,0 +1,6 @@
+title: KFC Success Story - Level 2
+level: Level 2
+description: Colonel Harland Sanders의 실패와 도전, 그리고 포기하지 않는 끈기로 KFC를 만든 여정을 통해 영어를 학습합니다.
+source: YouTube script
+video_url: https://youtu.be/azuRd9B4AOQ
+notes: The script has been preserved in its entirety and cleaned for formatting.
