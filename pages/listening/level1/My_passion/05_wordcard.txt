@@ -1,0 +1,69 @@
+1. engage
+pos: verb
+meaning: 관여하다, 몰두하다
+EN: to become involved in something
+KR: 어떤 것에 관여하게 되다
+sentence: I am deeply engaged in learning how to use AI tools effectively.
+
+2. effectively
+pos: adverb
+meaning: 효과적으로
+EN: in a way that produces results
+KR: 결과를 만들어내는 방식으로
+sentence: I am deeply engaged in learning how to use AI tools effectively.
+
+3. perspective
+pos: noun
+meaning: 관점
+EN: a particular way of seeing something
+KR: 어떤 것을 보는 특정한 방식
+sentence: I can see the world from a completely new perspective.
+
+4. motivation
+pos: noun
+meaning: 동기
+EN: the reason why you do something
+KR: 어떤 것을 하는 이유
+sentence: This experience gives me strong motivation.
+
+5. consist
+pos: verb
+meaning: 구성되다
+EN: to be made of something
+KR: 어떤 것으로 만들어지다
+sentence: Drone work consists of several important skills.
+
+6. require
+pos: verb
+meaning: 요구하다
+EN: to need something
+KR: 어떤 것을 필요로 하다
+sentence: Each of these skills requires practice.
+
+7. implement
+pos: verb
+meaning: 구현하다
+EN: to put something into action
+KR: 어떤 것을 행동으로 옮기다
+sentence: I can now implement my ideas more easily.
+
+8. complexity
+pos: noun
+meaning: 복잡성
+EN: the state of being complicated
+KR: 복잡한 상태
+sentence: It helps me reduce complexity.
+
+9. efficiency
+pos: noun
+meaning: 효율성
+EN: doing something well without waste
+KR: 낭비 없이 잘 하는 것
+sentence: It helps me improve efficiency.
+
+10. essential
+pos: adjective
+meaning: 필수적인
+EN: very important and necessary
+KR: 매우 중요하고 필요한
+sentence: I believe health is essential.

@@ -8,7 +8,18 @@ const inferredContentId = pathSegments.at(-1) === "index.html" && pathSegments.l
 const contentId = bodyDataset.contentId || new URLSearchParams(window.location.search).get(CONTENT_PARAM_KEY) || inferredContentId || DEFAULT_CONTENT;
 const BASE_DIR = bodyDataset.baseDir || (inferredContentId ? "." : `data/${contentId}`);
 const SERVICE_WORKER_PATH = bodyDataset.swPath || "./service-worker.js";
-const META_KEYS = new Set(["title", "level", "description", "source"]);
+const META_KEYS = new Set([
+  "title",
+  "level",
+  "description",
+  "source",
+  "video_id",
+  "video_url",
+  "channel",
+  "thumbnail_image",
+  "cover_image",
+  "notes"
+]);
 const STORAGE_KEY = `english-study-${contentId}-state-v1`;
 
 let activeSpeechButton = null;
@@ -666,6 +677,10 @@ function extractVideoIdFromUrl(url) {
 function normalizeMeta(meta) {
   if (!meta || typeof meta !== "object") return {};
   const normalized = { ...meta };
+  ["video_id", "video_url", "channel"].forEach((key) => {
+    const val = String(normalized[key] ?? "").trim();
+    if (/^none$/i.test(val)) normalized[key] = "";
+  });
   const notes = String(normalized.notes || "");
   if (!normalized.video_url) {
     const match = notes.match(/video_url\s*:\s*(https?:\/\/[^\s;]+)/i);
@@ -677,12 +692,40 @@ function normalizeMeta(meta) {
   return normalized;
 }
 
+function resolveStaticLessonImage(raw) {
+  const src = String(raw || "").trim();
+  if (!src || /^none$/i.test(src)) return "";
+  if (/^https?:\/\//i.test(src)) return src;
+  if (src.startsWith("/")) return src;
+  const base = window.location.href;
+  try {
+    if (src.startsWith("assets/")) {
+      return new URL(`../../../../${src}`, base).href;
+    }
+    if (src.startsWith("images/")) {
+      return new URL(`../../../../${src}`, base).href;
+    }
+    return new URL(src, base).href;
+  } catch {
+    return src;
+  }
+}
+
 function renderVideo(meta) {
   const wrap = document.getElementById("video-frame-wrap");
   const label = document.getElementById("video-label");
   const channelNode = document.getElementById("video-channel");
-  const videoId = (meta.video_id || "").trim() || extractVideoIdFromUrl(meta.video_url || "");
   channelNode.textContent = `Channel: ${meta.channel || "-"}`;
+
+  const thumb = resolveStaticLessonImage(meta.thumbnail_image || meta.cover_image);
+  if (thumb) {
+    label.textContent = meta.duration ? `Duration: ${meta.duration}` : "Lesson image";
+    const alt = escapeHtml(meta.title || "My Passion Image");
+    wrap.innerHTML = `<img src="${escapeHtml(thumb)}" alt="${alt}" loading="lazy">`;
+    return;
+  }
+
+  const videoId = (meta.video_id || "").trim() || extractVideoIdFromUrl(meta.video_url || "");
 
   if (!videoId) {
     label.textContent = "video_id가 없어 YouTube 임베드를 표시할 수 없습니다.";
@@ -797,8 +840,60 @@ function renderFullScript(items) {
   root.appendChild(fragment);
 }
 
-function parseWordCardsByKV(text) {
-  const lines = normalizeText(text).split("\n");
+function parseWordCardsLooseNumbered(text) {
+  const blocks = text.trim().split(/\n(?=\d+\.\s+)/);
+  const cards = [];
+  blocks.forEach((rawBlock) => {
+    const block = rawBlock.trim();
+    if (!block) return;
+    const lines = block.split("\n").map((l) => l.trim()).filter(Boolean);
+    const headMatch = lines[0]?.match(/^\d+\.\s*(.+)$/);
+    if (!headMatch) return;
+    const card = {
+      label: `[Card ${cards.length + 1}]`,
+      headword: headMatch[1].trim(),
+      part_of_speech: "",
+      meaning_kr: "",
+      definition_en: "",
+      definition_kr_literal: "",
+      example_en: "",
+      example_kr_literal: "-"
+    };
+    let lastProp = "";
+    const applyKey = (key, val) => {
+      if (key === "pos") {
+        card.part_of_speech = val;
+        lastProp = "part_of_speech";
+      } else if (key === "meaning") {
+        card.meaning_kr = val;
+        lastProp = "meaning_kr";
+      } else if (key === "en") {
+        card.definition_en = val;
+        lastProp = "definition_en";
+      } else if (key === "kr") {
+        card.definition_kr_literal = val;
+        lastProp = "definition_kr_literal";
+      } else if (key === "sentence") {
+        card.example_en = val;
+        lastProp = "example_en";
+      }
+    };
+    for (let i = 1; i < lines.length; i += 1) {
+      const line = lines[i];
+      const idx = line.indexOf(":");
+      if (idx > 0) {
+        applyKey(line.slice(0, idx).trim().toLowerCase(), line.slice(idx + 1).trim());
+      } else if (lastProp && card[lastProp] !== undefined) {
+        card[lastProp] = `${card[lastProp]} ${line}`.trim();
+      }
+    }
+    cards.push(card);
+  });
+  return cards;
+}
+
+function parseWordCardsBracketKV(text) {
+  const lines = text.split("\n");
   const cards = [];
   let current = null;
   let currentKey = "";
@@ -828,6 +923,15 @@ function parseWordCardsByKV(text) {
 
   if (current) cards.push(current);
   return cards;
+}
+
+function parseWordCardsByKV(text) {
+  const normalized = normalizeText(text);
+  if (!/\[Card/i.test(normalized) && /^\d+\.\s+\S/m.test(normalized.trim())) {
+    const loose = parseWordCardsLooseNumbered(normalized);
+    if (loose.length) return loose;
+  }
+  return parseWordCardsBracketKV(normalized);
 }
 
 function renderWordCards(cards) {

@@ -1,0 +1,47 @@
+[Sentence 1]
+EN: These days, I am deeply engaged in learning how to use AI tools effectively.
+KR: 요즘, 나는 AI 도구들을 효과적으로 사용하는 방법을 배우는 것에 깊이 몰두하고 있다.
+
+[Sentence 2]
+EN: I study AI every day because I want to use it to build and create things by myself.
+KR: 나는 매일 AI를 공부한다 왜냐하면 나는 그것을 사용하여 나 스스로 만들고 창조하고 싶기 때문이다.
+
+[Sentence 3]
+EN: When I use a drone, I can see the world from a completely new perspective.
+KR: 내가 드론을 사용할 때, 나는 세상을 완전히 새로운 관점에서 볼 수 있다.
+
+[Sentence 4]
+EN: Drone work consists of several important skills such as flying, shooting, editing, and sharing.
+KR: 드론 작업은 비행, 촬영, 편집, 그리고 공유와 같은 여러 중요한 기술들로 구성된다.
+
+[Sentence 5]
+EN: I am also learning how to use technologies like 3D printing, laser engraving, and UV printing.
+KR: 나는 또한 3D 프린팅, 레이저 각인, 그리고 UV 프린팅과 같은 기술들을 사용하는 방법을 배우고 있다.
+
+[Sentence 6]
+EN: In the past, these technologies were only available to professionals.
+KR: 과거에, 이러한 기술들은 오직 전문가들에게만 가능했다.
+
+[Sentence 7]
+EN: Because of this change, I can now implement my ideas more easily.
+KR: 이러한 변화 때문에, 나는 이제 나의 아이디어들을 더 쉽게 구현할 수 있다.
+
+[Sentence 8]
+EN: AI helps me reduce complexity and improve efficiency.
+KR: AI는 내가 복잡성을 줄이고 효율성을 향상시키도록 돕는다.
+
+[Sentence 9]
+EN: I want to combine drones, digital fabrication, and AI to create meaningful products.
+KR: 나는 드론, 디지털 제작, 그리고 AI를 결합하여 의미 있는 제품들을 만들고 싶다.
+
+[Sentence 10]
+EN: In the future, I plan to start a small souvenir business based on these technologies.
+KR: 미래에, 나는 이러한 기술들을 기반으로 작은 기념품 사업을 시작할 계획이다.
+
+[Sentence 11]
+EN: I would like to support local people so they can run their own small businesses.
+KR: 나는 지역 사람들이 그들 자신의 작은 사업들을 운영할 수 있도록 지원하고 싶다.
+
+[Sentence 12]
+EN: To continue this life, I believe health is essential.
+KR: 이 삶을 계속하기 위해, 나는 건강이 필수적이라고 믿는다.
