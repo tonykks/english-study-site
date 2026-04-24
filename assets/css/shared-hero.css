@@ -81,3 +81,67 @@
   color: #fef3c7;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
+
+@media (max-width: 767px) {
+  .hero-title {
+    font-size: 1.45rem;
+    line-height: 1.14;
+    letter-spacing: -0.03em;
+    white-space: nowrap;
+  }
+
+  .hero-subtitle {
+    margin-top: 0.2rem;
+    font-size: 0.56rem;
+    line-height: 1.05;
+    white-space: nowrap;
+  }
+
+  .hero-main-nav {
+    width: min(280px, 70vw);
+    flex-wrap: nowrap;
+    justify-content: center;
+    gap: 0.24rem;
+    bottom: -0.56rem;
+  }
+
+  .hero-main-nav > a,
+  .hero-main-nav > .menu-group {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .hero-main-nav .btn-main {
+    display: block;
+    width: 100%;
+  }
+
+  .btn-main {
+    min-width: 0;
+    font-size: 0.72rem;
+    line-height: 1;
+    padding: 0.36rem 0.32rem;
+    border-radius: 0.45rem;
+  }
+
+  .submenu {
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 0;
+    max-width: calc(100vw - 12px);
+    padding: 0.2rem;
+    width: max-content;
+  }
+
+  .menu-group:hover .submenu,
+  .menu-group:focus-within .submenu {
+    gap: 0.18rem;
+  }
+
+  .submenu a {
+    width: 56px;
+    min-width: 56px;
+    font-size: 0.56rem;
+    padding: 0.2rem 0.18rem;
+  }
+}

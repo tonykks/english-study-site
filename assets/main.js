@@ -1402,16 +1402,17 @@ function setupWordCardControls() {
 }
 
 function setupThemeToggle() {
-  const buttons = [
-    document.getElementById("theme-toggle-btn"),
-    document.getElementById("theme-toggle-btn-mobile")
-  ].filter(Boolean);
+  const desktopBtn = document.getElementById("theme-toggle-btn");
+  const mobileBtn = document.getElementById("theme-toggle-btn-mobile");
+  const buttons = [desktopBtn, mobileBtn].filter(Boolean);
+
   const apply = () => {
-    document.body.classList.toggle("dark-mode", appState.theme === "dark");
-    buttons.forEach((btn) => {
-      btn.textContent = appState.theme === "dark" ? "☀️ 라이트모드" : "🌙 다크모드";
-    });
+    const dark = appState.theme === "dark";
+    document.body.classList.toggle("dark-mode", dark);
+    if (desktopBtn) desktopBtn.textContent = dark ? "☀️ 라이트모드" : "🌙 다크모드";
+    if (mobileBtn) mobileBtn.textContent = dark ? "☀️" : "🌙";
   };
+
   apply();
   buttons.forEach((btn) => btn.addEventListener("click", () => {
     appState.theme = appState.theme === "dark" ? "light" : "dark";
