@@ -1,386 +1,166 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>English Study Hub - 영어 쉐도잉 학습</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .hero-bg {
-            background: linear-gradient(135deg, rgba(79, 70, 229, 0.9), rgba(129, 140, 248, 0.8)), 
-                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="%23ffffff" fill-opacity="0.1"/><circle cx="75" cy="75" r="1" fill="%23ffffff" fill-opacity="0.1"/><circle cx="25" cy="75" r="1" fill="%23ffffff" fill-opacity="0.05"/><circle cx="75" cy="25" r="1" fill="%23ffffff" fill-opacity="0.05"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grain)"/></svg>');
-            background-size: cover;
-            background-position: center;
-        }
-        
-        .card-hover {
-            transition: all 0.3s ease;
-        }
-        
-        .card-hover:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-        }
-        
-        .pulse-animation {
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>English Study Hub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preload" as="image" href="./images/main_banner.jpg">
+  <link rel="preload" as="image" href="./images/main_banner1.jpg">
+  <link rel="preload" as="image" href="./images/main_banner2.jpg">
+  <link rel="stylesheet" href="./assets/css/shared-hero.css">
+  <style>
+    .hero-slider { transition: transform 700ms ease-in-out; }
+  </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
-
-    <!-- Hero Section -->
-    <section class="hero-bg text-white py-20 md:py-32">
-        <div class="max-w-6xl mx-auto text-center px-4">
-            <div class="mb-8">
-                <div class="inline-flex items-center space-x-2 bg-white bg-opacity-20 rounded-full px-4 py-2 mb-6">
-                    <span class="w-2 h-2 bg-green-400 rounded-full pulse-animation"></span>
-                    <span class="text-sm font-medium">Live Server Ready</span>
-                </div>
-                
-                <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-                    🎓 English Study Hub
-                </h1>
-                
-                <p class="text-xl md:text-2xl mb-8 opacity-90 max-w-3xl mx-auto leading-relaxed">
-                    YouTube 영상과 함께하는 <span class="font-semibold text-yellow-300">쉐도잉</span>과 
-                    <span class="font-semibold text-yellow-300">단어 암기</span>로 영어 실력 향상하기
-                </p>
-            </div>
-            
-            <!-- Feature Tags -->
-            <div class="flex flex-wrap justify-center gap-3 mb-12">
-                <span class="px-4 py-2 bg-white bg-opacity-20 rounded-full text-sm font-medium backdrop-blur-sm">
-                    📺 YouTube 연동 학습
-                </span>
-                <span class="px-4 py-2 bg-white bg-opacity-20 rounded-full text-sm font-medium backdrop-blur-sm">
-                    🎵 TTS 음성 지원
-                </span>
-                <span class="px-4 py-2 bg-white bg-opacity-20 rounded-full text-sm font-medium backdrop-blur-sm">
-                    🃏 플립카드 단어암기
-                </span>
-                <span class="px-4 py-2 bg-white bg-opacity-20 rounded-full text-sm font-medium backdrop-blur-sm">
-                    📱 모바일 최적화
-                </span>
-            </div>
-
-            <!-- Quick Start Buttons -->
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <button onclick="scrollToLevels()" class="px-8 py-4 bg-white text-indigo-600 font-bold rounded-xl hover:bg-gray-100 transition-all shadow-lg transform hover:scale-105">
-                    🚀 지금 시작하기
-                </button>
-                <button onclick="scrollToGuide()" class="px-8 py-4 border-2 border-white text-white font-bold rounded-xl hover:bg-white hover:text-indigo-600 transition-all">
-                    📖 사용법 보기
-                </button>
-            </div>
+<body class="bg-[#f5f5f0] text-gray-900">
+  <header class="relative h-[350px] overflow-visible">
+    <div class="absolute inset-0 overflow-hidden">
+    <div id="hero-slider" class="hero-slider absolute inset-y-0 left-0 flex h-full w-[400%]">
+      <img src="./images/main_banner.jpg" alt="메인 배너 1" class="h-full w-1/4 object-cover">
+      <img src="./images/main_banner1.jpg" alt="메인 배너 2" class="h-full w-1/4 object-cover">
+      <img src="./images/main_banner2.jpg" alt="메인 배너 3" class="h-full w-1/4 object-cover">
+      <img src="./images/main_banner.jpg" alt="메인 배너 1 반복" class="h-full w-1/4 object-cover">
+    </div>
+    <div class="absolute inset-0 bg-black/45"></div>
+    </div>
+    <div class="relative z-10 mx-auto flex h-full max-w-6xl flex-col items-center justify-center px-4 text-white">
+      <h1 class="hero-title">토니와 함께하는 말하기영어</h1>
+      <p class="hero-subtitle">Master English word order, and speaking becomes natural.</p>
+      <nav class="hero-main-nav">
+        <a href="./index.html" class="btn-main px-4 py-2 text-center">소개</a>
+        <div class="menu-group">
+          <a href="./pages/listening/index.html" class="btn-main block px-4 py-2 text-center">듣기</a>
+          <div class="submenu">
+            <a href="./pages/listening/index.html?level=level1">Level 1</a>
+            <a href="./pages/listening/index.html?level=level2">Level 2</a>
+            <a href="./pages/listening/index.html?level=level3">Level 3</a>
+          </div>
         </div>
+        <div class="menu-group">
+          <a href="./pages/grammar/index.html" class="btn-main block px-4 py-2 text-center">문법</a>
+          <div class="submenu">
+            <a href="./pages/grammar/index.html?level=basic">Basic</a>
+            <a href="./pages/grammar/index.html?level=intermediate">Intermediate</a>
+            <a href="./pages/grammar/index.html?level=advanced">Advanced</a>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="w-full bg-yellow-50 px-4 pb-16 pt-20">
+    <section class="mx-auto max-w-4xl rounded-2xl border border-gray-200 border-t-4 border-t-yellow-400 bg-white p-8 shadow-xl md:p-12">
+      <h2 class="mb-10 text-center text-4xl font-black text-gray-800">환영합니다.</h2>
+      <div class="space-y-8 text-lg font-light leading-relaxed text-gray-700">
+        <p>
+          이곳은 <strong class="font-bold text-gray-900">영어를 “시험”이 아니라 “말하기”를 위해 다시 시작하는 사람</strong>을 위한 공간입니다.
+          저는 한동안 영어를 포기했던 사람입니다. 중학교 때부터 배웠지만, 문법·독해·암기 중심의 공부는
+          <strong class="font-bold text-gray-900">실제로 한 문장도 입 밖으로 꺼내지 못하게 만들었고</strong>, 결국 “영어는 나와 안 맞는다”는
+          고정관념만 남겼습니다.
+        </p>
+
+        <p>
+          그런데 어느 날 깨달았습니다. 영어는 <strong class="font-bold text-gray-900">완벽한 문장</strong>을 만드는 기술이 아니라,
+          <strong class="font-bold text-gray-900">의미가 통하는 문장</strong>을 “영어 어순”으로 꺼내는 기술이라는 사실을요.
+          단어를 많이 몰라도, 내가 가진 밑천으로 <strong class="rounded bg-yellow-100 px-1 font-bold text-gray-900">주어 → 동사 → 목적어/보어 → 수식</strong>의 흐름만 잡으면
+          원어민은 내 표현이 완벽하지 않아도 <strong class="font-bold text-gray-900">의사소통에 충분한 문장</strong>으로 받아들이는 경우가 많습니다.
+          이 경험이 영어를 다시 살려냈습니다.
+        </p>
+
+        <p>
+          그래서 이 사이트는 딱 하나에 집중합니다.
+          <strong class="font-bold text-gray-900">영어를 말하기 위해 필요한 “어순감각”을 몸에 넣는 것</strong>입니다.
+          ‘어려운 문법 설명’보다, ‘바로 말이 나오는 구조’를 먼저 세우는 방식입니다.
+        </p>
+
+        <p>
+          다만 지금은 세상이 많이 달라졌습니다. 유튜브에는 이미
+          <strong class="font-bold text-gray-900">제 생각을 저보다 더 잘, 더 친절하게 설명해주시는 좋은 영상들</strong>이 많습니다.
+          그래서 저는 모든 설명을 직접 만드는 대신,
+          <strong class="rounded bg-yellow-100 px-1 font-bold text-gray-900">그중에서 제 방향과 맞는 영상을 엄선</strong>하고,
+          거기에 <strong class="font-bold text-gray-900">한국인이 말할 때 꼭 필요한 관점</strong>을 한 줄씩 덧붙이는 형태로 정리합니다.
+          영상 제작자 분들의 노고에 누가 되지 않도록, 출처와 원저자를 분명히 밝히고, 학습 안내 목적으로만 링크합니다.
+        </p>
+
+        <p>
+          제가 직접 만드는 영상은 <strong class="font-bold text-gray-900">가장 기초가 되는 “어순감각” 파트</strong>로 한정합니다.
+          그 위의 단계는 이미 훌륭하게 가르쳐주시는 분들의 영상을 길잡이로 삼고,
+          <strong class="border-b-2 border-yellow-400 font-bold text-gray-900">어떤 순서로 볼지 · 무엇에 집중해서 들을지 · 어떻게 말해볼지</strong>를
+          이 사이트에서 안내합니다.
+        </p>
+
+        <p>
+          저는 특히 <strong class="font-bold text-red-600">스펠링 암기 중심 학습</strong>을 권하지 않습니다.
+          스펠링에 집착하는 순간, 영어는 다시 “학문”이 되고 “시험”이 됩니다.
+          여기서는 스펠링보다 <strong class="border-b-2 border-yellow-400 font-bold text-gray-900">발음(소리)</strong>과 <strong class="border-b-2 border-yellow-400 font-bold text-gray-900">어순(구조)</strong>을 먼저 잡습니다.
+          알고 있는 단어로라도, 말하고 싶은 내용을 영어 어순으로 바꾸어 말하는 습관을 만들겠습니다.
+        </p>
+
+        <p>
+          이 사이트의 콘텐츠는 <strong class="font-bold text-blue-600">무료</strong>입니다.
+          저는 <strong class="font-bold text-gray-900">기초 어순감각</strong>까지만 책임지고,
+          그 이후는 <strong class="font-bold text-gray-900">훌륭한 원저자 분들의 영상</strong>으로 안내합니다.
+          기초가 갖춰지면, 더 높은 단계로 과감하게 나아가세요.
+          한국인들이 시간·비용·노력의 낭비를 줄이는 데 제 남은 생을 쓰고 싶습니다.
+        </p>
+
+        <p>
+          이곳은 남에게 보이기 위한 영어가 아니라,
+          <strong class="font-bold text-gray-900">내가 실제로 사용하면서 사람과 가까워지기 위한 영어</strong>를 연습하는 곳입니다.
+          완벽함보다 소통, 암기보다 구조, 시험보다 대화.
+          그리고 좋은 영상은 좋은 영상으로 존중하며 함께 활용합니다.
+          이 방향에 동의하시는 분만 함께 오시면 좋겠습니다.
+        </p>
+      </div>
     </section>
+  </main>
 
-    <!-- How It Works Section -->
-    <section id="guide" class="py-20 bg-white">
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-gray-800 mb-4">🎯 학습하는 방법</h2>
-                <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-                    3단계로 이루어진 체계적인 영어 학습 프로세스를 경험해보세요
-                </p>
-            </div>
-            
-            <div class="grid md:grid-cols-3 gap-8">
-                <!-- Step 1 -->
-                <div class="text-center p-8 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl card-hover">
-                    <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                        <span class="text-3xl">🎬</span>
-                    </div>
-                    <h3 class="text-2xl font-bold text-gray-800 mb-4">1. 영상 시청</h3>
-                    <p class="text-gray-600 leading-relaxed">
-                        YouTube 영상을 보며 전체적인 내용과 맥락을 파악합니다. 
-                        자연스러운 영어 발음과 억양을 먼저 익혀보세요.
-                    </p>
-                </div>
+  <footer class="border-t border-gray-200 bg-white py-6">
+    <p class="text-center text-sm text-gray-500">© 2026 English Study Hub</p>
+  </footer>
 
-                <!-- Step 2 -->
-                <div class="text-center p-8 bg-gradient-to-br from-purple-50 to-pink-100 rounded-2xl card-hover">
-                    <div class="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                        <span class="text-3xl">🔄</span>
-                    </div>
-                    <h3 class="text-2xl font-bold text-gray-800 mb-4">2. 쉐도잉 연습</h3>
-                    <p class="text-gray-600 leading-relaxed">
-                        TTS 기능으로 문장을 듣고 따라 말하며 발음과 억양을 연습합니다. 
-                        자연스러운 영어 스피킹 실력을 기를 수 있습니다.
-                    </p>
-                </div>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const slider = document.getElementById("hero-slider");
+      if (!slider) return;
+      let index = 0;
+      const total = 3;
+      const withClone = 4;
+      const step = 100 / withClone;
+      const delay = 5500;
+      const duration = 700;
+      let timer = null;
 
-                <!-- Step 3 -->
-                <div class="text-center p-8 bg-gradient-to-br from-green-50 to-emerald-100 rounded-2xl card-hover">
-                    <div class="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                        <span class="text-3xl">🃏</span>
-                    </div>
-                    <h3 class="text-2xl font-bold text-gray-800 mb-4">3. 단어 암기</h3>
-                    <p class="text-gray-600 leading-relaxed">
-                        인터랙티브 플립카드로 핵심 단어들을 재미있게 암기합니다. 
-                        영영사전과 예문으로 완벽하게 이해해보세요.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
+      function move(to, animate = true) {
+        slider.style.transition = animate ? `transform ${duration}ms ease-in-out` : "none";
+        slider.style.transform = `translateX(-${to * step}%)`;
+      }
 
-    <!-- Study Levels Section -->
-    <section id="levels" class="py-20 bg-gray-50">
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-gray-800 mb-4">📚 학습 콘텐츠</h2>
-                <p class="text-xl text-gray-600">
-                    레벨별로 구성된 체계적인 영어 학습 콘텐츠를 만나보세요
-                </p>
-            </div>
-
-            <!-- Navigation Tabs -->
-            <div class="flex justify-center mb-12">
-                <nav class="bg-white rounded-2xl shadow-lg p-2">
-                    <div class="flex space-x-2">
-                        <button class="nav-btn px-6 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-600" onclick="showSection('listening')">
-                            🎧 듣기 연습
-                        </button>
-                        <button class="nav-btn px-6 py-3 rounded-xl font-bold text-gray-600 hover:text-gray-800 hover:bg-gray-100 transition-all" onclick="showSection('grammar')">
-                            📝 필수 문법
-                        </button>
-                    </div>
-                </nav>
-            </div>
-
-            <!-- Content Sections -->
-            <div class="content-sections">
-                <!-- 듣기 연습 섹션 -->
-                <div id="listening-section" class="content-section">
-                    <div class="text-center mb-8">
-                        <h3 class="text-2xl font-bold text-gray-800 mb-4">🎧 듣기 연습</h3>
-                        
-                        <!-- Level Navigation -->
-                        <div class="flex justify-center space-x-4 mb-8">
-                            <button class="level-btn px-4 py-2 bg-gray-200 text-gray-600 rounded-lg" onclick="showLevel('listening', 'level1')">Level 1</button>
-                            <button class="level-btn px-4 py-2 bg-gray-200 text-gray-600 rounded-lg" onclick="showLevel('listening', 'level2')">Level 2</button>
-                            <button class="level-btn px-4 py-2 bg-indigo-600 text-white rounded-lg" onclick="showLevel('listening', 'level3')">Level 3</button>
-                        </div>
-                    </div>
-
-                    <!-- Level 3 Content -->
-                    <div id="listening-level3" class="level-content">
-                        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                            <!-- Crisis in Middle East 카드 -->
-                            <div class="group flex flex-col rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:border-indigo-300 hover:shadow-lg">
-                                <div class="mb-4 flex items-center justify-between">
-                                    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-red-400 to-red-600 text-xl">🎯</div>
-                                    <span class="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-700">Level 3</span>
-                                </div>
-                                <h3 class="mb-2 text-lg font-bold text-gray-900">Crisis in Middle East Learn English Through Story</h3>
-                                <p class="mb-4 text-sm text-gray-600 flex-grow">중동 위기 상황을 통한 고급 영어 학습</p>
-                                <div class="mb-4 flex flex-wrap gap-2">
-                                    <span class="rounded-full bg-red-50 px-2 py-1 text-xs text-red-600">고급 문법</span>
-                                    <span class="rounded-full bg-orange-50 px-2 py-1 text-xs text-orange-600">시사</span>
-                                    <span class="rounded-full bg-blue-50 px-2 py-1 text-xs text-blue-600">토론</span>
-                                </div>
-                                <a href="pages/listening/level3/Crisis_in_Middle_East/Crisis_in_Middle_East.html" 
-                                class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-red-500 to-red-600 px-4 py-3 font-semibold text-white transition hover:from-red-600 hover:to-red-700 mt-auto">
-                                    <span>📚</span><span>학습 시작</span>
-                                </a>
-                            </div>
-
-                            <!-- The Girl Who Never Give Up 카드 -->
-                            <div class="group flex flex-col rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:border-indigo-300 hover:shadow-lg">
-                                <div class="mb-4 flex items-center justify-between">
-                                    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-purple-400 to-purple-600 text-xl">✨</div>
-                                    <span class="rounded-full bg-purple-50 px-3 py-1 text-xs font-semibold text-purple-700">Level 3</span>
-                                </div>
-                                <h3 class="mb-2 text-lg font-bold text-gray-900">The Girl Who Never Give Up</h3>
-                                <p class="mb-4 text-sm text-gray-600 flex-grow">포기하지 않는 소녀 이야기로 배우는 고급 영어</p>
-                                <div class="mb-4 flex flex-wrap gap-2">
-                                    <span class="rounded-full bg-purple-50 px-2 py-1 text-xs text-purple-600">동기부여</span>
-                                    <span class="rounded-full bg-pink-50 px-2 py-1 text-xs text-pink-600">스토리</span>
-                                    <span class="rounded-full bg-indigo-50 px-2 py-1 text-xs text-indigo-600">감정표현</span>
-                                </div>
-                                <a href="pages/listening/level3/The_Girl_Who_Never_Give_Up/The_Girl_Who_Never_Give_Up.html" 
-                                class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 px-4 py-3 font-semibold text-white transition hover:from-purple-600 hover:to-purple-700 mt-auto">
-                                    <span>📚</span><span>학습 시작</span>
-                                </a>
-                            </div>
-
-                            <!-- 준비 중 콘텐츠 -->
-                            <div class="group flex flex-col rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 p-6 text-center">
-                                <div class="text-4xl mb-3">🏗️</div>
-                                <h4 class="font-bold text-gray-600 mb-2">더 많은 콘텐츠</h4>
-                                <p class="text-sm text-gray-500 flex-grow">준비 중입니다</p>
-                                <div class="mt-4">
-                                    <div class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gray-300 px-4 py-3 font-semibold text-gray-500 cursor-not-allowed">
-                                        <span>🔜</span><span>준비 중...</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="listening-level1" class="level-content hidden">
-                        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                          <!-- 새로운 Level 1 콘텐츠 카드 -->
-                          <div class="group flex flex-col rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:border-indigo-300 hover:shadow-lg">
-                            <div class="mb-4 flex items-center justify-between">
-                              <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-green-400 to-emerald-500 text-xl">🌍</div>
-                              <span class="rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-700">Level 1</span>
-                            </div>
-                            <h3 class="mb-2 text-lg font-bold text-gray-900">The Middle East's Greatest Contributions</h3>
-                            <p class="mb-4 text-sm text-gray-600 flex-grow">중동 지역의 위대한 기여들을 통해 영어를 학습해보세요.</p>
-                            <div class="mb-4 flex flex-wrap gap-2">
-                              <span class="rounded-full bg-blue-50 px-2 py-1 text-xs text-blue-600">기초 단어</span>
-                              <span class="rounded-full bg-purple-50 px-2 py-1 text-xs text-purple-600">문화</span>
-                              <span class="rounded-full bg-orange-50 px-2 py-1 text-xs text-orange-600">역사</span>
-                            </div>
-                            <a href="pages/listening/level1/The_Middle_East's_Greatest_Contributions/The_Middle_East's_Greatest_Contributions.html" 
-                               class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 px-4 py-3 font-semibold text-white transition hover:from-green-600 hover:to-emerald-700 mt-auto">
-                              <span>📚</span><span>학습 시작</span>
-                            </a>
-                          </div>
-
-                          <div class="group flex flex-col rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:border-indigo-300 hover:shadow-lg">
-                            <div class="mb-4 flex items-center justify-between">
-                              <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-400 to-violet-600 text-xl">🛸</div>
-                              <span class="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700">Level 1</span>
-                            </div>
-                            <h3 class="mb-2 text-lg font-bold text-gray-900">My Passion for Drones, Making, and AI Learning</h3>
-                            <p class="mb-4 text-sm text-gray-600 flex-grow">드론, 메이킹, 그리고 AI 학습에 대한 나의 이야기로 기초 영어 쉐도잉을 연습해 보세요.</p>
-                            <div class="mb-4 flex flex-wrap gap-2">
-                              <span class="rounded-full bg-indigo-50 px-2 py-1 text-xs text-indigo-600">기초 표현</span>
-                              <span class="rounded-full bg-violet-50 px-2 py-1 text-xs text-violet-600">자기소개</span>
-                              <span class="rounded-full bg-sky-50 px-2 py-1 text-xs text-sky-600">취미·기술</span>
-                            </div>
-                            <a href="pages/listening/level1/My_passion/My_passion.html"
-                               class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-indigo-500 to-violet-600 px-4 py-3 font-semibold text-white transition hover:from-indigo-600 hover:to-violet-700 mt-auto">
-                              <span>📚</span><span>학습 시작</span>
-                            </a>
-                          </div>
-                      
-                          <!-- 준비 중 메시지 (기존 스타일로) -->
-                          <div class="group flex flex-col rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 p-6 text-center">
-                            <div class="text-4xl mb-3">🏗️</div>
-                            <h4 class="font-bold text-gray-600 mb-2">더 많은 콘텐츠</h4>
-                            <p class="text-sm text-gray-500 flex-grow">준비 중입니다</p>
-                            <div class="mt-4">
-                              <div class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gray-300 px-4 py-3 font-semibold text-gray-500 cursor-not-allowed">
-                                <span>🔜</span><span>준비 중...</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                    <div id="listening-level2" class="level-content hidden">
-                        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                            <div class="group flex flex-col rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:border-indigo-300 hover:shadow-lg">
-                                <div class="mb-4 flex items-center justify-between">
-                                    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-xl">🍗</div>
-                                    <span class="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">Level 2</span>
-                                </div>
-                                <h3 class="mb-2 text-lg font-bold text-gray-900">KFC Success Story</h3>
-                                <p class="mb-4 text-sm text-gray-600 flex-grow">콜로넬 샌더스의 성공 스토리로 배우는 중급 영어</p>
-                                <div class="mb-4 flex flex-wrap gap-2">
-                                    <span class="rounded-full bg-amber-50 px-2 py-1 text-xs text-amber-600">동기부여</span>
-                                    <span class="rounded-full bg-orange-50 px-2 py-1 text-xs text-orange-600">성공 스토리</span>
-                                    <span class="rounded-full bg-yellow-50 px-2 py-1 text-xs text-yellow-700">쉐도잉</span>
-                                </div>
-                                <a href="pages/listening/level2/KFC_Success_Story/KFC_Success_Story.html"
-                                class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-600 px-4 py-3 font-semibold text-white transition hover:from-amber-600 hover:to-orange-700 mt-auto">
-                                    <span>📚</span><span>학습 시작</span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 문법 섹션 -->
-                <div id="grammar-section" class="content-section hidden">
-                    <div class="text-center py-20">
-                        <div class="text-6xl mb-4">📝</div>
-                        <h3 class="text-2xl font-bold text-gray-600 mb-4">필수 문법 콘텐츠 준비 중</h3>
-                        <p class="text-gray-500">체계적인 문법 학습 콘텐츠를 준비하고 있습니다!</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-white py-12">
-        <div class="max-w-6xl mx-auto px-4 text-center">
-            <div class="mb-8">
-                <h3 class="text-2xl font-bold mb-4">🌟 함께 성장하는 영어 학습</h3>
-                <p class="text-gray-300 max-w-2xl mx-auto">
-                    매일 조금씩, 꾸준히 학습하는 것이 가장 큰 성과를 만들어냅니다. 
-                    English Study Hub와 함께 영어 실력을 한 단계 끌어올려보세요!
-                </p>
-            </div>
-            
-            <div class="border-t border-gray-700 pt-8">
-                <p class="text-gray-400">
-                    © 2024 English Study Hub. Made with ❤️ for English learners
-                </p>
-            </div>
-        </div>
-    </footer>
-
-    <!-- JavaScript -->
-    <script>
-        function scrollToLevels() {
-            document.getElementById('levels').scrollIntoView({ 
-                behavior: 'smooth' 
-            });
+      function next() {
+        index += 1;
+        move(index, true);
+        if (index === total) {
+          const handler = (e) => {
+            if (e.propertyName !== "transform") return;
+            slider.removeEventListener("transitionend", handler);
+            index = 0;
+            move(index, false);
+            timer = setTimeout(next, delay);
+          };
+          slider.addEventListener("transitionend", handler);
+          return;
         }
-        
-        function scrollToGuide() {
-            document.getElementById('guide').scrollIntoView({ 
-                behavior: 'smooth' 
-            });
-        }
-        
-        function showSection(sectionName) {
-            // Hide all sections
-            document.querySelectorAll('.content-section').forEach(section => {
-                section.classList.add('hidden');
-            });
-            
-            // Reset all nav buttons
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.className = 'nav-btn px-6 py-3 rounded-xl font-bold text-gray-600 hover:text-gray-800 hover:bg-gray-100 transition-all';
-            });
-            
-            // Show selected section
-            document.getElementById(sectionName + '-section').classList.remove('hidden');
-            
-            // Highlight active button
-            event.target.className = 'nav-btn px-6 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-600';
-        }
-        
-        function showLevel(section, level) {
-            // Hide all level contents in this section
-            document.querySelectorAll(`#${section}-section .level-content`).forEach(content => {
-                content.classList.add('hidden');
-            });
-            
-            // Reset all level buttons
-            document.querySelectorAll(`#${section}-section .level-btn`).forEach(btn => {
-                btn.className = 'level-btn px-4 py-2 bg-gray-200 text-gray-600 rounded-lg';
-            });
-            
-            // Show selected level
-            document.getElementById(`${section}-${level}`).classList.remove('hidden');
-            
-            // Highlight active level button
-            event.target.className = 'level-btn px-4 py-2 bg-indigo-600 text-white rounded-lg';
-        }
-    </script>
+        timer = setTimeout(next, delay);
+      }
+
+      move(0, false);
+      timer = setTimeout(next, delay);
+      document.addEventListener("visibilitychange", () => {
+        clearTimeout(timer);
+        if (!document.hidden) timer = setTimeout(next, delay);
+      });
+    });
+  </script>
 </body>
 </html>

@@ -1201,6 +1201,44 @@ function setupMobileMenu() {
   });
 }
 
+function setupBackNavigationButtons() {
+  const fallbackUrl = new URL("../../../../pages/listening/index.html", window.location.href).href;
+  const goBack = () => {
+    if (window.history.length > 1) {
+      window.history.back();
+      return;
+    }
+    window.location.href = fallbackUrl;
+  };
+
+  const desktopNav = document.querySelector("header nav.md\\:flex");
+  if (desktopNav && !desktopNav.querySelector("[data-back-nav='desktop']")) {
+    const backBtn = document.createElement("button");
+    backBtn.type = "button";
+    backBtn.dataset.backNav = "desktop";
+    backBtn.className = "inline-flex items-center gap-2 rounded-lg bg-stone-100 px-4 py-2 font-semibold text-stone-700 transition hover:bg-stone-200";
+    backBtn.innerHTML = "<span>↩️</span><span>이전으로</span>";
+    backBtn.addEventListener("click", goBack);
+    const homeLink = desktopNav.querySelector("a[href*='index.html']");
+    if (homeLink?.nextSibling) desktopNav.insertBefore(backBtn, homeLink.nextSibling);
+    else desktopNav.appendChild(backBtn);
+  }
+
+  const mobileMenu = document.getElementById("mobile-menu");
+  const mobileStack = mobileMenu?.querySelector(".space-y-2");
+  if (mobileStack && !mobileStack.querySelector("[data-back-nav='mobile']")) {
+    const backBtn = document.createElement("button");
+    backBtn.type = "button";
+    backBtn.dataset.backNav = "mobile";
+    backBtn.className = "block w-full rounded-lg px-4 py-3 text-left text-gray-700 transition hover:bg-gray-100";
+    backBtn.textContent = "↩️ 이전 페이지로";
+    backBtn.addEventListener("click", goBack);
+    const homeLink = mobileStack.querySelector("a[href*='index.html']");
+    if (homeLink?.nextSibling) mobileStack.insertBefore(backBtn, homeLink.nextSibling);
+    else mobileStack.appendChild(backBtn);
+  }
+}
+
 function setupWordCardInteractions() {
   const root = document.getElementById("wordcard-content");
   if (!root) return;
@@ -1444,6 +1482,7 @@ async function init() {
   loadState();
   setupTabs();
   setupMobileMenu();
+  setupBackNavigationButtons();
   setupThemeToggle();
   setupSessionTimer();
   setupOfflineSupport();

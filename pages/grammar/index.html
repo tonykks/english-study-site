@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>문법 학습 | English Study Hub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../../assets/css/shared-hero.css">
+  <style>
+    :root {
+      --card-cols-mobile: 2;
+      --card-cols-desktop: 4;
+    }
+    .shared-banner {
+      background-image: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)), url("../../images/main_banner.jpg");
+      background-position: center;
+      background-size: cover;
+    }
+    .content-grid {
+      display: grid;
+      grid-template-columns: repeat(var(--card-cols-mobile), minmax(0, 1fr));
+      gap: 0.9rem;
+      align-items: stretch;
+    }
+    @media (min-width: 768px) {
+      .content-grid {
+        grid-template-columns: repeat(var(--card-cols-desktop), minmax(0, 1fr));
+      }
+    }
+    .lesson-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 0.9rem;
+      background: #ffffff;
+      padding: 1rem;
+      min-height: 210px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      display: flex;
+      flex-direction: column;
+    }
+    .lesson-card.is-link {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+    }
+    .lesson-card.is-link:hover {
+      transform: translateY(-2px);
+      border-color: #6ee7b7;
+      box-shadow: 0 10px 20px -14px rgba(5, 150, 105, 0.7);
+    }
+    .lesson-tag {
+      display: inline-flex;
+      border-radius: 999px;
+      background: #ecfdf5;
+      color: #047857;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.2rem 0.5rem;
+    }
+    .lesson-card.placeholder {
+      background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+      border-style: dashed;
+    }
+    .lesson-preview {
+      margin-top: 0.1rem;
+      font-size: 0.84rem;
+      line-height: 1.45;
+      color: #4b5563;
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      word-break: break-word;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+  <header class="shared-banner relative h-[350px] border-b border-gray-200">
+    <div class="relative z-10 mx-auto flex h-full max-w-6xl flex-col items-center justify-center px-4 text-white">
+      <h1 class="hero-title">토니와 함께하는 말하기영어</h1>
+      <p class="hero-subtitle">Master English word order, and speaking becomes natural.</p>
+      <nav class="hero-main-nav">
+        <a href="../../index.html" class="btn-main px-4 py-2 text-center">소개</a>
+        <div class="menu-group">
+          <a href="../listening/index.html" class="btn-main block px-4 py-2 text-center">듣기</a>
+          <div class="submenu">
+            <a href="../listening/index.html?level=level1">Level 1</a>
+            <a href="../listening/index.html?level=level2">Level 2</a>
+            <a href="../listening/index.html?level=level3">Level 3</a>
+          </div>
+        </div>
+        <div class="menu-group">
+          <a href="./index.html" class="btn-main block px-4 py-2 text-center">문법</a>
+          <div class="submenu">
+            <a href="./index.html?level=basic">Basic</a>
+            <a href="./index.html?level=intermediate">Intermediate</a>
+            <a href="./index.html?level=advanced">Advanced</a>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-6xl px-4 pb-8 pt-16">
+    <section class="mb-6">
+      <div class="mx-auto max-w-md rounded-xl border border-emerald-100 bg-white px-5 py-4 text-center shadow-sm">
+        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Current Location</p>
+        <h2 id="page-title" class="mt-1 text-xl font-extrabold text-emerald-700">문법 학습 목록 - Basic</h2>
+      </div>
+    </section>
+
+    <section id="card-grid" class="content-grid"></section>
+  </main>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const grammarCards = [
+        {
+          level: "basic",
+          title: "Grammar Basic",
+          introEn: "Build clear sentences with the subject-verb-object flow first, then add simple details to speak naturally.",
+          tags: ["Basic", "기초"],
+          href: "./basic.html"
+        },
+        {
+          level: "intermediate",
+          title: "Grammar Intermediate",
+          introEn: "Expand your speaking with tense shifts, connectors, and longer sentence patterns that still keep the core order.",
+          tags: ["Intermediate", "중급"],
+          href: "./intermediate.html"
+        },
+        {
+          level: "advanced",
+          title: "Grammar Advanced",
+          introEn: "Use advanced structures and nuance control to express complex ideas more precisely in real conversations.",
+          tags: ["Advanced", "고급"],
+          href: "./advanced.html"
+        }
+      ];
+      const params = new URLSearchParams(window.location.search);
+      const level = (params.get("level") || "basic").toLowerCase();
+      const valid = new Set(["basic", "intermediate", "advanced"]);
+      const activeLevel = valid.has(level) ? level : "basic";
+      const titleMap = {
+        basic: "문법 학습 목록 - Basic",
+        intermediate: "문법 학습 목록 - Intermediate",
+        advanced: "문법 학습 목록 - Advanced"
+      };
+      const title = document.getElementById("page-title");
+      if (title) title.textContent = titleMap[activeLevel];
+      const grid = document.getElementById("card-grid");
+      if (!grid) return;
+      const filtered = grammarCards.filter((item) => item.level === activeLevel);
+      const targetCount = 16;
+      const placeholders = Array.from({ length: Math.max(0, targetCount - filtered.length) }, (_, idx) => ({
+        title: `준비중 콘텐츠 ${idx + 1}`,
+        introEn: "Content preview will be added soon.",
+        tags: [activeLevel.toUpperCase(), "준비중"],
+        href: ""
+      }));
+      const allCards = [...filtered, ...placeholders];
+      grid.innerHTML = allCards.map((item) => {
+        const tagHtml = item.tags.map((tag) => `<span class="lesson-tag">${tag}</span>`).join("");
+        const cardBody = `
+          <div class="mb-2 flex flex-wrap gap-1">${tagHtml}</div>
+          <h3 class="mb-2 text-base font-extrabold text-gray-900">${item.title}</h3>
+          <p class="lesson-preview">${item.introEn}</p>
+        `;
+        if (item.href) {
+          return `
+            <a href="${item.href}" class="lesson-card is-link">
+              ${cardBody}
+            </a>
+          `;
+        }
+        return `
+          <article class="lesson-card placeholder">
+            ${cardBody}
+          </article>
+        `;
+      }).join("");
+    });
+  </script>
+</body>
+</html>
