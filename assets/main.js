@@ -585,6 +585,7 @@ function speakEnglish(text, sourceButton) {
   if (activeUtterance) {
     window.speechSynthesis.cancel();
     activeUtterance = null;
+    resetLessonCoverPlaybackState();
   }
 
   if (sourceButton && sourceButton === activeSpeechButton) {
@@ -598,6 +599,7 @@ function speakEnglish(text, sourceButton) {
   if (activeSpeechButton) markSpeaking(activeSpeechButton);
 
   window.speechSynthesis.cancel();
+  resetLessonCoverPlaybackState();
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = "en-US";
   utterance.rate = ttsRate;
@@ -746,6 +748,140 @@ function renderVideo(meta) {
       allowfullscreen
     ></iframe>
   `;
+}
+
+function normalizeCoverAudioScript(text) {
+  return normalizeText(text)
+    .split(/\n+/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .join(" ");
+}
+
+let lessonCoverScriptPlain = "";
+let lessonCoverClickTimer = null;
+let lessonCoverListenersBound = false;
+/** idle | playing | paused — 브라우저의 paused/speaking 플래그와 어긋나는 경우를 피하기 위해 사용 */
+let lessonCoverPlaybackState = "idle";
+
+function resetLessonCoverPlaybackState() {
+  lessonCoverPlaybackState = "idle";
+}
+
+function updateLessonCoverVideoLabel(mode) {
+  const label = document.getElementById("video-label");
+  if (!label) return;
+  if (mode === "playing") {
+    label.textContent = "재생 중 · 한 번 더 탭하면 일시정지";
+  } else if (mode === "paused") {
+    label.textContent = "일시정지됨 · 탭하면 이어듣기";
+  } else if (mode === "stopped") {
+    label.textContent = "재생이 완전히 중지되었습니다. 탭하면 처음부터 듣기";
+  } else {
+    label.textContent =
+      "탭해서 전체 영어 스크립트 듣기 · 탭: 일시정지/이어듣기 · 더블탭: 완전히 중지";
+  }
+}
+
+function stopLessonCoverNarrationCompletely() {
+  window.speechSynthesis.cancel();
+  resetLessonCoverPlaybackState();
+  if (activeSpeechButton) {
+    clearSpeakingState(activeSpeechButton);
+    activeSpeechButton = null;
+  }
+  activeUtterance = null;
+  updateLessonCoverVideoLabel("stopped");
+  window.setTimeout(() => updateLessonCoverVideoLabel("idle"), 1600);
+}
+
+function toggleLessonCoverNarration() {
+  if (!lessonCoverScriptPlain) return;
+  if (!("speechSynthesis" in window)) {
+    window.alert("이 브라우저는 음성 합성을 지원하지 않습니다.");
+    return;
+  }
+
+  if (lessonCoverPlaybackState === "playing") {
+    window.speechSynthesis.pause();
+    lessonCoverPlaybackState = "paused";
+    updateLessonCoverVideoLabel("paused");
+    return;
+  }
+
+  if (lessonCoverPlaybackState === "paused") {
+    window.speechSynthesis.resume();
+    lessonCoverPlaybackState = "playing";
+    updateLessonCoverVideoLabel("playing");
+    return;
+  }
+
+  if (activeSpeechButton) {
+    clearSpeakingState(activeSpeechButton);
+    activeSpeechButton = null;
+  }
+  activeUtterance = null;
+  window.speechSynthesis.cancel();
+
+  const utterance = new SpeechSynthesisUtterance(lessonCoverScriptPlain);
+  utterance.lang = "en-US";
+  utterance.rate = ttsRate;
+  utterance.pitch = 1;
+  utterance.voice = getEnglishVoice();
+  utterance.onend = () => {
+    activeUtterance = null;
+    resetLessonCoverPlaybackState();
+    updateLessonCoverVideoLabel("idle");
+  };
+  utterance.onerror = () => {
+    activeUtterance = null;
+    resetLessonCoverPlaybackState();
+    updateLessonCoverVideoLabel("idle");
+  };
+  activeUtterance = utterance;
+  lessonCoverPlaybackState = "playing";
+  window.speechSynthesis.speak(utterance);
+  updateLessonCoverVideoLabel("playing");
+}
+
+function setupLessonImageNarration(rawText) {
+  const plain = normalizeCoverAudioScript(rawText || "");
+  if (!plain) return;
+  lessonCoverScriptPlain = plain;
+  const wrap = document.getElementById("video-frame-wrap");
+  const img = wrap?.querySelector("img");
+  if (!img) return;
+  img.classList.add("lesson-cover-tts");
+  img.setAttribute("tabindex", "0");
+  img.setAttribute("role", "button");
+  img.setAttribute(
+    "aria-label",
+    "전체 영어 스크립트 듣기. 탭으로 재생·일시정지·이어듣기. 더블탭으로 완전히 중지."
+  );
+  updateLessonCoverVideoLabel("idle");
+  if (lessonCoverListenersBound) return;
+  lessonCoverListenersBound = true;
+  img.addEventListener("dblclick", (event) => {
+    event.preventDefault();
+    if (lessonCoverClickTimer) {
+      window.clearTimeout(lessonCoverClickTimer);
+      lessonCoverClickTimer = null;
+    }
+    stopLessonCoverNarrationCompletely();
+  });
+  img.addEventListener("click", () => {
+    if (lessonCoverClickTimer) window.clearTimeout(lessonCoverClickTimer);
+    lessonCoverClickTimer = window.setTimeout(() => {
+      lessonCoverClickTimer = null;
+      toggleLessonCoverNarration();
+    }, 280);
+  });
+  img.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      toggleLessonCoverNarration();
+    }
+  });
 }
 
 function setHeroMeta(meta) {
@@ -1322,6 +1458,7 @@ async function init() {
     appState.totalStudySeconds += Math.floor((Date.now() - appState.startAt) / 1000);
     saveState();
     window.speechSynthesis.cancel();
+    resetLessonCoverPlaybackState();
   });
 
   try {
@@ -1353,6 +1490,15 @@ async function init() {
     renderFullScript(script);
     setupHangman(core);
     renderWordCards(words);
+
+    if (bodyDataset.audioScript) {
+      try {
+        const coverTxt = await loadText(bodyDataset.audioScript);
+        setupLessonImageNarration(coverTxt);
+      } catch (coverErr) {
+        console.warn("data-audio-script 로드 실패:", coverErr);
+      }
+    }
   } catch (error) {
     showError(`데이터를 불러오지 못했습니다. 데이터 경로를 확인해 주세요. (${error.message})`);
   }
