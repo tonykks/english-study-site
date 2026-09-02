@@ -8,7 +8,7 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_VERTEX_MODEL = "gemini-2.0-flash-001"
+DEFAULT_VERTEX_MODEL = "gemini-3.1-flash-lite"
 
 LITERAL_KR_INSTRUCTION = """Translate to Korean using literal translation (직역).
 Rules:
@@ -28,7 +28,7 @@ def vertex_model() -> str:
 
 
 def vertex_location() -> str:
-    return os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1")
+    return os.getenv("GOOGLE_CLOUD_LOCATION", "global")
 
 
 def _client():

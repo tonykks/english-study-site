@@ -14,7 +14,7 @@ Automates adding new Listening content from a YouTube URL + Level (1/2/3).
 ```bash
 pip install -r automation/listening/requirements.txt
 cp .env.example .env
-# Set GOOGLE_CLOUD_PROJECT and optional GOOGLE_CLOUD_LOCATION
+# Set GOOGLE_CLOUD_PROJECT; default location is global for gemini-3.1-flash-lite
 ```
 
 ## Usage
@@ -34,10 +34,11 @@ python -m automation.listening.add --fixture sample_segments.json --level 2
 
 | File | Standard |
 |------|----------|
-| `02_core.txt` | **12** `[Sentence N]` blocks |
-| `03_summary.txt` | **5** `[Part N]` blocks |
-| `05_wordcard.txt` | **10** `[Card N]` blocks (8 fields each) |
-| KR translation | Literal (직역), preserving English structure |
+| Sections | Full Script divided into natural story/topic sections (YouTube chapters preferred) |
+| `02_core.txt` | One **verbatim** core sentence per section (`[Sentence N]` = Hangman source) |
+| `03_summary.txt` | One summary part per section (`[Part N]`); count must match `02_core.txt` |
+| `05_wordcard.txt` | Quality-first vocabulary (~10 typical; not a fixed count); 8 fields each |
+| KR translation | Literal (직역) via `LITERAL_KR_INSTRUCTION`; model KR fields are re-translated |
 
 ## Pipeline
 
@@ -45,8 +46,13 @@ python -m automation.listening.add --fixture sample_segments.json --level 2
 2. Vertex AI ASR cross-validation (google-genai + ADC, Google Cloud Credit)
 3. Coverage / gap / duplicate / order validation
 4. Deterministic `04_full_script.txt` EN + literal KR per paragraph
-5. Generate `00~03`, `05` via Vertex AI (Data Maker quality)
+5. Section inference → Core + Summary per section; Word Cards with level-aware selection
 6. Stage → validate → publish
+
+## Vertex AI defaults
+
+- Model: `gemini-3.1-flash-lite`
+- Location: `global` (multi-region endpoint per Google lifecycle docs)
 
 ## Tests
 

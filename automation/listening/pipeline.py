@@ -16,10 +16,11 @@ from automation.listening.config import (
 from automation.listening.vertex_client import vertex_configured
 from automation.listening.generate.data_files import (
     assemble_04_en,
-    generate_core_from_transcript,
+    build_sections_for_transcript,
+    generate_core_from_sections,
     generate_intro_from_transcript,
     generate_meta,
-    generate_summary_from_transcript,
+    generate_summary_from_sections,
     generate_wordcards_from_transcript,
     inject_kr_into_04,
     validate_format_files,
@@ -41,7 +42,7 @@ from automation.listening.youtube.transcript import fetch_caption_segments
 logger = logging.getLogger(__name__)
 
 
-def load_fixture_segments(name: str = "sample_segments.json") -> tuple[list[Segment], VideoMeta]:
+def load_fixture_segments(name: str = "sample_segments.json") -> tuple[list[Segment], VideoMeta, list[dict] | None]:
     path = FIXTURES_DIR / name
     data = json.loads(path.read_text(encoding="utf-8"))
     segments = segments_from_raw(data["segments"], source="fixture")
@@ -52,7 +53,8 @@ def load_fixture_segments(name: str = "sample_segments.json") -> tuple[list[Segm
         duration=float(data.get("duration", max(s.end for s in segments))),
         video_url=f"https://youtu.be/{data['video_id']}",
     )
-    return segments, meta
+    chapters = data.get("chapters")
+    return segments, meta, chapters
 
 
 def run_pipeline(
@@ -67,8 +69,9 @@ def run_pipeline(
     if level not in LEVEL_MAP:
         return PipelineResult("BLOCKED", "Level must be 1, 2, or 3")
 
+    fixture_chapters: list[dict] | None = None
     if fixture:
-        segments, meta = load_fixture_segments(fixture)
+        segments, meta, fixture_chapters = load_fixture_segments(fixture)
         verified = segments
         val = validate_segments(verified, meta.duration)
         if not val.ok:
@@ -146,21 +149,27 @@ def run_pipeline(
         paragraphs = group_paragraphs(verified)
         kr_paragraphs = translate_paragraphs_kr(paragraphs, allow_placeholder=allow_placeholder)
         content_04 = inject_kr_into_04(content_04_en, kr_paragraphs)
-        core_text = generate_core_from_transcript(verified, allow_placeholder=allow_placeholder)
+        sections = build_sections_for_transcript(
+            verified,
+            meta.video_id,
+            allow_placeholder=allow_placeholder,
+            chapters=fixture_chapters,
+        )
+        core_text = generate_core_from_sections(sections, allow_placeholder=allow_placeholder)
         files = {
             "00_meta.txt": generate_meta(meta, level),
             "01_intro.txt": generate_intro_from_transcript(verified, allow_placeholder=allow_placeholder),
             "02_core.txt": core_text,
-            "03_summary.txt": generate_summary_from_transcript(verified, allow_placeholder=allow_placeholder),
+            "03_summary.txt": generate_summary_from_sections(sections, allow_placeholder=allow_placeholder),
             "04_full_script.txt": content_04,
             "05_wordcard.txt": generate_wordcards_from_transcript(
-                verified, core_text, allow_placeholder=allow_placeholder
+                verified, core_text, level, allow_placeholder=allow_placeholder
             ),
         }
     except RuntimeError as exc:
         return PipelineResult("BLOCKED", str(exc), video_id=meta.video_id)
 
-    ok, reason = validate_format_files(files, reject_placeholders=not allow_placeholder)
+    ok, reason = validate_format_files(files, segments=verified, reject_placeholders=not allow_placeholder)
     if not ok:
         return PipelineResult("BLOCKED", f"Format validation failed: {reason}", video_id=meta.video_id)
 

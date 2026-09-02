@@ -32,7 +32,7 @@ def write_stage(
     if html_content and html_name:
         (stage / html_name).write_text(html_content, encoding="utf-8")
     (stage / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
-    ok, reason = validate_format_files(files, reject_placeholders=reject_placeholders)
+    ok, reason = validate_format_files(files, segments=segments, reject_placeholders=reject_placeholders)
     if not ok:
         raise ValueError(f"Stage validation failed: {reason}")
     if segments and not verify_04_en_manifest(segments, files.get("04_full_script.txt", ""), manifest):

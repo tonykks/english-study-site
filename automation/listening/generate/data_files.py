@@ -6,21 +6,39 @@ import re
 from typing import Any
 
 from automation.listening.config import (
-    CORE_SENTENCE_COUNT,
     FEW_SHOT_DIR,
-    SUMMARY_PART_COUNT,
-    WORDCARD_COUNT,
+    LISTENING_ROOT,
+    WORDCARD_MAX,
+    WORDCARD_MIN,
     allow_openai_fallback,
+    level_folder,
     openai_configured,
 )
-from automation.listening.models import Segment, VideoMeta
+from automation.listening.generate.sections import (
+    build_story_sections,
+    extract_core_sentences,
+    fill_section_content,
+    render_core_file,
+    render_summary_file,
+)
+from automation.listening.models import Segment, StorySection, VideoMeta
 from automation.listening.script.canonical import group_paragraphs
-from automation.listening.utils import segment_hash, split_sentences
+from automation.listening.utils import normalize_text, segment_hash, split_sentences
 from automation.listening.vertex_client import (
     LITERAL_KR_INSTRUCTION,
     generate_json,
     translate_literal_kr,
     vertex_configured,
+)
+
+WORDCARD_FIELDS = (
+    "headword:",
+    "part_of_speech:",
+    "meaning_kr:",
+    "definition_en:",
+    "definition_kr_literal:",
+    "example_en:",
+    "example_kr_literal:",
 )
 
 
@@ -146,97 +164,74 @@ Transcript excerpt:
     return f"EN: {en}\nKR: {kr}\n"
 
 
-def generate_core_from_transcript(segments: list[Segment], *, allow_placeholder: bool = False) -> str:
-    all_sents = _all_sentences(segments)
-    if len(all_sents) < CORE_SENTENCE_COUNT:
-        raise RuntimeError(f"BLOCKED: transcript has fewer than {CORE_SENTENCE_COUNT} sentences for Core")
-
-    if vertex_configured() and not allow_placeholder:
-        example = _few_shot("02_core.txt", 24)
-        transcript = _transcript_text(segments)
-        data = generate_json(
-            f"""Select exactly {CORE_SENTENCE_COUNT} key sentences from the transcript for Core Sentences.
-Rules:
-- Use complete sentences verbatim from the transcript (no rewriting)
-- Spread across beginning, middle, and end
-- Return JSON: {{"sentences": ["...", ...]}} with exactly {CORE_SENTENCE_COUNT} strings
-
-Example format:
-{example}
-
-Transcript:
-{transcript[:14000]}
-"""
-        )
-        picked = [str(s).strip() for s in data.get("sentences", []) if str(s).strip()]
-        if len(picked) != CORE_SENTENCE_COUNT:
-            raise RuntimeError(f"BLOCKED: Core generation returned {len(picked)} sentences, need {CORE_SENTENCE_COUNT}")
-    else:
-        picked = _pick_evenly(all_sents, CORE_SENTENCE_COUNT)
-
-    lines: list[str] = []
-    for i, sent in enumerate(picked, start=1):
-        kr = _translate(sent, allow_placeholder=allow_placeholder)
-        lines.append(f"[Sentence {i}]")
-        lines.append(f"EN: {sent}")
-        lines.append(f"KR: {kr}")
-        lines.append("")
-    return "\n".join(lines).strip() + "\n"
+def build_sections_for_transcript(
+    segments: list[Segment],
+    video_id: str,
+    *,
+    allow_placeholder: bool = False,
+    chapters: list[dict] | None = None,
+) -> list[StorySection]:
+    sections = build_story_sections(
+        segments,
+        video_id,
+        allow_placeholder=allow_placeholder,
+        chapters=chapters,
+    )
+    fill_section_content(sections, segments, allow_placeholder=allow_placeholder)
+    return sections
 
 
-def generate_summary_from_transcript(segments: list[Segment], *, allow_placeholder: bool = False) -> str:
-    transcript = _transcript_text(segments)
-    if vertex_configured() and not allow_placeholder:
-        example = _few_shot("03_summary.txt", 20)
-        data = generate_json(
-            f"""Create exactly {SUMMARY_PART_COUNT} summary parts for an English listening lesson.
-Each part: one EN sentence summarizing a story section (concise but complete).
-Then KR will be literal translation separately.
+def generate_core_from_sections(
+    sections: list[StorySection],
+    *,
+    allow_placeholder: bool = False,
+) -> str:
+    return render_core_file(sections, _translate, allow_placeholder=allow_placeholder)
 
-Example:
-{example}
 
-Return JSON: {{"parts": ["EN sentence 1", ...]}} with exactly {SUMMARY_PART_COUNT} strings.
+def generate_summary_from_sections(
+    sections: list[StorySection],
+    *,
+    allow_placeholder: bool = False,
+) -> str:
+    return render_summary_file(sections, _translate, allow_placeholder=allow_placeholder)
 
-Transcript:
-{transcript[:14000]}
-"""
-        )
-        parts = [str(p).strip() for p in data.get("parts", []) if str(p).strip()]
-        if len(parts) != SUMMARY_PART_COUNT:
-            raise RuntimeError(f"BLOCKED: Summary generation returned {len(parts)} parts, need {SUMMARY_PART_COUNT}")
-    else:
-        sents = _all_sentences(segments)
-        parts = _pick_evenly(sents, SUMMARY_PART_COUNT)
 
-    lines: list[str] = []
-    for i, en in enumerate(parts, start=1):
-        kr = _translate(en, allow_placeholder=allow_placeholder)
-        lines.append(f"[Part {i}]")
-        lines.append(f"EN: {en}")
-        lines.append(f"KR: {kr}")
-        lines.append("")
-    return "\n".join(lines).strip() + "\n"
+def _level_wordcard_sample(level: int, max_lines: int = 45) -> str:
+    level_dir = LISTENING_ROOT / level_folder(level)
+    if level_dir.is_dir():
+        for folder in sorted(level_dir.iterdir()):
+            wc = folder / "05_wordcard.txt"
+            if wc.is_file():
+                return "\n".join(wc.read_text(encoding="utf-8").splitlines()[:max_lines])
+    return _few_shot("05_wordcard.txt", max_lines)
 
 
 def generate_wordcards_from_transcript(
     segments: list[Segment],
     core_text: str,
+    level: int,
     *,
     allow_placeholder: bool = False,
 ) -> str:
     transcript = _transcript_text(segments)
     if vertex_configured() and not allow_placeholder:
-        example = _few_shot("05_wordcard.txt", 45)
+        example = _level_wordcard_sample(level)
         data = generate_json(
-            f"""Create exactly {WORDCARD_COUNT} vocabulary word cards from this English listening story.
-Each card must have: headword, part_of_speech, meaning_kr, definition_en, definition_kr_literal, example_en, example_kr_literal.
-Pick words useful for learners; examples must come from or relate to the story.
+            f"""Create vocabulary word cards for Level {level} English listening learners.
+Rules:
+- Pick a natural count (typically around 10; range {WORDCARD_MIN}-{WORDCARD_MAX}) based on learning value, NOT a fixed number
+- Priority: context importance > level fit > learning value
+- Include words critical to understanding the video; do NOT pad with easy/common words
+- Do NOT drop important words to hit a count
+- Skip overly common function words, trivial words, words chosen only for length or early appearance
+- Proper nouns only when essential for comprehension
+- Return English fields only (Korean will be added via literal translation separately)
 
-Example:
+Return JSON: {{"cards": [{{"headword": "...", "part_of_speech": "...", "definition_en": "...", "example_en": "..."}}]}}
+
+Reference Level {level} vocabulary style:
 {example}
-
-Return JSON array of {WORDCARD_COUNT} objects with those keys.
 
 Transcript excerpt:
 {transcript[:10000]}
@@ -245,28 +240,37 @@ Core sentences excerpt:
 {core_text[:3000]}
 """
         )
-        cards = data if isinstance(data, list) else data.get("cards", [])
-        if len(cards) != WORDCARD_COUNT:
-            raise RuntimeError(f"BLOCKED: Word card generation returned {len(cards)} cards, need {WORDCARD_COUNT}")
+        cards = data.get("cards", []) if isinstance(data, dict) else data
+        if not isinstance(cards, list):
+            raise RuntimeError("BLOCKED: Word card generation returned invalid format")
+        if len(cards) < WORDCARD_MIN or len(cards) > WORDCARD_MAX:
+            raise RuntimeError(
+                f"BLOCKED: Word card generation returned {len(cards)} cards "
+                f"(expected {WORDCARD_MIN}-{WORDCARD_MAX} based on content value)"
+            )
     else:
         cards = _heuristic_wordcards(core_text)
 
+    return _format_wordcards(cards, allow_placeholder=allow_placeholder)
+
+
+def _format_wordcards(cards: list[dict[str, Any]], *, allow_placeholder: bool) -> str:
     lines: list[str] = []
     for i, card in enumerate(cards, start=1):
-        hw = card.get("headword", "word")
+        hw = str(card.get("headword", "word")).strip()
+        pos = str(card.get("part_of_speech", "noun")).strip()
+        def_en = str(card.get("definition_en", f"definition of {hw}")).strip()
+        ex_en = str(card.get("example_en", f"This story mentions {hw}.")).strip()
+        meaning = _translate(hw, allow_placeholder=allow_placeholder)
+        def_kr = _translate(def_en, allow_placeholder=allow_placeholder)
+        ex_kr = _translate(ex_en, allow_placeholder=allow_placeholder)
         lines.append(f"[Card {i}]")
         lines.append(f"headword: {hw}")
-        lines.append(f"part_of_speech: {card.get('part_of_speech', 'noun')}")
-        meaning = card.get("meaning_kr") or _translate(hw, allow_placeholder=allow_placeholder)
+        lines.append(f"part_of_speech: {pos}")
         lines.append(f"meaning_kr: {meaning}")
-        lines.append(f"definition_en: {card.get('definition_en', f'definition of {hw}')}")
-        def_kr = card.get("definition_kr_literal") or _translate(
-            str(card.get("definition_en", hw)), allow_placeholder=allow_placeholder
-        )
+        lines.append(f"definition_en: {def_en}")
         lines.append(f"definition_kr_literal: {def_kr}")
-        ex_en = card.get("example_en", f"This story mentions {hw}.")
         lines.append(f"example_en: {ex_en}")
-        ex_kr = card.get("example_kr_literal") or _translate(ex_en, allow_placeholder=allow_placeholder)
         lines.append(f"example_kr_literal: {ex_kr}")
         lines.append("")
     return "\n".join(lines).strip() + "\n"
@@ -304,16 +308,19 @@ def _translate_with_instruction(en: str, instruction: str, *, allow_placeholder:
 
 
 def _heuristic_wordcards(core_text: str) -> list[dict[str, Any]]:
-    words = re.findall(r"\b[A-Za-z]{4,}\b", core_text)
+    words = re.findall(r"\b[A-Za-z]{5,}\b", core_text)
     unique: list[str] = []
+    skip = {"about", "there", "their", "which", "would", "could", "should", "every", "after"}
     for w in words:
         lw = w.lower()
+        if lw in skip:
+            continue
         if lw not in unique:
             unique.append(lw)
-        if len(unique) >= WORDCARD_COUNT:
+        if len(unique) >= 8:
             break
-    while len(unique) < WORDCARD_COUNT:
-        unique.append(f"word{len(unique)+1}")
+    if not unique:
+        unique = ["lesson", "story"]
     return [
         {
             "headword": w,
@@ -321,15 +328,8 @@ def _heuristic_wordcards(core_text: str) -> list[dict[str, Any]]:
             "definition_en": f"common English definition of {w}",
             "example_en": f"This story mentions {w} in an important moment.",
         }
-        for w in unique[:WORDCARD_COUNT]
+        for w in unique
     ]
-
-
-def _pick_evenly(items: list[str], count: int) -> list[str]:
-    if len(items) < count:
-        return items
-    step = len(items) / count
-    return [items[int(i * step)] for i in range(count)]
 
 
 def _openai_literal(en: str, instruction: str | None = None) -> str:
@@ -350,7 +350,37 @@ def _count_blocks(content: str, label: str) -> int:
     return len(re.findall(rf"\[{re.escape(label)}\s+\d+\]", content))
 
 
-def validate_format_files(files: dict[str, str], *, reject_placeholders: bool = True) -> tuple[bool, str]:
+def _verified_script_text(segments: list[Segment] | None, content_04: str) -> str:
+    if segments:
+        return " ".join(s.text_en for s in segments)
+    en_lines = [
+        line.split(":", 1)[1].strip()
+        for line in content_04.splitlines()
+        if line.strip().upper().startswith("EN:")
+    ]
+    return " ".join(en_lines)
+
+
+def _validate_wordcards(content: str) -> tuple[bool, str]:
+    blocks = re.split(r"\[Card\s+\d+\]", content)
+    card_blocks = [b for b in blocks if b.strip()]
+    if len(card_blocks) < WORDCARD_MIN:
+        return False, f"05_wordcard.txt has {len(card_blocks)} cards, need at least {WORDCARD_MIN}"
+    if len(card_blocks) > WORDCARD_MAX:
+        return False, f"05_wordcard.txt has {len(card_blocks)} cards, exceeds {WORDCARD_MAX}"
+    for i, block in enumerate(card_blocks, start=1):
+        for field in WORDCARD_FIELDS:
+            if field not in block:
+                return False, f"05_wordcard.txt Card {i} missing {field.rstrip(':')}"
+    return True, "OK"
+
+
+def validate_format_files(
+    files: dict[str, str],
+    *,
+    segments: list[Segment] | None = None,
+    reject_placeholders: bool = True,
+) -> tuple[bool, str]:
     required = {
         "00_meta.txt": ["title:", "level:"],
         "01_intro.txt": ["EN:", "KR:"],
@@ -368,13 +398,20 @@ def validate_format_files(files: dict[str, str], *, reject_placeholders: bool = 
             return False, f"{name} contains untranslated placeholder KR"
 
     core_n = _count_blocks(files.get("02_core.txt", ""), "Sentence")
-    if core_n != CORE_SENTENCE_COUNT:
-        return False, f"02_core.txt has {core_n} sentences, need {CORE_SENTENCE_COUNT}"
     sum_n = _count_blocks(files.get("03_summary.txt", ""), "Part")
-    if sum_n != SUMMARY_PART_COUNT:
-        return False, f"03_summary.txt has {sum_n} parts, need {SUMMARY_PART_COUNT}"
-    card_n = _count_blocks(files.get("05_wordcard.txt", ""), "Card")
-    if card_n != WORDCARD_COUNT:
-        return False, f"05_wordcard.txt has {card_n} cards, need {WORDCARD_COUNT}"
+    if core_n != sum_n:
+        return False, f"02_core.txt has {core_n} sentences but 03_summary.txt has {sum_n} parts (section mismatch)"
+    if core_n < 1:
+        return False, "02_core.txt has no sentences (need at least 1 section)"
+
+    verified = _verified_script_text(segments, files.get("04_full_script.txt", ""))
+    norm_script = normalize_text(verified)
+    for sent in extract_core_sentences(files.get("02_core.txt", "")):
+        if normalize_text(sent) not in norm_script:
+            return False, f"02_core.txt sentence not found in verified full script: {sent[:80]}"
+
+    ok, reason = _validate_wordcards(files.get("05_wordcard.txt", ""))
+    if not ok:
+        return False, reason
 
     return True, "OK"

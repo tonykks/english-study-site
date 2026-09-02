@@ -1,23 +1,30 @@
 from __future__ import annotations
 
-from automation.listening.config import CORE_SENTENCE_COUNT, SUMMARY_PART_COUNT, WORDCARD_COUNT
 from automation.listening.publish.stage import write_stage
 
 
+def _wordcard_block(i: int) -> str:
+    return (
+        f"[Card {i}]\n"
+        f"headword: word{i}\n"
+        f"part_of_speech: noun\n"
+        f"meaning_kr: 단어{i}\n"
+        f"definition_en: definition of word{i}\n"
+        f"definition_kr_literal: word{i}의 정의\n"
+        f"example_en: This story mentions word{i}.\n"
+        f"example_kr_literal: 이 이야기는 word{i}를 언급합니다.\n\n"
+    )
+
+
 def _valid_files() -> dict[str, str]:
+    core_sent = "Hello everyone, welcome to this English lesson today."
     return {
         "00_meta.txt": "title: t\nlevel: Level 1\n",
         "01_intro.txt": "EN: hi\nKR: 안녕\n",
-        "02_core.txt": "".join(
-            f"[Sentence {i}]\nEN: s{i}\nKR: k{i}\n\n" for i in range(1, CORE_SENTENCE_COUNT + 1)
-        ),
-        "03_summary.txt": "".join(
-            f"[Part {i}]\nEN: p{i}\nKR: k{i}\n\n" for i in range(1, SUMMARY_PART_COUNT + 1)
-        ),
-        "04_full_script.txt": "[Paragraph 1]\nEN: Hello world.\nKR: 안녕\n",
-        "05_wordcard.txt": "".join(
-            f"[Card {i}]\nheadword: w{i}\n" for i in range(1, WORDCARD_COUNT + 1)
-        ),
+        "02_core.txt": f"[Sentence 1]\nEN: {core_sent}\nKR: k1\n\n",
+        "03_summary.txt": "[Part 1]\nEN: A welcome lesson intro.\nKR: k1\n\n",
+        "04_full_script.txt": f"[Paragraph 1]\nEN: {core_sent}\nKR: 안녕\n",
+        "05_wordcard.txt": "".join(_wordcard_block(i) for i in range(1, 3)),
     }
 
 

@@ -26,6 +26,17 @@ class VideoMeta:
 
 
 @dataclass
+class StorySection:
+    index: int
+    title: str
+    text_en: str
+    start: float
+    end: float
+    core_sentence_en: str = ""
+    summary_en: str = ""
+
+
+@dataclass
 class ValidationResult:
     ok: bool
     reason: str = ""
