@@ -3,8 +3,9 @@
 *credentials*.json
 *service-account*.json
 
-# Automation staging
+# Automation staging / comparison output
 automation/.staging/
+automation/.comparison/
 __pycache__/
 *.pyc
 .pytest_cache/

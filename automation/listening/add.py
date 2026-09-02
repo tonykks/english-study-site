@@ -15,6 +15,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--level", type=int, choices=[1, 2, 3], required=True)
     parser.add_argument("--dry-run", action="store_true", help="Stage + validate only; no publish")
     parser.add_argument("--fixture", help="Use test fixture JSON name (e.g. sample_segments.json)")
+    parser.add_argument("--comparison", action="store_true", help="Write output to automation/.comparison/<video_id>/ without modifying repo")
     parser.add_argument("-v", "--verbose", action="store_true")
     args = parser.parse_args(argv)
 
@@ -27,7 +28,7 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("--url or --fixture is required")
 
     url = args.url or "fixture://local"
-    result = run_pipeline(url, args.level, dry_run=args.dry_run, fixture=args.fixture)
+    result = run_pipeline(url, args.level, dry_run=args.dry_run, fixture=args.fixture, comparison=args.comparison)
 
     print(f"Status: {result.status}")
     print(f"Message: {result.message}")

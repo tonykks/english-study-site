@@ -31,7 +31,7 @@ from automation.listening.generate.translate import translate_paragraphs_kr
 from automation.listening.generate.update_index import check_duplicate
 from automation.listening.models import PipelineResult, Segment, VideoMeta
 from automation.listening.publish.publish import publish_to_repo
-from automation.listening.publish.stage import write_stage
+from automation.listening.publish.stage import write_comparison, write_stage
 from automation.listening.script.canonical import group_paragraphs, merge_overlapping_segments, segments_from_raw
 from automation.listening.script.validate import cross_validate, validate_segments
 from automation.listening.script.vertex_transcribe import chunk_segments, transcribe_with_vertex
@@ -63,6 +63,7 @@ def run_pipeline(
     *,
     dry_run: bool = False,
     fixture: str | None = None,
+    comparison: bool = False,
 ) -> PipelineResult:
     load_config()
 
@@ -81,9 +82,10 @@ def run_pipeline(
         meta = fetch_metadata(url)
         content_id = sanitize_folder_name(meta.title)
         href = f"./{level_folder(level)}/{content_id}/{content_id}.html"
-        dup = check_duplicate(meta.video_id, content_id, href)
-        if dup:
-            return PipelineResult("PASS", f"idempotent: {dup}", video_id=meta.video_id)
+        if not comparison:
+            dup = check_duplicate(meta.video_id, content_id, href)
+            if dup:
+                return PipelineResult("PASS", f"idempotent: {dup}", video_id=meta.video_id)
 
         caption_segments: list[Segment] = []
         cap_duration = 0.0
@@ -136,9 +138,10 @@ def run_pipeline(
 
     content_id = sanitize_folder_name(meta.title)
     href = f"./{level_folder(level)}/{content_id}/{content_id}.html"
-    dup = check_duplicate(meta.video_id, content_id, href)
-    if dup and not fixture:
-        return PipelineResult("PASS", f"idempotent: {dup}", video_id=meta.video_id, folder=content_id)
+    if not fixture and not comparison:
+        dup = check_duplicate(meta.video_id, content_id, href)
+        if dup:
+            return PipelineResult("PASS", f"idempotent: {dup}", video_id=meta.video_id, folder=content_id)
 
     content_04_en, manifest = assemble_04_en(verified)
     if not verify_04_en_manifest(verified, content_04_en, manifest):
@@ -175,6 +178,25 @@ def run_pipeline(
 
     html_content = render_lesson_page(content_id, level, meta.title)
     html_name = f"{content_id}.html"
+
+    if comparison:
+        comp_dir = write_comparison(
+            meta.video_id,
+            files,
+            manifest,
+            verified,
+            html_content=html_content,
+            html_name=html_name,
+            reject_placeholders=not allow_placeholder,
+        )
+        return PipelineResult(
+            "COMPARISON",
+            f"comparison output written to {comp_dir} (repo unchanged)",
+            folder=content_id,
+            video_id=meta.video_id,
+            staging_dir=str(comp_dir),
+        )
+
     stage_dir = write_stage(
         meta.video_id,
         files,

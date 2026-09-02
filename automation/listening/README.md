@@ -28,6 +28,9 @@ python -m automation.listening.add --url "https://youtu.be/VIDEO_ID" --level 2 -
 
 # Fixture test (no Vertex / network)
 python -m automation.listening.add --fixture sample_segments.json --level 2
+
+# Comparison mode (existing video_id OK; writes to automation/.comparison/<video_id>/ only)
+python -m automation.listening.add --url "https://youtu.be/VIDEO_ID" --level 2 --comparison
 ```
 
 ## Content standards
@@ -49,6 +52,8 @@ python -m automation.listening.add --fixture sample_segments.json --level 2
 5. Section inference → Core + Summary per section; Word Cards with level-aware selection
 6. Stage → validate → publish
 
+**Comparison mode** (`--comparison`): skips duplicate guard, writes validated output to `automation/.comparison/<video_id>/` only. Does not modify `pages/listening/` or `index.html`. Production duplicate guard unchanged when `--comparison` is not set.
+
 ## Vertex AI defaults
 
 - Model: `gemini-3.1-flash-lite`
@@ -63,5 +68,6 @@ python -m pytest automation/listening/tests/ -q
 ## Safety
 
 - Staging before publish; duplicate rejection; rollback on failure
+- Comparison output isolated under `automation/.comparison/` (gitignored)
 - OpenAI fallback **disabled** unless `ALLOW_OPENAI_FALLBACK=1` (Owner opt-in)
 - Without captions or Vertex ADC → `BLOCKED`

@@ -1,8 +1,14 @@
 from __future__ import annotations
 
+import json
 import logging
 import re
 
+from automation.listening.config import (
+    SECTION_BOUNDARY_MERGE_GAP_SEC,
+    SECTION_CHUNK_MAX_SEGMENTS,
+    SECTION_CHUNK_OVERLAP_SEGMENTS,
+)
 from automation.listening.models import Segment, StorySection
 from automation.listening.utils import normalize_text, split_sentences
 from automation.listening.vertex_client import generate_json, vertex_configured
@@ -38,14 +44,82 @@ def _sections_from_chapters(segments: list[Segment], chapters: list[dict]) -> li
     return sections
 
 
-def _infer_sections_vertex(segments: list[Segment]) -> list[StorySection]:
-    if len(segments) > 500:
-        logger.warning(
-            "Transcript has %d segments; using heuristic sections instead of Vertex inference",
-            len(segments),
-        )
-        return _heuristic_sections(segments)
+def chunk_segments_for_inference(
+    segments: list[Segment],
+    *,
+    max_segments: int = SECTION_CHUNK_MAX_SEGMENTS,
+    overlap: int = SECTION_CHUNK_OVERLAP_SEGMENTS,
+) -> list[list[Segment]]:
+    if not segments:
+        return []
+    if len(segments) <= max_segments:
+        return [segments]
 
+    chunks: list[list[Segment]] = []
+    start_idx = 0
+    while start_idx < len(segments):
+        end_idx = min(start_idx + max_segments, len(segments))
+        chunks.append(segments[start_idx:end_idx])
+        if end_idx >= len(segments):
+            break
+        start_idx = max(0, end_idx - overlap)
+    return chunks
+
+
+def merge_section_candidates(candidates: list[dict]) -> list[dict]:
+    if not candidates:
+        return []
+
+    sorted_cands = sorted(
+        candidates,
+        key=lambda c: (float(c.get("start", 0.0)), float(c.get("end", 0.0))),
+    )
+    merged: list[dict] = []
+    for cand in sorted_cands:
+        start = float(cand.get("start", 0.0))
+        end = float(cand.get("end", start))
+        title = str(cand.get("title") or "Section").strip()
+        if end <= start:
+            end = start + 1.0
+        if not merged:
+            merged.append({"title": title, "start": start, "end": end})
+            continue
+
+        last = merged[-1]
+        gap = start - last["end"]
+        if gap <= SECTION_BOUNDARY_MERGE_GAP_SEC or start < last["end"]:
+            last["end"] = max(last["end"], end)
+            if len(title) > len(last["title"]):
+                last["title"] = title
+        else:
+            merged.append({"title": title, "start": start, "end": end})
+    return merged
+
+
+def _candidates_to_sections(candidates: list[dict], segments: list[Segment]) -> list[StorySection]:
+    sections: list[StorySection] = []
+    for i, cand in enumerate(candidates, start=1):
+        start = float(cand.get("start", 0.0))
+        end = float(cand.get("end", start + 1.0))
+        segs = _segments_in_range(segments, start, end)
+        text = _section_text(segs)
+        if not text:
+            continue
+        sections.append(
+            StorySection(
+                index=len(sections) + 1,
+                title=str(cand.get("title") or f"Section {i}"),
+                text_en=text,
+                start=start,
+                end=end,
+            )
+        )
+    if not sections:
+        raise RuntimeError("BLOCKED: section candidates produced no usable sections")
+    return sections
+
+
+def _infer_sections_vertex_single(segments: list[Segment]) -> list[StorySection]:
     lines = [f"{i + 1}. [{s.start:.1f}-{s.end:.1f}] {s.text_en}" for i, s in enumerate(segments)]
     transcript = "\n".join(lines)
     data = generate_json(
@@ -66,31 +140,97 @@ Transcript ({len(segments)} caption segments):
     raw_sections = data.get("sections") or []
     if not raw_sections:
         raise RuntimeError("BLOCKED: Vertex section inference returned no sections")
+    return _candidates_to_sections(raw_sections, segments)
 
-    sections: list[StorySection] = []
-    for i, item in enumerate(raw_sections, start=1):
-        start = float(item.get("start", 0.0))
-        end = float(item.get("end", start + 1.0))
-        segs = _segments_in_range(segments, start, end)
-        text = _section_text(segs)
-        if not text:
-            continue
-        sections.append(
-            StorySection(
-                index=len(sections) + 1,
-                title=str(item.get("title") or f"Section {i}"),
-                text_en=text,
-                start=start,
-                end=end,
-            )
-        )
-    if not sections:
-        raise RuntimeError("BLOCKED: Vertex section inference produced empty sections")
-    return sections
+
+def _infer_chunk_section_candidates(
+    chunk_segments: list[Segment],
+    chunk_index: int,
+    total_chunks: int,
+) -> list[dict]:
+    chunk_start = chunk_segments[0].start
+    chunk_end = chunk_segments[-1].end
+    lines = [f"[{s.start:.1f}-{s.end:.1f}] {s.text_en}" for s in chunk_segments]
+    data = generate_json(
+        f"""This is part {chunk_index + 1} of {total_chunks} from a longer English listening video.
+Time range: {chunk_start:.1f}s to {chunk_end:.1f}s (absolute timestamps).
+
+Identify natural story/topic section boundaries within this excerpt.
+Rules:
+- Use absolute timestamps in seconds from the video start
+- Base boundaries on plot events, topic shifts, or logical transitions
+- Do NOT merge or split sections to hit a target count
+- At chunk edges, add a boundary only when there is a clear transition (avoid artificial edge splits)
+
+Return JSON:
+{{"sections": [{{"title": "...", "start": 0.0, "end": 30.0}}, ...]}}
+
+Transcript excerpt ({len(chunk_segments)} segments):
+{chr(10).join(lines)}
+"""
+    )
+    raw = data.get("sections") or []
+    if not raw:
+        raise RuntimeError(f"BLOCKED: Vertex chunk {chunk_index + 1}/{total_chunks} returned no sections")
+    return raw
+
+
+def _consolidate_section_boundaries_vertex(segments: list[Segment], candidates: list[dict]) -> list[dict]:
+    if len(candidates) <= 1:
+        return candidates
+
+    total_end = segments[-1].end
+    summary = "\n".join(
+        f"- {c['title']}: {float(c['start']):.1f}s – {float(c['end']):.1f}s" for c in candidates
+    )
+    data = generate_json(
+        f"""These section boundary candidates were produced by processing a {total_end:.0f}s video in chunks.
+Merge ONLY boundaries that incorrectly split one natural section across chunk edges.
+Do NOT merge distinct story sections to reduce count.
+Do NOT split sections to hit a target count.
+Return finalized sections covering 0 to {total_end:.1f}s without gaps.
+
+Candidates:
+{summary}
+
+Return JSON:
+{{"sections": [{{"title": "...", "start": 0.0, "end": 30.0}}, ...]}}
+"""
+    )
+    finalized = data.get("sections") or []
+    if not finalized:
+        logger.warning("Vertex consolidation returned empty; using merged chunk candidates")
+        return candidates
+    return finalized
+
+
+def _infer_sections_vertex_chunked(segments: list[Segment]) -> list[StorySection]:
+    chunks = chunk_segments_for_inference(segments)
+    logger.info("Section inference: processing %d segments in %d Vertex chunks", len(segments), len(chunks))
+
+    all_candidates: list[dict] = []
+    for i, chunk in enumerate(chunks):
+        candidates = _infer_chunk_section_candidates(chunk, i, len(chunks))
+        all_candidates.extend(candidates)
+        logger.info("Chunk %d/%d yielded %d section candidates", i + 1, len(chunks), len(candidates))
+
+    merged = merge_section_candidates(all_candidates)
+    if len(chunks) > 1:
+        finalized = _consolidate_section_boundaries_vertex(segments, merged)
+    else:
+        finalized = merged
+
+    return _candidates_to_sections(finalized, segments)
+
+
+def _infer_sections_vertex(segments: list[Segment]) -> list[StorySection]:
+    if len(segments) <= SECTION_CHUNK_MAX_SEGMENTS:
+        return _infer_sections_vertex_single(segments)
+    return _infer_sections_vertex_chunked(segments)
 
 
 def _heuristic_sections(segments: list[Segment]) -> list[StorySection]:
-    """Placeholder sections for fixture/dry-run without Vertex."""
+    """Placeholder sections for fixture/offline tests only."""
     if not segments:
         return []
 
@@ -150,7 +290,8 @@ def build_story_sections(
                 logger.info("Using %d YouTube chapters as sections", len(from_chapters))
                 return from_chapters
 
-    if vertex_configured() and not allow_placeholder:
+        if not vertex_configured():
+            raise RuntimeError("BLOCKED: Vertex AI (ADC) required for section inference")
         return _infer_sections_vertex(segments)
 
     sections = _heuristic_sections(segments)
@@ -278,14 +419,8 @@ def extract_core_sentences(content: str) -> list[str]:
 
 
 def extract_summary_parts(content: str) -> list[str]:
-    parts: list[str] = []
-    for line in content.splitlines():
-        if line.strip().startswith("EN:") and "[Part" in content:
-            # Only within Part blocks — EN lines in summary file
-            parts.append(line.split(":", 1)[1].strip())
-    # Re-parse by blocks for accuracy
     blocks = re.split(r"\[Part\s+\d+\]", content)
-    parts = []
+    parts: list[str] = []
     for block in blocks:
         for line in block.splitlines():
             if line.strip().startswith("EN:"):

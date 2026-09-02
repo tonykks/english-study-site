@@ -3,7 +3,9 @@ from __future__ import annotations
 from automation.listening.generate.data_files import validate_format_files
 from automation.listening.generate.sections import (
     build_story_sections,
+    chunk_segments_for_inference,
     fill_section_content,
+    merge_section_candidates,
     render_core_file,
     render_summary_file,
 )
@@ -90,3 +92,35 @@ def test_core_sentence_must_exist_in_script():
     ok, reason = validate_format_files(files, reject_placeholders=False)
     assert not ok
     assert "not found in verified full script" in reason
+
+
+def test_chunk_segments_for_long_transcript():
+    segments = _fixture_segments()
+    expanded = []
+    for i in range(60):
+        for seg in segments:
+            expanded.append(
+                type(seg)(
+                    segment_id=f"seg_{len(expanded)+1:05d}",
+                    start=seg.start + i * 120,
+                    end=seg.end + i * 120,
+                    text_en=seg.text_en,
+                    source=seg.source,
+                )
+            )
+    chunks = chunk_segments_for_inference(expanded, max_segments=400, overlap=40)
+    assert len(chunks) > 1
+    assert sum(len(c) for c in chunks) > len(expanded)
+
+
+def test_merge_section_candidates_deduplicates_chunk_overlap():
+    candidates = [
+        {"title": "Intro", "start": 0.0, "end": 300.0},
+        {"title": "Intro continued", "start": 280.0, "end": 600.0},
+        {"title": "Main story", "start": 700.0, "end": 1200.0},
+    ]
+    merged = merge_section_candidates(candidates)
+    assert len(merged) == 2
+    assert merged[0]["end"] == 600.0
+    assert merged[1]["title"] == "Main story"
+

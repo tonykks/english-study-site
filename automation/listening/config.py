@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 REPO_ROOT = Path(__file__).resolve().parents[2]
 LISTENING_ROOT = REPO_ROOT / "pages" / "listening"
 STAGING_ROOT = REPO_ROOT / "automation" / ".staging"
+COMPARISON_ROOT = REPO_ROOT / "automation" / ".comparison"
 TEMPLATE_PATH = Path(__file__).resolve().parent / "templates" / "lesson_page.html"
 FIXTURES_DIR = Path(__file__).resolve().parent / "tests" / "fixtures"
 FEW_SHOT_DIR = REPO_ROOT / "pages" / "listening" / "level2" / "KFC_Success_Story"
@@ -23,6 +24,10 @@ DUPLICATE_BLOCK_COUNT = 3
 
 WORDCARD_MIN = 1
 WORDCARD_MAX = 20
+
+SECTION_CHUNK_MAX_SEGMENTS = 400
+SECTION_CHUNK_OVERLAP_SEGMENTS = 40
+SECTION_BOUNDARY_MERGE_GAP_SEC = 30
 
 LEVEL_MAP = {1: "level1", 2: "level2", 3: "level3"}
 LEVEL_LABEL = {1: "Level 1", 2: "Level 2", 3: "Level 3"}
