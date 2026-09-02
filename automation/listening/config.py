@@ -11,6 +11,7 @@ LISTENING_ROOT = REPO_ROOT / "pages" / "listening"
 STAGING_ROOT = REPO_ROOT / "automation" / ".staging"
 TEMPLATE_PATH = Path(__file__).resolve().parent / "templates" / "lesson_page.html"
 FIXTURES_DIR = Path(__file__).resolve().parent / "tests" / "fixtures"
+FEW_SHOT_DIR = REPO_ROOT / "pages" / "listening" / "level2" / "KFC_Success_Story"
 
 CHUNK_SECONDS = 15 * 60
 OVERLAP_SECONDS = 30
@@ -19,6 +20,10 @@ COVERAGE_MIN = 0.95
 DIVERGENCE_WORD_THRESHOLD = 0.15
 DIVERGENCE_DURATION_BLOCK = 0.05
 DUPLICATE_BLOCK_COUNT = 3
+
+CORE_SENTENCE_COUNT = 12
+SUMMARY_PART_COUNT = 5
+WORDCARD_COUNT = 10
 
 LEVEL_MAP = {1: "level1", 2: "level2", 3: "level3"}
 LEVEL_LABEL = {1: "Level 1", 2: "Level 2", 3: "Level 3"}
@@ -55,9 +60,9 @@ def level_folder(level: int) -> str:
     return LEVEL_MAP[level]
 
 
-def gemini_configured() -> bool:
-    return bool(os.getenv("GOOGLE_API_KEY"))
+def allow_openai_fallback() -> bool:
+    return os.getenv("ALLOW_OPENAI_FALLBACK", "").lower() in ("1", "true", "yes")
 
 
 def openai_configured() -> bool:
-    return bool(os.getenv("OPENAI_API_KEY"))
+    return allow_openai_fallback() and bool(os.getenv("OPENAI_API_KEY"))

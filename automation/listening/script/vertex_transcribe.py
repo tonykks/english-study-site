@@ -1,25 +1,23 @@
 from __future__ import annotations
 
+import json
 import logging
-import os
-import subprocess
-import tempfile
+import re
 from pathlib import Path
 
-from automation.listening.config import CHUNK_SECONDS, OVERLAP_SECONDS, gemini_configured
+from automation.listening.config import CHUNK_SECONDS, OVERLAP_SECONDS
 from automation.listening.models import Segment
 from automation.listening.script.canonical import segments_from_raw
 from automation.listening.utils import cleanup_caption_text
+from automation.listening.vertex_client import transcribe_audio_bytes, vertex_configured
 
 logger = logging.getLogger(__name__)
 
 
 def transcribe_with_vertex(video_id: str, duration: float) -> list[Segment]:
-    """Vertex/Gemini ASR with retry and long-video chunking."""
-    if not gemini_configured():
-        raise RuntimeError(
-            "BLOCKED: GOOGLE_API_KEY required for ASR cross-validation"
-        )
+    """Vertex AI ASR via google-genai + ADC."""
+    if not vertex_configured():
+        raise RuntimeError("BLOCKED: GOOGLE_CLOUD_PROJECT required for Vertex AI ASR (ADC)")
 
     audio_path = _download_audio(video_id)
     try:
@@ -52,7 +50,9 @@ def _transcribe_long_audio(audio_path: str, duration: float) -> list[Segment]:
 
 
 def _split_audio_chunks(audio_path: str, duration: float) -> list[tuple[str, float]]:
-    """Split audio into 15min chunks with 30s overlap using ffmpeg."""
+    import subprocess
+    import tempfile
+
     chunks: list[tuple[str, float]] = []
     start = 0.0
     idx = 0
@@ -62,17 +62,8 @@ def _split_audio_chunks(audio_path: str, duration: float) -> list[tuple[str, flo
         out = tempfile.NamedTemporaryFile(suffix=f"_chunk{idx}.m4a", delete=False)
         out.close()
         cmd = [
-            "ffmpeg",
-            "-y",
-            "-ss",
-            str(start),
-            "-t",
-            str(chunk_len),
-            "-i",
-            audio_path,
-            "-c",
-            "copy",
-            out.name,
+            "ffmpeg", "-y", "-ss", str(start), "-t", str(chunk_len),
+            "-i", audio_path, "-c", "copy", out.name,
         ]
         try:
             subprocess.run(cmd, check=True, capture_output=True, timeout=120)
@@ -90,7 +81,7 @@ def _transcribe_chunk_with_retry(audio_path: str, offset: float = 0.0) -> list[S
     last_error: Exception | None = None
     for attempt in range(3):
         try:
-            segs = _transcribe_audio_gemini(audio_path)
+            segs = _transcribe_audio_vertex(audio_path)
             if offset:
                 for seg in segs:
                     seg.start += offset
@@ -103,19 +94,15 @@ def _transcribe_chunk_with_retry(audio_path: str, offset: float = 0.0) -> list[S
 
 
 def _download_audio(video_id: str) -> str:
+    import subprocess
+    import tempfile
+
     tmp_dir = tempfile.mkdtemp()
     out_path = str(Path(tmp_dir) / f"{video_id}.m4a")
     url = f"https://www.youtube.com/watch?v={video_id}"
     cmd = [
-        "yt-dlp",
-        "-f",
-        "bestaudio[ext=m4a]/bestaudio",
-        "-o",
-        out_path,
-        "--no-playlist",
-        "--no-continue",
-        "--force-overwrites",
-        url,
+        "yt-dlp", "-f", "bestaudio[ext=m4a]/bestaudio", "-o", out_path,
+        "--no-playlist", "--no-continue", "--force-overwrites", url,
     ]
     try:
         subprocess.run(cmd, check=True, capture_output=True, timeout=300)
@@ -126,38 +113,10 @@ def _download_audio(video_id: str) -> str:
     return out_path
 
 
-def _transcribe_audio_gemini(audio_path: str) -> list[Segment]:
-    import os
-
-    api_key = os.getenv("GOOGLE_API_KEY")
-    if not api_key:
-        raise RuntimeError("BLOCKED: GOOGLE_API_KEY not set")
-
-    try:
-        import google.generativeai as genai
-    except ImportError as exc:
-        raise RuntimeError("BLOCKED: google-generativeai package required") from exc
-
-    genai.configure(api_key=api_key)
-    model_name = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
-    model = genai.GenerativeModel(model_name)
-
+def _transcribe_audio_vertex(audio_path: str) -> list[Segment]:
     with open(audio_path, "rb") as f:
         audio_bytes = f.read()
-
-    prompt = (
-        "Transcribe this English audio accurately. Return JSON array only: "
-        '[{"start":0.0,"end":1.2,"text":"..."}] with timestamps in seconds.'
-    )
-
-    response = model.generate_content(
-        [{"mime_type": "audio/mp4", "data": audio_bytes}, prompt],
-        request_options={"timeout": 120},
-    )
-    text = (response.text or "").strip()
-    import json
-    import re
-
+    text = transcribe_audio_bytes(audio_bytes, mime_type="audio/mp4")
     match = re.search(r"\[.*\]", text, re.DOTALL)
     if not match:
         raise RuntimeError("BLOCKED: ASR returned invalid format")

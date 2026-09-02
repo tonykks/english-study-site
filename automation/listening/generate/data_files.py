@@ -5,10 +5,23 @@ import os
 import re
 from typing import Any
 
-from automation.listening.config import openai_configured, gemini_configured
+from automation.listening.config import (
+    CORE_SENTENCE_COUNT,
+    FEW_SHOT_DIR,
+    SUMMARY_PART_COUNT,
+    WORDCARD_COUNT,
+    allow_openai_fallback,
+    openai_configured,
+)
 from automation.listening.models import Segment, VideoMeta
 from automation.listening.script.canonical import group_paragraphs
 from automation.listening.utils import segment_hash, split_sentences
+from automation.listening.vertex_client import (
+    LITERAL_KR_INSTRUCTION,
+    generate_json,
+    translate_literal_kr,
+    vertex_configured,
+)
 
 
 def build_04_en_manifest(segments: list[Segment]) -> list[dict[str, str]]:
@@ -72,22 +85,98 @@ def generate_meta(meta: VideoMeta, level: int) -> str:
     )
 
 
+def _transcript_text(segments: list[Segment]) -> str:
+    return " ".join(s.text_en for s in segments)
+
+
+def _all_sentences(segments: list[Segment]) -> list[str]:
+    sents: list[str] = []
+    for seg in segments:
+        sents.extend(split_sentences(seg.text_en))
+    return sents
+
+
+def _few_shot(name: str, max_lines: int = 35) -> str:
+    path = FEW_SHOT_DIR / name
+    if not path.exists():
+        return ""
+    return "\n".join(path.read_text(encoding="utf-8").splitlines()[:max_lines])
+
+
+def _translate(en: str, *, allow_placeholder: bool = False) -> str:
+    if vertex_configured():
+        try:
+            return translate_literal_kr(en)
+        except Exception as exc:
+            if not allow_placeholder:
+                raise RuntimeError(f"BLOCKED: literal KR translation failed: {exc}") from exc
+    if openai_configured():
+        try:
+            return _openai_literal(en)
+        except Exception as exc:
+            if not allow_placeholder:
+                raise RuntimeError(f"BLOCKED: OpenAI fallback failed: {exc}") from exc
+    if allow_placeholder:
+        return f"[KR translation pending: {en[:60]}...]"
+    raise RuntimeError("BLOCKED: Vertex AI (ADC) required for literal KR translation")
+
+
 def generate_intro_from_transcript(segments: list[Segment], *, allow_placeholder: bool = False) -> str:
-    text = " ".join(s.text_en for s in segments[:3])
-    sents = split_sentences(text)
-    en = sents[0] if sents else text[:200]
-    kr = _translate_text(en, "Translate to Korean literally, one paragraph.", allow_placeholder=allow_placeholder)
+    transcript = _transcript_text(segments)
+    if vertex_configured() and not allow_placeholder:
+        example = _few_shot("01_intro.txt", 5)
+        data = generate_json(
+            f"""Create one intro for an English listening lesson page.
+Example:
+{example}
+
+Write one EN intro sentence (1-2 sentences) summarizing the story for learners.
+Use content from this transcript only. Return JSON: {{"intro_en": "..."}}
+
+Transcript excerpt:
+{transcript[:8000]}
+"""
+        )
+        en = str(data.get("intro_en", "")).strip()
+    else:
+        sents = _all_sentences(segments)
+        en = sents[0] if sents else transcript[:200]
+
+    kr = _translate(en, allow_placeholder=allow_placeholder)
     return f"EN: {en}\nKR: {kr}\n"
 
 
 def generate_core_from_transcript(segments: list[Segment], *, allow_placeholder: bool = False) -> str:
-    all_sents: list[str] = []
-    for seg in segments:
-        all_sents.extend(split_sentences(seg.text_en))
-    picked = _pick_evenly(all_sents, 10)
+    all_sents = _all_sentences(segments)
+    if len(all_sents) < CORE_SENTENCE_COUNT:
+        raise RuntimeError(f"BLOCKED: transcript has fewer than {CORE_SENTENCE_COUNT} sentences for Core")
+
+    if vertex_configured() and not allow_placeholder:
+        example = _few_shot("02_core.txt", 24)
+        transcript = _transcript_text(segments)
+        data = generate_json(
+            f"""Select exactly {CORE_SENTENCE_COUNT} key sentences from the transcript for Core Sentences.
+Rules:
+- Use complete sentences verbatim from the transcript (no rewriting)
+- Spread across beginning, middle, and end
+- Return JSON: {{"sentences": ["...", ...]}} with exactly {CORE_SENTENCE_COUNT} strings
+
+Example format:
+{example}
+
+Transcript:
+{transcript[:14000]}
+"""
+        )
+        picked = [str(s).strip() for s in data.get("sentences", []) if str(s).strip()]
+        if len(picked) != CORE_SENTENCE_COUNT:
+            raise RuntimeError(f"BLOCKED: Core generation returned {len(picked)} sentences, need {CORE_SENTENCE_COUNT}")
+    else:
+        picked = _pick_evenly(all_sents, CORE_SENTENCE_COUNT)
+
     lines: list[str] = []
     for i, sent in enumerate(picked, start=1):
-        kr = _translate_text(sent, "Translate to Korean literally.", allow_placeholder=allow_placeholder)
+        kr = _translate(sent, allow_placeholder=allow_placeholder)
         lines.append(f"[Sentence {i}]")
         lines.append(f"EN: {sent}")
         lines.append(f"KR: {kr}")
@@ -96,88 +185,169 @@ def generate_core_from_transcript(segments: list[Segment], *, allow_placeholder:
 
 
 def generate_summary_from_transcript(segments: list[Segment], *, allow_placeholder: bool = False) -> str:
-    paragraphs = group_paragraphs(segments, min_sentences=2, max_sentences=6)
-    parts = paragraphs[:5] if len(paragraphs) >= 5 else paragraphs
+    transcript = _transcript_text(segments)
+    if vertex_configured() and not allow_placeholder:
+        example = _few_shot("03_summary.txt", 20)
+        data = generate_json(
+            f"""Create exactly {SUMMARY_PART_COUNT} summary parts for an English listening lesson.
+Each part: one EN sentence summarizing a story section (concise but complete).
+Then KR will be literal translation separately.
+
+Example:
+{example}
+
+Return JSON: {{"parts": ["EN sentence 1", ...]}} with exactly {SUMMARY_PART_COUNT} strings.
+
+Transcript:
+{transcript[:14000]}
+"""
+        )
+        parts = [str(p).strip() for p in data.get("parts", []) if str(p).strip()]
+        if len(parts) != SUMMARY_PART_COUNT:
+            raise RuntimeError(f"BLOCKED: Summary generation returned {len(parts)} parts, need {SUMMARY_PART_COUNT}")
+    else:
+        sents = _all_sentences(segments)
+        parts = _pick_evenly(sents, SUMMARY_PART_COUNT)
+
     lines: list[str] = []
-    for i, para in enumerate(parts, start=1):
-        kr = _translate_text(para, "Translate this English summary to Korean literally.", allow_placeholder=allow_placeholder)
+    for i, en in enumerate(parts, start=1):
+        kr = _translate(en, allow_placeholder=allow_placeholder)
         lines.append(f"[Part {i}]")
-        lines.append(f"EN: {para}")
+        lines.append(f"EN: {en}")
         lines.append(f"KR: {kr}")
         lines.append("")
     return "\n".join(lines).strip() + "\n"
 
 
-def generate_wordcards_from_core(core_text: str, *, allow_placeholder: bool = False) -> str:
+def generate_wordcards_from_transcript(
+    segments: list[Segment],
+    core_text: str,
+    *,
+    allow_placeholder: bool = False,
+) -> str:
+    transcript = _transcript_text(segments)
+    if vertex_configured() and not allow_placeholder:
+        example = _few_shot("05_wordcard.txt", 45)
+        data = generate_json(
+            f"""Create exactly {WORDCARD_COUNT} vocabulary word cards from this English listening story.
+Each card must have: headword, part_of_speech, meaning_kr, definition_en, definition_kr_literal, example_en, example_kr_literal.
+Pick words useful for learners; examples must come from or relate to the story.
+
+Example:
+{example}
+
+Return JSON array of {WORDCARD_COUNT} objects with those keys.
+
+Transcript excerpt:
+{transcript[:10000]}
+
+Core sentences excerpt:
+{core_text[:3000]}
+"""
+        )
+        cards = data if isinstance(data, list) else data.get("cards", [])
+        if len(cards) != WORDCARD_COUNT:
+            raise RuntimeError(f"BLOCKED: Word card generation returned {len(cards)} cards, need {WORDCARD_COUNT}")
+    else:
+        cards = _heuristic_wordcards(core_text)
+
+    lines: list[str] = []
+    for i, card in enumerate(cards, start=1):
+        hw = card.get("headword", "word")
+        lines.append(f"[Card {i}]")
+        lines.append(f"headword: {hw}")
+        lines.append(f"part_of_speech: {card.get('part_of_speech', 'noun')}")
+        meaning = card.get("meaning_kr") or _translate(hw, allow_placeholder=allow_placeholder)
+        lines.append(f"meaning_kr: {meaning}")
+        lines.append(f"definition_en: {card.get('definition_en', f'definition of {hw}')}")
+        def_kr = card.get("definition_kr_literal") or _translate(
+            str(card.get("definition_en", hw)), allow_placeholder=allow_placeholder
+        )
+        lines.append(f"definition_kr_literal: {def_kr}")
+        ex_en = card.get("example_en", f"This story mentions {hw}.")
+        lines.append(f"example_en: {ex_en}")
+        ex_kr = card.get("example_kr_literal") or _translate(ex_en, allow_placeholder=allow_placeholder)
+        lines.append(f"example_kr_literal: {ex_kr}")
+        lines.append("")
+    return "\n".join(lines).strip() + "\n"
+
+
+def translate_paragraphs_kr(paragraphs: list[str], *, allow_placeholder: bool = False) -> list[str]:
+    instruction = (
+        f"{LITERAL_KR_INSTRUCTION}\n"
+        "The English paragraph must map one-to-one to Korean. "
+        "Do not merge, split, omit, or add sentences."
+    )
+    return [
+        _translate_with_instruction(p, instruction, allow_placeholder=allow_placeholder) for p in paragraphs
+    ]
+
+
+def _translate_with_instruction(en: str, instruction: str, *, allow_placeholder: bool = False) -> str:
+    if vertex_configured():
+        try:
+            from automation.listening.vertex_client import generate_text
+
+            return generate_text(f"{instruction}\n\nEnglish:\n{en}")
+        except Exception as exc:
+            if not allow_placeholder:
+                raise RuntimeError(f"BLOCKED: 04 KR literal translation failed: {exc}") from exc
+    if openai_configured():
+        try:
+            return _openai_literal(en, instruction)
+        except Exception as exc:
+            if not allow_placeholder:
+                raise RuntimeError(f"BLOCKED: OpenAI fallback failed: {exc}") from exc
+    if allow_placeholder:
+        return f"[KR translation pending: {en[:60]}...]"
+    raise RuntimeError("BLOCKED: Vertex AI (ADC) required for 04 KR translation")
+
+
+def _heuristic_wordcards(core_text: str) -> list[dict[str, Any]]:
     words = re.findall(r"\b[A-Za-z]{4,}\b", core_text)
     unique: list[str] = []
     for w in words:
         lw = w.lower()
         if lw not in unique:
             unique.append(lw)
-        if len(unique) >= 12:
+        if len(unique) >= WORDCARD_COUNT:
             break
-    lines: list[str] = []
-    for i, word in enumerate(unique, start=1):
-        lines.append(f"[Card {i}]")
-        lines.append(f"headword: {word}")
-        lines.append("part_of_speech: noun")
-        lines.append(f"meaning_kr: {_translate_text(word, 'Korean meaning, one word', allow_placeholder=allow_placeholder)}")
-        lines.append(f"definition_en: common English definition of {word}")
-        lines.append(f"definition_kr_literal: {_translate_text(word, 'Korean literal', allow_placeholder=allow_placeholder)}")
-        lines.append(f"example_en: This story mentions {word} in an important moment.")
-        lines.append(f"example_kr_literal: {_translate_text(f'This story mentions {word}.', 'Korean literal', allow_placeholder=allow_placeholder)}")
-        lines.append("")
-    return "\n".join(lines).strip() + "\n"
-
-
-def translate_paragraphs_kr(paragraphs: list[str], *, allow_placeholder: bool = False) -> list[str]:
+    while len(unique) < WORDCARD_COUNT:
+        unique.append(f"word{len(unique)+1}")
     return [
-        _translate_text(p, "Translate to Korean literally. Do not summarize.", allow_placeholder=allow_placeholder)
-        for p in paragraphs
+        {
+            "headword": w,
+            "part_of_speech": "noun",
+            "definition_en": f"common English definition of {w}",
+            "example_en": f"This story mentions {w} in an important moment.",
+        }
+        for w in unique[:WORDCARD_COUNT]
     ]
 
 
 def _pick_evenly(items: list[str], count: int) -> list[str]:
-    if len(items) <= count:
+    if len(items) < count:
         return items
     step = len(items) / count
     return [items[int(i * step)] for i in range(count)]
 
 
-def _translate_text(text: str, instruction: str, *, allow_placeholder: bool = False) -> str:
-    if gemini_configured():
-        try:
-            return _gemini_text(f"{instruction}\n\n{text}")
-        except Exception:
-            pass
-    if openai_configured():
-        try:
-            return _openai_text(f"{instruction}\n\n{text}")
-        except Exception:
-            pass
-    if allow_placeholder:
-        return f"[KR translation pending: {text[:60]}...]"
-    raise RuntimeError(f"BLOCKED: translation failed for text starting '{text[:40]}'")
-
-
-def _gemini_text(prompt: str) -> str:
-    import google.generativeai as genai
-
-    genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
-    model = genai.GenerativeModel(os.getenv("GEMINI_MODEL", "gemini-2.0-flash"))
-    return (model.generate_content(prompt).text or "").strip()
-
-
-def _openai_text(prompt: str) -> str:
+def _openai_literal(en: str, instruction: str | None = None) -> str:
+    if not allow_openai_fallback():
+        raise RuntimeError("BLOCKED: OpenAI fallback not allowed (set ALLOW_OPENAI_FALLBACK=1)")
     from openai import OpenAI
 
+    prompt = instruction or LITERAL_KR_INSTRUCTION
     client = OpenAI()
     resp = client.chat.completions.create(
         model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
-        messages=[{"role": "user", "content": prompt}],
+        messages=[{"role": "user", "content": f"{prompt}\n\nEnglish:\n{en}"}],
     )
     return (resp.choices[0].message.content or "").strip()
+
+
+def _count_blocks(content: str, label: str) -> int:
+    return len(re.findall(rf"\[{re.escape(label)}\s+\d+\]", content))
 
 
 def validate_format_files(files: dict[str, str], *, reject_placeholders: bool = True) -> tuple[bool, str]:
@@ -196,4 +366,15 @@ def validate_format_files(files: dict[str, str], *, reject_placeholders: bool = 
                 return False, f"{name} missing {m}"
         if reject_placeholders and "[KR translation pending:" in content:
             return False, f"{name} contains untranslated placeholder KR"
+
+    core_n = _count_blocks(files.get("02_core.txt", ""), "Sentence")
+    if core_n != CORE_SENTENCE_COUNT:
+        return False, f"02_core.txt has {core_n} sentences, need {CORE_SENTENCE_COUNT}"
+    sum_n = _count_blocks(files.get("03_summary.txt", ""), "Part")
+    if sum_n != SUMMARY_PART_COUNT:
+        return False, f"03_summary.txt has {sum_n} parts, need {SUMMARY_PART_COUNT}"
+    card_n = _count_blocks(files.get("05_wordcard.txt", ""), "Card")
+    if card_n != WORDCARD_COUNT:
+        return False, f"05_wordcard.txt has {card_n} cards, need {WORDCARD_COUNT}"
+
     return True, "OK"

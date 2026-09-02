@@ -9,18 +9,18 @@ from automation.listening.config import (
     LISTENING_ROOT,
     LEVEL_LABEL,
     LEVEL_MAP,
-    gemini_configured,
     level_folder,
     load_config,
     sanitize_folder_name,
 )
+from automation.listening.vertex_client import vertex_configured
 from automation.listening.generate.data_files import (
     assemble_04_en,
     generate_core_from_transcript,
     generate_intro_from_transcript,
     generate_meta,
     generate_summary_from_transcript,
-    generate_wordcards_from_core,
+    generate_wordcards_from_transcript,
     inject_kr_into_04,
     validate_format_files,
     verify_04_en_manifest,
@@ -87,7 +87,14 @@ def run_pipeline(
         try:
             caption_segments, is_auto, cap_duration = fetch_caption_segments(meta.video_id)
         except Exception as exc:
-            logger.warning("Caption fetch failed, attempting ASR-only: %s", exc)
+            logger.warning("Caption fetch failed: %s", exc)
+
+        if not caption_segments:
+            return PipelineResult(
+                "BLOCKED",
+                "No English captions available; ASR-only path not supported in V1 without cross-validation",
+                video_id=meta.video_id,
+            )
 
         video_duration = fetch_youtube_duration(meta.video_id)
         if video_duration > 0:
@@ -95,10 +102,10 @@ def run_pipeline(
         elif cap_duration > 0:
             meta.duration = cap_duration
 
-        if not gemini_configured():
+        if not vertex_configured():
             return PipelineResult(
                 "BLOCKED",
-                "GOOGLE_API_KEY required for ASR cross-validation",
+                "GOOGLE_CLOUD_PROJECT required for Vertex AI (ADC)",
                 video_id=meta.video_id,
             )
 
@@ -119,9 +126,6 @@ def run_pipeline(
 
             if not cv.ok:
                 return PipelineResult("BLOCKED", cv.reason, video_id=meta.video_id)
-        else:
-            verified = asr_segments
-            logger.info("ASR-only path: no captions available")
 
         val = validate_segments(verified, meta.duration or cap_duration)
         if not val.ok:
@@ -149,7 +153,9 @@ def run_pipeline(
             "02_core.txt": core_text,
             "03_summary.txt": generate_summary_from_transcript(verified, allow_placeholder=allow_placeholder),
             "04_full_script.txt": content_04,
-            "05_wordcard.txt": generate_wordcards_from_core(core_text, allow_placeholder=allow_placeholder),
+            "05_wordcard.txt": generate_wordcards_from_transcript(
+                verified, core_text, allow_placeholder=allow_placeholder
+            ),
         }
     except RuntimeError as exc:
         return PipelineResult("BLOCKED", str(exc), video_id=meta.video_id)
