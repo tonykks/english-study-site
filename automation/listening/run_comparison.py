@@ -292,6 +292,35 @@ def main(argv: list[str] | None = None) -> int:
     if golden_report is not None:
         report["golden_compare"] = golden_report
 
+    if video_id:
+        content_04_path = COMPARISON_ROOT / video_id / "04_full_script.txt"
+        if content_04_path.exists():
+            from automation.listening.generate.data_files import (
+                count_04_kr_sentence_alignment_mismatches,
+                count_en_punctuation,
+                validate_04_kr_sentence_alignment,
+            )
+
+            content_04 = content_04_path.read_text(encoding="utf-8")
+            report["en_punctuation_counts"] = count_en_punctuation(content_04)
+            mismatch_n, mismatch_sample = count_04_kr_sentence_alignment_mismatches(content_04)
+            report["kr_sentence_alignment_mismatch_count"] = mismatch_n
+            if mismatch_sample:
+                report["kr_sentence_alignment_sample"] = mismatch_sample
+            kr_ok, kr_reason = validate_04_kr_sentence_alignment(content_04)
+            report["kr_sentence_alignment_ok"] = kr_ok
+            report["kr_sentence_alignment_reason"] = kr_reason
+            if result and result.status == "COMPARISON" and not kr_ok:
+                result = type(result)(
+                    "NEEDS_FIX",
+                    kr_reason,
+                    folder=result.folder,
+                    video_id=result.video_id,
+                    staging_dir=result.staging_dir,
+                )
+                report["status"] = result.status
+                report["message"] = result.message
+
     out_dir = COMPARISON_ROOT / video_id if video_id else COMPARISON_ROOT / "unknown"
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "run_metrics.json").write_text(json.dumps(report, indent=2), encoding="utf-8")

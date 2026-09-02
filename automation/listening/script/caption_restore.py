@@ -415,16 +415,41 @@ def fix_artificial_period_breaks(text: str) -> str:
     return re.sub(r"\s+", " ", result).strip()
 
 
-def _build_asr_word_lists(asr_text: str) -> tuple[list[str], set[int]]:
+def tokenize_words_with_punct(text: str) -> list[tuple[str, str]]:
+    """Return (word, trailing punctuation) pairs from ASR or caption text."""
+    return [(m.group(1), m.group(2)) for m in re.finditer(r"([A-Za-z0-9']+)([,;:?!]*)", text or "")]
+
+
+def _internal_punct(punct: str) -> str:
+    if "," in (punct or ""):
+        return ","
+    if ";" in (punct or ""):
+        return ";"
+    if ":" in (punct or ""):
+        return ":"
+    return ""
+
+
+def _end_mark_from_punct(punct: str) -> str:
+    if "!" in (punct or ""):
+        return "!"
+    if "?" in (punct or ""):
+        return "?"
+    return ""
+
+
+def _build_asr_word_lists(asr_text: str) -> tuple[list[str], set[int], list[str]]:
     words: list[str] = []
     sentence_ends: set[int] = set()
+    puncts: list[str] = []
     for sent in split_sentences(asr_text):
-        tokens = re.findall(r"[A-Za-z0-9']+", sent)
-        for i, tok in enumerate(tokens):
+        pairs = tokenize_words_with_punct(sent)
+        for i, (tok, punct) in enumerate(pairs):
             words.append(tok)
-            if i == len(tokens) - 1:
+            puncts.append(punct)
+            if i == len(pairs) - 1:
                 sentence_ends.add(len(words) - 1)
-    return words, sentence_ends
+    return words, sentence_ends, puncts
 
 
 def _map_caption_to_asr(cap_norm: list[str], asr_norm: list[str]) -> dict[int, int]:
@@ -484,12 +509,24 @@ def _heuristic_sentence_end_indices(words: list[str]) -> set[int]:
     return ends
 
 
-def _apply_sentence_ends(words: list[str], end_indices: set[int]) -> str:
+def _apply_sentence_ends(
+    words: list[str],
+    end_indices: set[int],
+    end_marks: dict[int, str] | None = None,
+) -> str:
+    """Keep internal ,:; from evidence; attach . ? ! only at sentence ends."""
+    marks = end_marks or {}
     output: list[str] = []
     for i, word in enumerate(words):
-        clean = re.sub(r"[.!?]+$", "", word)
-        clean = re.sub(r"[,:;]+$", "", clean)
-        output.append(clean + ("." if i in end_indices else ""))
+        if i in end_indices:
+            core = re.sub(r"[,;:.!?]+$", "", word)
+            mark = marks.get(i, ".")
+            if mark not in ".!?":
+                mark = "."
+            output.append(core + mark)
+        else:
+            core = re.sub(r"[.!?]+$", "", word)
+            output.append(core)
     return " ".join(output)
 
 
@@ -516,7 +553,7 @@ def _split_long_sentences(text: str, end_indices: set[int], *, max_words: int = 
 
 
 def _restore_boundaries_with_asr(cap_words: list[str], asr_text: str) -> str:
-    asr_words, asr_ends = _build_asr_word_lists(asr_text)
+    asr_words, asr_ends, asr_puncts = _build_asr_word_lists(asr_text)
     asr_norm = [normalize_text(w) for w in asr_words]
     cap_clean = [re.sub(r"[.!?]+$", "", w) for w in cap_words]
     cap_norm = [normalize_text(w) for w in cap_clean]
@@ -568,7 +605,21 @@ def _restore_boundaries_with_asr(cap_words: list[str], asr_text: str) -> str:
     if cap_clean:
         safe_ends.add(len(cap_clean) - 1)
 
-    return _apply_sentence_ends(cap_clean, safe_ends)
+    decorated: list[str] = []
+    end_marks: dict[int, str] = {}
+    for i, word in enumerate(cap_clean):
+        base = re.sub(r"[,;:?!]+$", "", word)
+        extra = _internal_punct(word)
+        aj = mapping.get(i)
+        if aj is not None and aj < len(asr_puncts):
+            if not extra:
+                extra = _internal_punct(asr_puncts[aj])
+            mark = _end_mark_from_punct(asr_puncts[aj])
+            if mark:
+                end_marks[i] = mark
+        decorated.append(base + extra)
+
+    return _apply_sentence_ends(decorated, safe_ends, end_marks)
 
 
 def _restore_boundaries_heuristic(text: str) -> str:

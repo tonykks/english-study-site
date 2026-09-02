@@ -306,13 +306,18 @@ def translate_literal_kr_batch(items: list[tuple[str, str]], *, timeout_sec: int
     return out
 
 
-WORDCARD_POS_INSTRUCTION = """Translate the English headword into ONE Korean dictionary gloss.
-The gloss MUST match the given part of speech.
-- verb → Korean verb, typically ending in 다 (trade/verb → 거래하다 or 무역하다; influence/verb → 영향을 주다)
-- noun → Korean noun (trade/noun → 무역; influence/noun → 영향)
+WORDCARD_POS_INSTRUCTION = """Translate the English headword into ONE Korean dictionary gloss for THIS card's sense.
+Use headword + part_of_speech + definition_en + example_en together.
+The gloss MUST match the given part of speech AND the meaning used in the definition/example.
+- verb → Korean verb, typically ending in 다 (trade/verb → 거래하다; influence/verb → 영향을 주다)
+- noun → Korean noun matching this card's sense
+  * law/rules list → 법전 (NOT 암호)
+  * secret message → 암호
+  * computer program → 코드
 - adjective → Korean adjective
 - adverb → Korean adverb
 Do not give a noun gloss for a verb, or a verb gloss for a noun.
+Do not pick an unrelated dictionary sense.
 Return JSON array only: [{"id":"...","kr":"..."}]
 """
 
@@ -329,11 +334,38 @@ def meaning_matches_pos(meaning_kr: str, pos: str) -> bool:
     return True
 
 
-def translate_wordcard_meanings(items: list[tuple[str, str, str]], *, timeout_sec: int = 120) -> dict[str, str]:
-    """items: [(id, headword, part_of_speech), ...]"""
+def meaning_conflicts_with_context(
+    headword: str,
+    meaning_kr: str,
+    definition_en: str,
+    example_en: str,
+) -> str | None:
+    """Return a reason if meaning_kr contradicts the card's definition/example sense."""
+    hw = (headword or "").strip().lower()
+    kr = (meaning_kr or "").strip()
+    blob = f"{definition_en} {example_en}".lower()
+    if hw == "code" and any(token in blob for token in ("law", "laws", "legal", "hammurabi", "rule")):
+        if any(bad in kr for bad in ("암호", "코드", "암호문")):
+            return "law-code sense expected (법전/법규), not 암호/코드"
+        if "법" not in kr:
+            return "law-code sense expected (법전/법규)"
+    return None
+
+
+def translate_wordcard_meanings(items: list[dict[str, str]], *, timeout_sec: int = 120) -> dict[str, str]:
+    """items: dicts with id, headword, part_of_speech, definition_en, example_en."""
     if not items:
         return {}
-    payload = [{"id": item_id, "headword": hw, "part_of_speech": pos} for item_id, hw, pos in items]
+    payload = [
+        {
+            "id": str(item.get("id", "")).strip(),
+            "headword": str(item.get("headword", "")).strip(),
+            "part_of_speech": str(item.get("part_of_speech", "")).strip(),
+            "definition_en": str(item.get("definition_en", "")).strip(),
+            "example_en": str(item.get("example_en", "")).strip(),
+        }
+        for item in items
+    ]
     prompt = (
         f"{WORDCARD_POS_INSTRUCTION}\n\nInput JSON:\n{json.dumps(payload, ensure_ascii=False)}"
     )
@@ -347,8 +379,10 @@ def translate_wordcard_meanings(items: list[tuple[str, str, str]], *, timeout_se
     if not isinstance(raw, list) or len(raw) != len(items):
         raise RuntimeError("BLOCKED: wordcard meaning translation count mismatch")
     out: dict[str, str] = {}
-    for expected, row in zip(items, raw):
-        item_id, hw, pos = expected
+    for expected, row in zip(payload, raw):
+        item_id = expected["id"]
+        hw = expected["headword"]
+        pos = expected["part_of_speech"]
         if not isinstance(row, dict):
             raise RuntimeError(f"BLOCKED: wordcard meaning item {item_id} is not an object")
         if str(row.get("id", "")).strip() != item_id:
@@ -357,6 +391,7 @@ def translate_wordcard_meanings(items: list[tuple[str, str, str]], *, timeout_se
         if not meaning_matches_pos(kr, pos):
             retry = generate_json(
                 f"{WORDCARD_POS_INSTRUCTION}\nHeadword: {hw}\nPart of speech: {pos}\n"
+                f"Definition: {expected['definition_en']}\nExample: {expected['example_en']}\n"
                 f'Return JSON only: {{"id": "{item_id}", "kr": "..."}}'
             )
             kr = str(retry.get("kr", "")).strip() if isinstance(retry, dict) else ""
@@ -364,5 +399,21 @@ def translate_wordcard_meanings(items: list[tuple[str, str, str]], *, timeout_se
                 raise RuntimeError(
                     f"BLOCKED: wordcard meaning POS mismatch for {hw} ({pos}): {kr}"
                 )
+        conflict = meaning_conflicts_with_context(
+            hw, kr, expected["definition_en"], expected["example_en"]
+        )
+        if conflict:
+            retry = generate_json(
+                f"{WORDCARD_POS_INSTRUCTION}\nThe previous gloss was wrong: {kr}\n"
+                f"Headword: {hw}\nPart of speech: {pos}\n"
+                f"Definition: {expected['definition_en']}\nExample: {expected['example_en']}\n"
+                f'Return JSON only: {{"id": "{item_id}", "kr": "..."}}'
+            )
+            kr = str(retry.get("kr", "")).strip() if isinstance(retry, dict) else kr
+            conflict = meaning_conflicts_with_context(
+                hw, kr, expected["definition_en"], expected["example_en"]
+            )
+            if conflict:
+                raise RuntimeError(f"BLOCKED: wordcard sense mismatch for {hw}: {conflict}")
         out[item_id] = kr
     return out

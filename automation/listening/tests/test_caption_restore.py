@@ -134,6 +134,39 @@ def test_punctuation_anomaly_removed_and_blocked():
     assert not validate_punctuation_anomalies("communities,.").ok
 
 
+def test_asr_internal_commas_preserved():
+    from automation.listening.script.caption_restore import restore_sentence_boundaries, words_unchanged
+
+    caption = "Long ago before modern cities and technology people lived very simple lives"
+    asr = "Long ago, before modern cities and technology, people lived very simple lives."
+    restored = restore_sentence_boundaries(caption, asr)
+    assert words_unchanged(caption, restored)
+    assert "ago," in restored
+    assert "technology," in restored
+    assert restored.count(",") >= 2
+
+
+def test_asr_list_commas_preserved():
+    from automation.listening.script.caption_restore import restore_sentence_boundaries, words_unchanged
+
+    caption = "Countries like Britain France and Italy wanted control"
+    asr = "Countries like Britain, France, and Italy wanted control."
+    restored = restore_sentence_boundaries(caption, asr)
+    assert words_unchanged(caption, restored)
+    assert "Britain," in restored
+    assert "France," in restored
+
+
+def test_period_only_flattening_rejected():
+    from automation.listening.generate.data_files import validate_04_en_punctuation
+
+    sentences = " ".join(f"This is sentence number {i}." for i in range(45))
+    content = f"[Paragraph 1]\nEN: {sentences}\nKR: 예시입니다."
+    ok, reason = validate_04_en_punctuation(content)
+    assert not ok
+    assert "flattened" in reason
+
+
 def test_run_on_split_after_alignment_gap():
     from automation.listening.script.caption_restore import restore_sentence_boundaries, validate_run_on_sentences
 

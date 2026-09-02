@@ -29,6 +29,7 @@ from automation.listening.utils import normalize_text, segment_hash, split_sente
 from automation.listening.vertex_client import (
     LITERAL_KR_INSTRUCTION,
     generate_json,
+    meaning_conflicts_with_context,
     translate_literal_kr,
     translate_literal_kr_batch,
     vertex_configured,
@@ -348,7 +349,7 @@ def _format_wordcards(cards: list[dict[str, Any]], *, allow_placeholder: bool) -
     from automation.listening.vertex_client import meaning_matches_pos, translate_wordcard_meanings
 
     batch_items: list[tuple[str, str]] = []
-    meaning_items: list[tuple[str, str, str]] = []
+    meaning_items: list[dict[str, str]] = []
     structured: list[dict[str, str]] = []
     for i, card in enumerate(cards, start=1):
         hw = str(card.get("headword", "word")).strip()
@@ -356,13 +357,23 @@ def _format_wordcards(cards: list[dict[str, Any]], *, allow_placeholder: bool) -
         def_en = str(card.get("definition_en", f"definition of {hw}")).strip()
         ex_en = str(card.get("example_en", f"This story mentions {hw}.")).strip()
         structured.append({"hw": hw, "pos": pos, "def_en": def_en, "ex_en": ex_en})
-        meaning_items.append((f"c{i}_m", hw, pos))
+        meaning_items.append(
+            {
+                "id": f"c{i}_m",
+                "headword": hw,
+                "part_of_speech": pos,
+                "definition_en": def_en,
+                "example_en": ex_en,
+            }
+        )
         batch_items.append((f"c{i}_d", def_en))
         batch_items.append((f"c{i}_e", ex_en))
 
     kr_map = _translate_batch(batch_items, allow_placeholder=allow_placeholder)
     if allow_placeholder or not vertex_configured():
-        meaning_map = {item_id: f"[KR pending: {hw}]" for item_id, hw, _pos in meaning_items}
+        meaning_map = {
+            str(item["id"]): f"[KR pending: {item['headword']}]" for item in meaning_items
+        }
         if not allow_placeholder and meaning_items:
             raise RuntimeError("BLOCKED: Vertex AI required for wordcard meanings")
     else:
@@ -375,6 +386,11 @@ def _format_wordcards(cards: list[dict[str, Any]], *, allow_placeholder: bool) -
             raise RuntimeError(
                 f"BLOCKED: wordcard POS mismatch for {card['hw']} ({card['pos']}): {meaning_kr}"
             )
+        conflict = meaning_conflicts_with_context(
+            card["hw"], meaning_kr, card["def_en"], card["ex_en"]
+        )
+        if not allow_placeholder and conflict:
+            raise RuntimeError(f"BLOCKED: wordcard sense mismatch for {card['hw']}: {conflict}")
         lines.append(f"[Card {i}]")
         lines.append(f"headword: {card['hw']}")
         lines.append(f"part_of_speech: {card['pos']}")
@@ -388,13 +404,37 @@ def _format_wordcards(cards: list[dict[str, Any]], *, allow_placeholder: bool) -
 
 
 def translate_paragraphs_kr(paragraphs: list[str], *, allow_placeholder: bool = False) -> list[str]:
+    """Translate each English sentence, then rejoin so KR units match EN sentence order."""
     if not paragraphs:
         return []
     if allow_placeholder:
         return [f"[KR translation pending: {p[:60]}...]" for p in paragraphs]
-    items = [(f"p{i}", p) for i, p in enumerate(paragraphs, start=1)]
+
+    items: list[tuple[str, str]] = []
+    structure: list[list[str]] = []
+    for i, para in enumerate(paragraphs, start=1):
+        sents = [s.strip() for s in split_sentences(para) if s.strip()]
+        if not sents:
+            sents = [para.strip()] if para.strip() else [""]
+        ids: list[str] = []
+        for j, sent in enumerate(sents, start=1):
+            sid = f"p{i}s{j}"
+            items.append((sid, sent))
+            ids.append(sid)
+        structure.append(ids)
+
     kr_map = _translate_batch(items, allow_placeholder=allow_placeholder)
-    return [kr_map[f"p{i}"] for i in range(1, len(paragraphs) + 1)]
+    assembled: list[str] = []
+    for ids in structure:
+        units: list[str] = []
+        for sid in ids:
+            unit = (kr_map.get(sid) or "").strip()
+            unit = re.sub(r"[.!?]+", "", unit).strip()
+            unit = re.sub(r"\s+", " ", unit)
+            if unit:
+                units.append(unit + ".")
+        assembled.append(" ".join(units) if units else "")
+    return assembled
 
 
 def _translate_with_instruction(en: str, instruction: str, *, allow_placeholder: bool = False) -> str:
@@ -491,6 +531,77 @@ def _validate_wordcards(content: str) -> tuple[bool, str]:
             kr = kr_m.group(1).strip()
             if kr and not kr.startswith("[KR") and not meaning_matches_pos(kr, pos):
                 return False, f"05_wordcard.txt Card {i} POS mismatch ({pos}): {kr}"
+        hw_m = re.search(r"headword:\s*(.+)", block)
+        def_m = re.search(r"definition_en:\s*(.+)", block)
+        ex_m = re.search(r"example_en:\s*(.+)", block)
+        if hw_m and kr_m and def_m and ex_m:
+            kr = kr_m.group(1).strip()
+            if kr and not kr.startswith("[KR"):
+                conflict = meaning_conflicts_with_context(
+                    hw_m.group(1).strip(),
+                    kr,
+                    def_m.group(1).strip(),
+                    ex_m.group(1).strip(),
+                )
+                if conflict:
+                    return False, f"05_wordcard.txt Card {i} sense mismatch: {conflict}"
+    return True, "OK"
+
+
+def count_en_punctuation(content_04: str) -> dict[str, int]:
+    en = " ".join(
+        line.split(":", 1)[1]
+        for line in content_04.splitlines()
+        if line.strip().upper().startswith("EN:")
+    )
+    return {ch: en.count(ch) for ch in ". ,?!:;".replace(" ", "")}
+
+
+def _04_paragraph_pairs(content_04: str) -> list[tuple[str, str]]:
+    pairs: list[tuple[str, str]] = []
+    en = ""
+    kr = ""
+    for line in content_04.splitlines():
+        stripped = line.strip()
+        if stripped.upper().startswith("EN:"):
+            en = stripped.split(":", 1)[1].strip()
+        elif stripped.upper().startswith("KR:"):
+            kr = stripped.split(":", 1)[1].strip()
+            if en:
+                pairs.append((en, kr))
+            en = ""
+            kr = ""
+    return pairs
+
+
+def validate_04_en_punctuation(content_04: str) -> tuple[bool, str]:
+    en = " ".join(en for en, _kr in _04_paragraph_pairs(content_04))
+    sentences = [s for s in split_sentences(en) if s.strip()]
+    counts = count_en_punctuation(content_04)
+    if len(sentences) >= 40 and counts.get(",", 0) == 0:
+        return False, "04 EN punctuation flattened to periods only (comma count 0)"
+    return True, "OK"
+
+
+def count_04_kr_sentence_alignment_mismatches(content_04: str) -> tuple[int, str]:
+    mismatches = 0
+    sample = ""
+    for idx, (en, kr) in enumerate(_04_paragraph_pairs(content_04), start=1):
+        if not kr or kr.startswith("[KR"):
+            continue
+        en_n = len([s for s in split_sentences(en) if s.strip()])
+        kr_n = len([s for s in split_sentences(kr) if s.strip()])
+        if en_n and kr_n and en_n != kr_n:
+            mismatches += 1
+            if not sample:
+                sample = f"Paragraph {idx}: EN {en_n} vs KR {kr_n}"
+    return mismatches, sample
+
+
+def validate_04_kr_sentence_alignment(content_04: str) -> tuple[bool, str]:
+    mismatches, sample = count_04_kr_sentence_alignment_mismatches(content_04)
+    if mismatches:
+        return False, f"04 KR sentence alignment mismatch ({mismatches}): {sample}"
     return True, "OK"
 
 
@@ -534,5 +645,13 @@ def validate_format_files(
     ok, reason = _validate_wordcards(files.get("05_wordcard.txt", ""))
     if not ok:
         return False, reason
+
+    if reject_placeholders:
+        ok, reason = validate_04_en_punctuation(files.get("04_full_script.txt", ""))
+        if not ok:
+            return False, reason
+        ok, reason = validate_04_kr_sentence_alignment(files.get("04_full_script.txt", ""))
+        if not ok:
+            return False, reason
 
     return True, "OK"
