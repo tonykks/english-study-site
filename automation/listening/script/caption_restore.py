@@ -130,6 +130,12 @@ INCOMPLETE_BEFORE_PERIOD = frozenset(
         "why",
         "all",
         "half",
+        "like",
+        "including",
+        "unlike",
+        "except",
+        "plus",
+        "versus",
     }
 )
 
@@ -268,6 +274,82 @@ SENTENCE_STARTERS = frozenset(
         "caravans",
         "ships",
         "despite",
+        "wars",
+        "artists",
+        "farmers",
+        "doctors",
+        "music",
+        "share",
+        "battles",
+        "armies",
+        "children",
+        "neighbors",
+        "technology",
+        "culture",
+        "religion",
+        "knowledge",
+        "markets",
+        "history",
+        "women",
+        "men",
+    }
+)
+
+# Adjective/adverb/noun endings that complete a clause before a new capitalized subject.
+TERMINAL_BEFORE_CAPITAL = frozenset(
+    {
+        "easy",
+        "hard",
+        "difficult",
+        "mixed",
+        "more",
+        "most",
+        "other",
+        "forever",
+        "deserts",
+        "years",
+        "celebrations",
+        "world",
+        "time",
+        "region",
+        "history",
+        "valuable",
+        "poor",
+        "busy",
+        "broken",
+        "damaged",
+        "united",
+        "resilient",
+        "together",
+        "away",
+        "safely",
+        "quickly",
+        "rapidly",
+        "alive",
+        "full",
+        "century",
+        "communities",
+        "homes",
+        "cities",
+        "schools",
+        "hospitals",
+        "families",
+        "people",
+        "life",
+        "faith",
+        "trade",
+        "learning",
+        "knowledge",
+        "culture",
+        "conflict",
+        "hope",
+        "future",
+        "past",
+        "present",
+        "story",
+        "stories",
+        "generation",
+        "generations",
     }
 )
 
@@ -276,6 +358,7 @@ ARTIFICIAL_BREAK_RE = re.compile(
     rf"\b({_INCOMPLETE_PATTERN})\.\s+([A-Za-z][A-Za-z'-]*)",
     re.IGNORECASE,
 )
+PUNCT_ANOMALY_RE = re.compile(r"[,;:]+\s*\.|\.\s*[,;:]+")
 
 
 def normalize_caption_fragment(text: str) -> str:
@@ -321,6 +404,8 @@ def fix_artificial_period_breaks(text: str) -> str:
         def _repl(match: re.Match[str]) -> str:
             before = match.group(1)
             after = match.group(2)
+            if _is_kept_boundary(before, after):
+                return match.group(0)
             return f"{before} {_lower_unless_proper(after)}"
 
         updated = ARTIFICIAL_BREAK_RE.sub(_repl, result)
@@ -354,20 +439,35 @@ def _map_caption_to_asr(cap_norm: list[str], asr_norm: list[str]) -> dict[int, i
     return mapping
 
 
-def _should_split_before_next(current_norm: str, next_word: str, next_norm: str) -> bool:
+def _should_split_before_next(
+    current_norm: str,
+    next_word: str,
+    next_norm: str,
+    *,
+    current_raw: str = "",
+) -> bool:
     if current_norm in INCOMPLETE_BEFORE_PERIOD:
-        return False
+        # "more/most/other" can end a clause before a new capitalized starter.
+        if not (
+            current_norm in TERMINAL_BEFORE_CAPITAL
+            and (next_norm in SENTENCE_STARTERS or next_word == "I")
+        ):
+            return False
     if not next_word or not next_word[0].isupper():
+        return False
+    if current_raw and current_raw[0].isupper() and next_word[0].isupper():
         return False
     if re.match(r"^(Mr|Mrs|Ms|Dr|St)\.?$", current_norm, re.IGNORECASE):
         return False
     if current_norm in PROPER_NOUN_CONTINUATIONS and next_norm in PROPER_NOUN_TOKENS:
         return False
-    if next_norm in PROPER_NOUN_TOKENS and current_norm in {"called", "named", "the"}:
+    if next_norm in PROPER_NOUN_TOKENS:
         return False
-    if next_norm not in SENTENCE_STARTERS and next_word not in {"I"}:
-        return False
-    return True
+    if next_norm in SENTENCE_STARTERS or next_word == "I":
+        return True
+    if current_norm in TERMINAL_BEFORE_CAPITAL:
+        return True
+    return False
 
 
 def _heuristic_sentence_end_indices(words: list[str]) -> set[int]:
@@ -379,7 +479,7 @@ def _heuristic_sentence_end_indices(words: list[str]) -> set[int]:
         next_word = words[i + 1]
         current_norm = normalize_text(clean)
         next_norm = normalize_text(re.sub(r"[.!?]+$", "", next_word))
-        if _should_split_before_next(current_norm, next_word, next_norm):
+        if _should_split_before_next(current_norm, next_word, next_norm, current_raw=clean):
             ends.add(i)
     return ends
 
@@ -388,6 +488,7 @@ def _apply_sentence_ends(words: list[str], end_indices: set[int]) -> str:
     output: list[str] = []
     for i, word in enumerate(words):
         clean = re.sub(r"[.!?]+$", "", word)
+        clean = re.sub(r"[,:;]+$", "", clean)
         output.append(clean + ("." if i in end_indices else ""))
     return " ".join(output)
 
@@ -432,30 +533,37 @@ def _restore_boundaries_with_asr(cap_words: list[str], asr_text: str) -> str:
     # Local heuristic recovery only inside run-on spans.
     end_indices = _split_long_sentences(" ".join(cap_clean), end_indices, max_words=RUN_ON_WARN_WORDS)
 
-    # Conservative starter-based refinement between existing boundaries.
+    # Conservative starter/terminal refinement between existing boundaries, including short spans.
     ordered = sorted(end_indices)
-    for start, end in zip([0] + ordered, ordered):
-        span_len = end - start
-        if span_len >= 20:
-            span_words = cap_clean[start : end + 1]
-            for local_i in range(len(span_words) - 1):
-                abs_i = start + local_i
-                if abs_i in end_indices:
-                    continue
-                if _should_split_before_next(
-                    cap_norm[abs_i],
-                    span_words[local_i + 1],
-                    cap_norm[abs_i + 1],
-                ):
-                    end_indices.add(abs_i)
+    starts = [0] + [e + 1 for e in ordered[:-1]] if ordered else [0]
+    for start, end in zip(starts, ordered or []):
+        span_len = end - start + 1
+        if span_len < 4:
+            continue
+        span_words = cap_clean[start : end + 1]
+        for local_i in range(len(span_words) - 1):
+            abs_i = start + local_i
+            if abs_i in end_indices:
+                continue
+            if _should_split_before_next(
+                cap_norm[abs_i],
+                span_words[local_i + 1],
+                cap_norm[abs_i + 1],
+                current_raw=span_words[local_i],
+            ):
+                end_indices.add(abs_i)
 
-    if len(end_indices) <= 1 and cap_clean:
-        end_indices.update(_heuristic_sentence_end_indices(cap_clean))
+    end_indices.update(_heuristic_sentence_end_indices(cap_clean))
 
     safe_ends: set[int] = set()
     for idx in sorted(end_indices):
         if cap_norm[idx] in INCOMPLETE_BEFORE_PERIOD and idx != len(cap_clean) - 1:
-            continue
+            next_raw = cap_clean[idx + 1] if idx + 1 < len(cap_clean) else ""
+            next_norm = cap_norm[idx + 1] if idx + 1 < len(cap_norm) else ""
+            if not _should_split_before_next(
+                cap_norm[idx], next_raw, next_norm, current_raw=cap_clean[idx]
+            ):
+                continue
         safe_ends.add(idx)
     if cap_clean:
         safe_ends.add(len(cap_clean) - 1)
@@ -490,6 +598,7 @@ def restore_caption_text(segments: list[Segment], asr_segments: list[Segment] | 
     asr_text = " ".join(s.text_en for s in asr_segments) if asr_segments else None
     restored = restore_sentence_boundaries(fixed, asr_text)
     restored = fix_artificial_period_breaks(restored)
+    restored = fix_punctuation_anomalies(restored)
     if not words_unchanged(joined, restored):
         raise RuntimeError("BLOCKED: caption restoration altered word content or order")
     return restored
@@ -574,15 +683,58 @@ def restore_caption_segments(
     return restored
 
 
+def _is_kept_boundary(before: str, after: str) -> bool:
+    return before.lower() in TERMINAL_BEFORE_CAPITAL and after.lower() in SENTENCE_STARTERS
+
+
 def validate_no_artificial_sentence_breaks(text: str) -> ValidationResult:
-    matches = list(ARTIFICIAL_BREAK_RE.finditer(text))
-    if matches:
-        sample = matches[0].group(0)
-        return ValidationResult(False, f"Artificial sentence break detected: {sample}")
+    for match in ARTIFICIAL_BREAK_RE.finditer(text or ""):
+        if _is_kept_boundary(match.group(1), match.group(2)):
+            continue
+        return ValidationResult(False, f"Artificial sentence break detected: {match.group(0)}")
     for sent in split_sentences(text):
-        if ARTIFICIAL_BREAK_RE.search(sent):
+        for match in ARTIFICIAL_BREAK_RE.finditer(sent):
+            if _is_kept_boundary(match.group(1), match.group(2)):
+                continue
             return ValidationResult(False, f"Artificial sentence break in sentence: {sent[:80]}")
     return ValidationResult(True, "OK")
+
+
+def validate_punctuation_anomalies(text: str) -> ValidationResult:
+    match = PUNCT_ANOMALY_RE.search(text or "")
+    if match:
+        return ValidationResult(False, f"Punctuation anomaly detected: {match.group(0)!r}")
+    return ValidationResult(True, "OK")
+
+
+def find_missing_short_boundaries(text: str) -> list[str]:
+    """Detect capitalized clause starts that lack a preceding sentence-ending mark."""
+    hits: list[str] = []
+    words = (text or "").split()
+    for i in range(len(words) - 1):
+        if re.search(r"[.!?]$", words[i]):
+            continue
+        clean = re.sub(r"[,:;]+$", "", re.sub(r"[.!?]+$", "", words[i]))
+        next_word = words[i + 1]
+        next_norm = normalize_text(re.sub(r"[.!?]+$", "", next_word))
+        current_norm = normalize_text(clean)
+        if _should_split_before_next(current_norm, next_word, next_norm, current_raw=clean):
+            hits.append(f"{clean} {next_word}")
+    return hits
+
+
+def validate_missing_short_boundaries(text: str) -> ValidationResult:
+    hits = find_missing_short_boundaries(text)
+    if hits:
+        return ValidationResult(False, f"Missing sentence boundary detected: {hits[0]}")
+    return ValidationResult(True, "OK")
+
+
+def fix_punctuation_anomalies(text: str) -> str:
+    """Normalize sequences like ',.' without changing word content or order."""
+    result = re.sub(r"[,;:]+\s*\.", ".", text or "")
+    result = re.sub(r"\.\s*[,;:]+", ".", result)
+    return re.sub(r"\s+", " ", result).strip()
 
 
 def validate_run_on_sentences(text: str, *, block_words: int = RUN_ON_BLOCK_WORDS) -> ValidationResult:
@@ -603,6 +755,12 @@ def validate_sentence_boundaries(text: str) -> ValidationResult:
     run_on = validate_run_on_sentences(text)
     if not run_on.ok:
         return run_on
+    punct = validate_punctuation_anomalies(text)
+    if not punct.ok:
+        return punct
+    missing = validate_missing_short_boundaries(text)
+    if not missing.ok:
+        return missing
     return ValidationResult(True, "OK")
 
 
@@ -613,6 +771,8 @@ def is_complete_sentence(text: str) -> bool:
     if text[-1] not in ".!?":
         return False
     if ARTIFICIAL_BREAK_RE.search(text):
-        return False
+        for match in ARTIFICIAL_BREAK_RE.finditer(text):
+            if not _is_kept_boundary(match.group(1), match.group(2)):
+                return False
     words = word_sequence(text)
     return len(words) >= 4

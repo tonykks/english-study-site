@@ -14,36 +14,61 @@ DEFAULT_VERTEX_MODEL = "gemini-3.1-flash-lite"
 
 CHUNK_KR_INSTRUCTION = """Translate to Korean using Meaning-Chunk Literal Translation (의미 덩어리 직역).
 
-Purpose: Korean learners must feel English word order through meaningful Korean chunks.
+Purpose: Korean learners first catch the English subject + verb, then attach the remaining information in the same order English presents it (what / where / why / how).
 
 Rules:
-- Split the English sentence mentally into meaningful grammatical chunks (subject, verb phrase, object, clause, etc.)
-- Translate each chunk into understandable Korean that preserves the chunk's meaning
+- Split the English sentence into meaningful chunks
+- The first chunks should capture subject + verb (or subject + predicate head)
+- Remaining chunks follow English order: object, complement, place, reason, manner
+- Translate each chunk into understandable Korean
 - Preserve the original English chunk order in Korean output
 - Do NOT rearrange chunks into natural Korean sentence order
-- Do NOT translate word-by-word (one English word per chunk)
+- Do NOT translate every English word as its own chunk
 - Do NOT summarize, paraphrase, omit, or add meaning
-- Each English chunk must map clearly to one Korean chunk
-- Chunk-internal Korean grammar should be understandable (e.g. "became a center" → "하나의 중심지가 되었다")
-- Keep verb phrases together: "became a center", "could stay in one place", "helped humans build"
-- Do NOT split auxiliary+verb or verb+complement into separate one-word chunks
-- Avoid 1-word or 2-word chunks unless the English chunk is truly atomic (e.g. a short subject)
+- Verb and complement MAY be separate chunks. That is intended.
+  Example allowed: "became" → "되었다", "a center" → "하나의 중심지가"
+- Do NOT force verb+complement into one chunk
 - You do not need to output "/" in the final kr text; join chunks with spaces
 
 Examples:
 English: The Middle East became a center of learning and exchange.
 Chunks:
 - The Middle East → 중동은
-- became a center → 하나의 중심지가 되었다
+- became → 되었다
+- a center → 하나의 중심지가
 - of learning and exchange → 학습과 교류의
-Final kr: 중동은 하나의 중심지가 되었다 학습과 교류의.
+Final kr: 중동은 되었다 하나의 중심지가 학습과 교류의
+
+English: King Hammurabi created one of the first written law codes in history.
+Chunks:
+- King Hammurabi → 함무라비 왕은
+- created → 만들었다
+- one of the first written law codes → 최초의 성문법전들 중 하나를
+- in history → 역사상
+Final kr: 함무라비 왕은 만들었다 최초의 성문법전들 중 하나를 역사상
+
+English: Writing helped humans build more organized societies.
+Chunks:
+- Writing → 글쓰기는
+- helped → 도왔다
+- humans build → 인간들이 건설하도록
+- more organized societies → 더 조직적인 사회를
+Final kr: 글쓰기는 도왔다 인간들이 건설하도록 더 조직적인 사회를
+
+English: Because of the rivers, people could stay in one place instead of moving all the time.
+Chunks:
+- Because of the rivers → 강들 덕분에
+- people could stay → 사람들은 머무를 수 있었다
+- in one place → 한 장소에
+- instead of moving all the time → 계속 이동하는 대신에
+Final kr: 강들 덕분에 사람들은 머무를 수 있었다 한 장소에 계속 이동하는 대신에
 
 English: People believed that many gods controlled nature and daily life.
 Chunks:
 - People believed → 사람들은 믿었다
 - that many gods controlled → 많은 신들이 통제한다고
 - nature and daily life → 자연과 일상생활을
-Final kr: 사람들은 믿었다 많은 신들이 통제한다고 자연과 일상생활을."""
+Final kr: 사람들은 믿었다 많은 신들이 통제한다고 자연과 일상생활을"""
 
 LITERAL_KR_INSTRUCTION = CHUNK_KR_INSTRUCTION
 
@@ -173,14 +198,12 @@ def validate_chunk_translation(item_id: str, en_text: str, row: dict[str, Any]) 
         kr_part = str(chunk.get("kr", "")).strip()
         if len(en_part) >= 3 and len(kr_part.split()) <= 1:
             tiny_chunks += 1
-        if len(en_part) == 1 and len(en_words) >= 8:
-            tiny_chunks += 1
     if len(en_words) >= 8 and tiny_chunks >= max(2, len(chunks) // 2):
         raise RuntimeError(f"BLOCKED: fragmented one-word chunks for id {item_id}")
 
     if len(en_words) >= 8:
         avg_en_words = len(chunk_en_words) / len(chunks)
-        if avg_en_words < 2.0:
+        if avg_en_words < 1.5:
             raise RuntimeError(f"BLOCKED: chunks too small (avg {avg_en_words:.1f} EN words) for id {item_id}")
 
     joined_kr = " ".join(str(c.get("kr", "")).strip() for c in chunks if str(c.get("kr", "")).strip())
@@ -220,7 +243,8 @@ Rules:
 - Each output id must match the corresponding input id
 - "kr" must equal all chunk "kr" values joined in order (space-separated)
 - Chunk EN words must cover the full source sentence in order with no omissions
-- Use meaningful chunks, not word-by-word translation
+- Use meaningful chunks following subject+verb first, then remaining English-order information
+- Verb and complement MAY be separate chunks
 - Do not merge, split, omit, or reorder input items
 """
 
@@ -279,4 +303,66 @@ def translate_literal_kr_batch(items: list[tuple[str, str]], *, timeout_sec: int
         except RuntimeError:
             for item_id, text in chunk:
                 out[item_id] = _translate_single(item_id, text)
+    return out
+
+
+WORDCARD_POS_INSTRUCTION = """Translate the English headword into ONE Korean dictionary gloss.
+The gloss MUST match the given part of speech.
+- verb → Korean verb, typically ending in 다 (trade/verb → 거래하다 or 무역하다; influence/verb → 영향을 주다)
+- noun → Korean noun (trade/noun → 무역; influence/noun → 영향)
+- adjective → Korean adjective
+- adverb → Korean adverb
+Do not give a noun gloss for a verb, or a verb gloss for a noun.
+Return JSON array only: [{"id":"...","kr":"..."}]
+"""
+
+_VERB_KR_RE = re.compile(r"(다|하다|되다|주다|받다|가다|오다|보다|이다)$")
+
+
+def meaning_matches_pos(meaning_kr: str, pos: str) -> bool:
+    kr = re.sub(r"\s+", "", (meaning_kr or "").strip())
+    p = (pos or "").lower()
+    if not kr:
+        return False
+    if p.startswith("verb"):
+        return bool(_VERB_KR_RE.search(kr)) or "하다" in kr or "주다" in kr
+    return True
+
+
+def translate_wordcard_meanings(items: list[tuple[str, str, str]], *, timeout_sec: int = 120) -> dict[str, str]:
+    """items: [(id, headword, part_of_speech), ...]"""
+    if not items:
+        return {}
+    payload = [{"id": item_id, "headword": hw, "part_of_speech": pos} for item_id, hw, pos in items]
+    prompt = (
+        f"{WORDCARD_POS_INSTRUCTION}\n\nInput JSON:\n{json.dumps(payload, ensure_ascii=False)}"
+    )
+    raw = generate_json(prompt, timeout_sec=timeout_sec)
+    if not isinstance(raw, list) or len(raw) != len(items):
+        raw = generate_json(
+            f"{WORDCARD_POS_INSTRUCTION}\nReturn one object per input id.\n\nInput JSON:\n"
+            f"{json.dumps(payload, ensure_ascii=False)}",
+            timeout_sec=timeout_sec,
+        )
+    if not isinstance(raw, list) or len(raw) != len(items):
+        raise RuntimeError("BLOCKED: wordcard meaning translation count mismatch")
+    out: dict[str, str] = {}
+    for expected, row in zip(items, raw):
+        item_id, hw, pos = expected
+        if not isinstance(row, dict):
+            raise RuntimeError(f"BLOCKED: wordcard meaning item {item_id} is not an object")
+        if str(row.get("id", "")).strip() != item_id:
+            raise RuntimeError(f"BLOCKED: wordcard meaning id mismatch for {item_id}")
+        kr = str(row.get("kr", "")).strip()
+        if not meaning_matches_pos(kr, pos):
+            retry = generate_json(
+                f"{WORDCARD_POS_INSTRUCTION}\nHeadword: {hw}\nPart of speech: {pos}\n"
+                f'Return JSON only: {{"id": "{item_id}", "kr": "..."}}'
+            )
+            kr = str(retry.get("kr", "")).strip() if isinstance(retry, dict) else ""
+            if not meaning_matches_pos(kr, pos):
+                raise RuntimeError(
+                    f"BLOCKED: wordcard meaning POS mismatch for {hw} ({pos}): {kr}"
+                )
+        out[item_id] = kr
     return out

@@ -56,7 +56,23 @@ def test_chunk_regression_became_a_center():
         ],
     }
     kr = validate_chunk_translation("r1", en, row)
-    assert "하나의 중심지가 되었다" in kr
+    assert "중동은" in kr
+
+
+def test_owner_verb_complement_split_allowed():
+    en = "King Hammurabi created one of the first written law codes in history."
+    row = {
+        "id": "r3",
+        "kr": "함무라비 왕은 만들었다 최초의 성문법전들 중 하나를 역사상",
+        "chunks": [
+            {"en": "King Hammurabi", "kr": "함무라비 왕은"},
+            {"en": "created", "kr": "만들었다"},
+            {"en": "one of the first written law codes", "kr": "최초의 성문법전들 중 하나를"},
+            {"en": "in history", "kr": "역사상"},
+        ],
+    }
+    kr = validate_chunk_translation("r3", en, row)
+    assert "만들었다" in kr
 
 
 def test_chunk_rejects_single_word_fragments():

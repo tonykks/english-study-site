@@ -8,6 +8,11 @@ from difflib import SequenceMatcher
 from pathlib import Path
 
 from automation.listening.config import LISTENING_ROOT
+from automation.listening.script.caption_restore import (
+    find_missing_short_boundaries,
+    validate_punctuation_anomalies,
+    validate_run_on_sentences,
+)
 from automation.listening.utils import normalize_text, split_sentences
 
 # video_id -> legacy production 04_full_script.txt (EN oracle only; not runtime dependency)
@@ -17,6 +22,14 @@ DEVELOPMENT_GOLDEN_REFERENCES: dict[str, Path] = {
     / "The_Middle_East's_Greatest_Contributions"
     / "04_full_script.txt",
 }
+
+
+@dataclass
+class BoundaryMismatch:
+    kind: str  # missed_boundary | added_boundary
+    classification: str  # REAL_ERROR | VALID_IMPROVEMENT
+    sample: str
+    word_index: int = -1
 
 
 @dataclass
@@ -34,14 +47,24 @@ class GoldenCompareResult:
     run_on_count: int = 0
     fragment_count: int = 0
     omitted_legacy_edits: list[str] = field(default_factory=list)
+    missed_boundary_count: int = 0
+    added_boundary_count: int = 0
+    real_error_count: int = 0
+    mismatches: list[BoundaryMismatch] = field(default_factory=list)
 
     def to_report(self) -> dict:
+        real_errors = [m for m in self.mismatches if m.classification == "REAL_ERROR"]
+        improvements = [m for m in self.mismatches if m.classification == "VALID_IMPROVEMENT"]
         return {
             "ok": self.ok,
             "reason": self.reason,
             "legacy_sentence_count": self.legacy_sentence_count,
             "new_sentence_count": self.new_sentence_count,
             "matching_sentence_count": self.matching_sentence_count,
+            "missed_boundary_count": self.missed_boundary_count,
+            "added_boundary_count": self.added_boundary_count,
+            "real_error_count": self.real_error_count,
+            "valid_improvement_count": len(improvements),
             "missing_sentence_count": len(self.missing_sentences),
             "boundary_divergence_count": len(self.boundary_divergences),
             "omitted_legacy_edit_count": len(self.omitted_legacy_edits),
@@ -49,6 +72,13 @@ class GoldenCompareResult:
             "run_on_count": self.run_on_count,
             "fragment_count": self.fragment_count,
             "unusually_long_count": len(self.unusually_long_sentences),
+            "real_error_samples": [m.sample for m in real_errors],
+            "missed_boundary_samples": [
+                m.sample for m in self.mismatches if m.kind == "missed_boundary"
+            ],
+            "added_boundary_samples": [
+                m.sample for m in self.mismatches if m.kind == "added_boundary"
+            ][:20],
             "missing_samples": self.missing_sentences[:5],
             "boundary_samples": self.boundary_divergences[:5],
             "duplicate_samples": self.duplicated_sentences[:5],
@@ -81,11 +111,62 @@ def _words_in_order(haystack: list[str], needle: list[str]) -> bool:
     return ni == len(needle)
 
 
+def _token_words(sentences: list[str]) -> tuple[list[str], list[str], set[int]]:
+    """Return (normalized words, cased words, sentence-end indices)."""
+    norm: list[str] = []
+    cased: list[str] = []
+    ends: set[int] = set()
+    for sent in sentences:
+        tokens = re.findall(r"[A-Za-z0-9']+", sent)
+        if not tokens:
+            continue
+        for tok in tokens:
+            cased.append(tok)
+            norm.append(normalize_text(tok))
+        ends.add(len(norm) - 1)
+    return norm, cased, ends
+
+
+def _context_sample(cased: list[str], index: int) -> str:
+    start = max(0, index - 4)
+    end = min(len(cased), index + 6)
+    return " ".join(cased[start:end])
+
+
+def _classify_missed(cased: list[str], index: int, new_text: str) -> str:
+    if index + 1 >= len(cased):
+        return "VALID_IMPROVEMENT"
+    left = cased[index]
+    right = cased[index + 1]
+    join = f"{left} {right}"
+    if find_missing_short_boundaries(join):
+        return "REAL_ERROR"
+    hits = find_missing_short_boundaries(new_text)
+    if any(left.lower() in h.lower() and right.lower() in h.lower() for h in hits):
+        return "REAL_ERROR"
+    return "VALID_IMPROVEMENT"
+
+
+def _classify_added(new_sentences: list[str], new_norm: list[str], index: int) -> str:
+    cursor = 0
+    for sent in new_sentences:
+        words = normalize_text(sent).split()
+        if not words:
+            continue
+        end = cursor + len(words) - 1
+        if end == index:
+            if len(words) <= 3:
+                return "REAL_ERROR"
+            return "VALID_IMPROVEMENT"
+        cursor += len(words)
+    _ = new_norm
+    return "VALID_IMPROVEMENT"
+
+
 def compare_legacy_en_sentences(
     legacy: list[str],
     new: list[str],
     *,
-    max_boundary_divergence_ratio: float = 0.10,
     long_sentence_words: int = 80,
     block_run_on_words: int = 150,
     fragment_word_max: int = 3,
@@ -93,6 +174,7 @@ def compare_legacy_en_sentences(
     new_keys = [_sentence_key(s) for s in new]
     new_key_set = set(new_keys)
     new_full_words = normalize_text(" ".join(new)).split()
+    new_text = " ".join(new)
 
     matching = 0
     boundary_divergences: list[str] = []
@@ -133,25 +215,65 @@ def compare_legacy_en_sentences(
     fragments: list[str] = []
     for sent in new:
         wc = len(_sentence_key(sent).split())
-        if 0 < wc <= fragment_word_max and sent.rstrip()[-1] in ".!?":
+        if 0 < wc <= fragment_word_max and sent.rstrip()[-1:] in ".!?":
             fragments.append(sent)
 
-    comparable = max(len(legacy) - len(omitted_legacy_edits), 1)
-    boundary_ratio = len(boundary_divergences) / comparable
-    match_ratio = matching / len(legacy) if legacy else 1.0
+    legacy_norm, _, legacy_ends = _token_words(legacy)
+    new_norm, new_cased, new_ends = _token_words(new)
+    matcher = SequenceMatcher(None, legacy_norm, new_norm, autojunk=False)
+    mapped_legacy_ends: set[int] = set()
+    mapped_new_indices: set[int] = set()
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+        if tag != "equal":
+            continue
+        for offset in range(i2 - i1):
+            li = i1 + offset
+            ni = j1 + offset
+            mapped_new_indices.add(ni)
+            if li in legacy_ends:
+                mapped_legacy_ends.add(ni)
 
-    ok = True
-    reasons: list[str] = []
-    if run_on_count > 0:
-        ok = False
-        reasons.append(f"{run_on_count} run-on sentence(s) >= {block_run_on_words} words")
-    if boundary_ratio > max_boundary_divergence_ratio:
-        ok = False
-        reasons.append(
-            f"boundary divergence ratio {boundary_ratio:.1%} exceeds {max_boundary_divergence_ratio:.0%}"
+    missed = sorted(mapped_legacy_ends - new_ends)
+    added = sorted((new_ends & mapped_new_indices) - mapped_legacy_ends)
+
+    mismatches: list[BoundaryMismatch] = []
+    for idx in missed:
+        classification = _classify_missed(new_cased, idx, new_text)
+        mismatches.append(
+            BoundaryMismatch("missed_boundary", classification, _context_sample(new_cased, idx), idx)
         )
-    if match_ratio < 0.75 and len(legacy) > 20:
-        reasons.append(f"matching ratio {match_ratio:.1%} (informational)")
+    for idx in added:
+        classification = _classify_added(new, new_norm, idx)
+        mismatches.append(
+            BoundaryMismatch("added_boundary", classification, _context_sample(new_cased, idx), idx)
+        )
+
+    # Direct detector on new text is always a REAL_ERROR, even if golden didn't map it.
+    detector_hits = find_missing_short_boundaries(new_text)
+    for hit in detector_hits:
+        if not any(hit.lower() in m.sample.lower() or m.sample.lower() in hit.lower() for m in mismatches):
+            mismatches.append(BoundaryMismatch("missed_boundary", "REAL_ERROR", hit, -1))
+
+    punct = validate_punctuation_anomalies(new_text)
+    if not punct.ok:
+        mismatches.append(BoundaryMismatch("missed_boundary", "REAL_ERROR", punct.reason, -1))
+
+    run_on_val = validate_run_on_sentences(new_text, block_words=block_run_on_words)
+    if not run_on_val.ok:
+        mismatches.append(BoundaryMismatch("missed_boundary", "REAL_ERROR", run_on_val.reason, -1))
+
+    real_error_count = sum(1 for m in mismatches if m.classification == "REAL_ERROR")
+    missed_count = sum(1 for m in mismatches if m.kind == "missed_boundary")
+    added_count = sum(1 for m in mismatches if m.kind == "added_boundary")
+
+    ok = real_error_count == 0 and run_on_count == 0
+    reasons: list[str] = []
+    if real_error_count:
+        reasons.append(f"{real_error_count} REAL_ERROR boundary mismatch(es)")
+    if run_on_count:
+        reasons.append(f"{run_on_count} run-on sentence(s) >= {block_run_on_words} words")
+    if not punct.ok:
+        reasons.append(punct.reason)
 
     return GoldenCompareResult(
         ok=ok,
@@ -167,6 +289,10 @@ def compare_legacy_en_sentences(
         run_on_count=run_on_count,
         fragment_count=len(fragments),
         omitted_legacy_edits=omitted_legacy_edits,
+        missed_boundary_count=missed_count,
+        added_boundary_count=added_count,
+        real_error_count=real_error_count,
+        mismatches=mismatches,
     )
 
 

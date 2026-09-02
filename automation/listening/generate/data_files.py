@@ -309,7 +309,8 @@ Rules:
 - Do NOT drop important words to hit a count
 - Skip overly common function words, trivial words, words chosen only for length or early appearance
 - Proper nouns only when essential for comprehension
-- Return English fields only (Korean will be added via literal translation separately)
+- Return English fields only (Korean will be added separately)
+- meaning_kr will be generated to MATCH part_of_speech (verb gloss must be a Korean verb)
 {lemma_rule}
 Return JSON: {{"cards": [{{"headword": "...", "part_of_speech": "...", "definition_en": "...", "example_en": "..."}}]}}
 
@@ -344,7 +345,10 @@ Core sentences excerpt:
 
 
 def _format_wordcards(cards: list[dict[str, Any]], *, allow_placeholder: bool) -> str:
+    from automation.listening.vertex_client import meaning_matches_pos, translate_wordcard_meanings
+
     batch_items: list[tuple[str, str]] = []
+    meaning_items: list[tuple[str, str, str]] = []
     structured: list[dict[str, str]] = []
     for i, card in enumerate(cards, start=1):
         hw = str(card.get("headword", "word")).strip()
@@ -352,18 +356,29 @@ def _format_wordcards(cards: list[dict[str, Any]], *, allow_placeholder: bool) -
         def_en = str(card.get("definition_en", f"definition of {hw}")).strip()
         ex_en = str(card.get("example_en", f"This story mentions {hw}.")).strip()
         structured.append({"hw": hw, "pos": pos, "def_en": def_en, "ex_en": ex_en})
-        batch_items.append((f"c{i}_m", hw))
+        meaning_items.append((f"c{i}_m", hw, pos))
         batch_items.append((f"c{i}_d", def_en))
         batch_items.append((f"c{i}_e", ex_en))
 
     kr_map = _translate_batch(batch_items, allow_placeholder=allow_placeholder)
+    if allow_placeholder or not vertex_configured():
+        meaning_map = {item_id: f"[KR pending: {hw}]" for item_id, hw, _pos in meaning_items}
+        if not allow_placeholder and meaning_items:
+            raise RuntimeError("BLOCKED: Vertex AI required for wordcard meanings")
+    else:
+        meaning_map = translate_wordcard_meanings(meaning_items)
 
     lines: list[str] = []
     for i, card in enumerate(structured, start=1):
+        meaning_kr = meaning_map[f"c{i}_m"]
+        if not allow_placeholder and not meaning_matches_pos(meaning_kr, card["pos"]):
+            raise RuntimeError(
+                f"BLOCKED: wordcard POS mismatch for {card['hw']} ({card['pos']}): {meaning_kr}"
+            )
         lines.append(f"[Card {i}]")
         lines.append(f"headword: {card['hw']}")
         lines.append(f"part_of_speech: {card['pos']}")
-        lines.append(f"meaning_kr: {kr_map[f'c{i}_m']}")
+        lines.append(f"meaning_kr: {meaning_kr}")
         lines.append(f"definition_en: {card['def_en']}")
         lines.append(f"definition_kr_literal: {kr_map[f'c{i}_d']}")
         lines.append(f"example_en: {card['ex_en']}")
@@ -467,6 +482,15 @@ def _validate_wordcards(content: str) -> tuple[bool, str]:
         for field in WORDCARD_FIELDS:
             if field not in block:
                 return False, f"05_wordcard.txt Card {i} missing {field.rstrip(':')}"
+        pos_m = re.search(r"part_of_speech:\s*(.+)", block)
+        kr_m = re.search(r"meaning_kr:\s*(.+)", block)
+        if pos_m and kr_m:
+            from automation.listening.vertex_client import meaning_matches_pos
+
+            pos = pos_m.group(1).strip()
+            kr = kr_m.group(1).strip()
+            if kr and not kr.startswith("[KR") and not meaning_matches_pos(kr, pos):
+                return False, f"05_wordcard.txt Card {i} POS mismatch ({pos}): {kr}"
     return True, "OK"
 
 

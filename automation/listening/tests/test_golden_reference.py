@@ -29,7 +29,27 @@ def test_golden_compare_boundary_divergence():
     new = ["They were known for fairness Merchants could travel safely."]
     result = compare_legacy_en_sentences(legacy, new)
     assert not result.ok
-    assert len(result.boundary_divergences) >= 1
+    assert result.real_error_count >= 1
+    assert result.missed_boundary_count >= 1
+
+
+def test_owner_style_verb_split_is_valid():
+    from automation.listening.vertex_client import validate_chunk_translation
+
+    en = "The Middle East became a center of learning and exchange."
+    row = {
+        "id": "owner1",
+        "kr": "중동은 되었다 하나의 중심지가 학습과 교류의",
+        "chunks": [
+            {"en": "The Middle East", "kr": "중동은"},
+            {"en": "became", "kr": "되었다"},
+            {"en": "a center", "kr": "하나의 중심지가"},
+            {"en": "of learning and exchange", "kr": "학습과 교류의"},
+        ],
+    }
+    kr = validate_chunk_translation("owner1", en, row)
+    assert "되었다" in kr
+    assert "하나의 중심지가" in kr
 
 
 def test_golden_compare_matching_sentences():

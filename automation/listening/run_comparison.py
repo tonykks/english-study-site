@@ -148,6 +148,19 @@ def _install_metrics_hooks() -> None:
     vt._transcribe_chunk_with_retry = retry_with_metrics  # type: ignore[attr-defined]
 
 
+def _code_sha() -> str:
+    try:
+        import subprocess
+
+        return subprocess.check_output(
+            ["git", "rev-parse", "--short", "HEAD"],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).strip()
+    except Exception:
+        return "unknown"
+
+
 def _asr_cache_path(video_id: str) -> Path:
     return ASR_CACHE_ROOT / f"{video_id}.json"
 
@@ -273,6 +286,8 @@ def main(argv: list[str] | None = None) -> int:
         "usage_totals": METRICS["usage_totals"],
         "calls": METRICS["calls"],
         "billing_note": "Exact USD cost requires Google Cloud Billing export; usage_totals are from Vertex usage_metadata when available.",
+        "code_sha": _code_sha(),
+        "generated_at": datetime.now(timezone.utc).isoformat(),
     }
     if golden_report is not None:
         report["golden_compare"] = golden_report

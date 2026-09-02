@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+
 from automation.listening.models import Segment
 from automation.listening.script.caption_restore import (
     fix_artificial_period_breaks,
@@ -83,6 +85,53 @@ def test_restore_caption_segments_complete_sentences():
 def test_real_sentence_end_preserved():
     text = "Water made the land good for farming. Because of the rivers, people stayed."
     assert validate_no_artificial_sentence_breaks(text).ok
+
+
+def test_missing_boundary_easy_wars_restored():
+    from automation.listening.script.caption_restore import (
+        restore_sentence_boundaries,
+        validate_missing_short_boundaries,
+        words_unchanged,
+    )
+
+    text = "It was not always easy Wars invasions and struggles threatened communities"
+    restored = restore_sentence_boundaries(text)
+    assert words_unchanged(text, restored)
+    assert re.search(r"easy\.\s+Wars", restored, re.I)
+    assert validate_missing_short_boundaries(restored).ok
+
+
+def test_missing_boundary_deserts_ships_restored():
+    from automation.listening.script.caption_restore import restore_sentence_boundaries, words_unchanged
+
+    text = "Caravans carried goods across deserts Ships sailed on rivers and seas"
+    restored = restore_sentence_boundaries(text)
+    assert words_unchanged(text, restored)
+    assert re.search(r"deserts\.\s+Ships", restored, re.I)
+
+
+def test_missing_boundary_other_doctors_restored():
+    from automation.listening.script.caption_restore import restore_sentence_boundaries, words_unchanged
+
+    text = "Neighbors help each other Doctors care for the sick"
+    restored = restore_sentence_boundaries(text)
+    assert words_unchanged(text, restored)
+    assert re.search(r"other\.\s+Doctors", restored, re.I)
+
+
+def test_punctuation_anomaly_removed_and_blocked():
+    from automation.listening.script.caption_restore import (
+        fix_punctuation_anomalies,
+        validate_punctuation_anomalies,
+        words_unchanged,
+    )
+
+    broken = "Life was not easy,. schools, and hospitals were built,."
+    fixed = fix_punctuation_anomalies(broken)
+    assert ",." not in fixed
+    assert validate_punctuation_anomalies(fixed).ok
+    assert words_unchanged(broken, fixed)
+    assert not validate_punctuation_anomalies("communities,.").ok
 
 
 def test_run_on_split_after_alignment_gap():
