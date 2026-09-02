@@ -240,16 +240,33 @@ def _level_wordcard_sample(level: int, max_lines: int = 45) -> str:
     return _few_shot("05_wordcard.txt", max_lines)
 
 
+_NON_GERUND_ING = frozenset(
+    {
+        "building",
+        "ceiling",
+        "during",
+        "evening",
+        "feeling",
+        "morning",
+        "nothing",
+        "something",
+        "spring",
+        "string",
+        "thing",
+    }
+)
+
+
 def _lemma_level1_headword(headword: str, part_of_speech: str) -> str:
     """Normalize -ing gerunds/participles to base verb lemma for Level 1 headwords."""
     word = headword.strip()
     lw = word.lower()
-    pos = part_of_speech.lower()
-    if len(lw) <= 4 or not lw.endswith("ing"):
+    if lw in _NON_GERUND_ING or len(lw) <= 4 or not lw.endswith("ing"):
         return word
     stem = lw[:-3]
     if len(stem) < 2:
         return word
+    pos = part_of_speech.lower()
     if len(stem) >= 2 and stem[-1] == stem[-2] and stem[-1] not in "aeiou":
         lemma = stem[:-1]
     elif stem[-1] in "tvklgp" and not stem.endswith("e"):
