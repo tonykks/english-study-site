@@ -53,14 +53,17 @@ def word_sequence_from_segments(segments: list[Segment]) -> list[str]:
 
 
 def _combined_asr_text(cap: Segment, asr: list[Segment]) -> tuple[str, float]:
-    best_text = ""
-    best_overlap = 0.0
+    """Combine overlapping ASR evidence for validation matching only (not canonical text)."""
+    overlapping: list[tuple[float, str, float]] = []
     for cand in asr:
         overlap = max(0.0, min(cap.end, cand.end) - max(cap.start, cand.start))
-        if overlap > best_overlap:
-            best_overlap = overlap
-            best_text = cand.text_en
-    return best_text, best_overlap
+        if overlap > 0.0:
+            overlapping.append((cand.start, cand.text_en, overlap))
+    if not overlapping:
+        return "", 0.0
+    overlapping.sort(key=lambda item: item[0])
+    combined = " ".join(item[1] for item in overlapping)
+    return combined, max(item[2] for item in overlapping)
 
 
 def _merged_duration(ranges: list[tuple[float, float]]) -> float:
@@ -132,6 +135,8 @@ def cross_validate(caption: list[Segment], asr: list[Segment]) -> tuple[list[Seg
     ratio = divergent_duration / total_duration
     details = {"divergent_ratio": ratio, "document_divergence": document_divergence}
 
+    if document_divergence <= DIVERGENCE_WORD_THRESHOLD:
+        return verified, ValidationResult(True, "OK", details)
     if ratio > DIVERGENCE_DURATION_BLOCK:
         return verified, ValidationResult(
             False,

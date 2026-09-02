@@ -33,7 +33,7 @@ def test_cross_validate_blocked_on_high_divergence():
     asr = []
     for i in range(20):
         cap_text = "caption text segment here"
-        asr_text = "completely different words only" if i < 2 else cap_text
+        asr_text = "completely different words only" if i < 10 else cap_text
         caption.append(Segment(f"c{i}", i * 5, i * 5 + 5, cap_text))
         asr.append(Segment(f"a{i}", i * 5, i * 5 + 5, asr_text))
     merged, result = cross_validate(caption, asr)
