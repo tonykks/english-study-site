@@ -49,16 +49,45 @@ def validate_segments(segments: list[Segment], duration: float) -> ValidationRes
 
 
 def _combined_asr_text(cap: Segment, asr: list[Segment]) -> tuple[str, float]:
-    overlapping: list[tuple[float, str, float]] = []
+    best_text = ""
+    best_overlap = 0.0
     for cand in asr:
         overlap = max(0.0, min(cap.end, cand.end) - max(cap.start, cand.start))
-        if overlap > 0.0:
-            overlapping.append((cand.start, cand.text_en, overlap))
-    if not overlapping:
-        return "", 0.0
-    overlapping.sort(key=lambda item: item[0])
-    combined = " ".join(item[1] for item in overlapping)
-    return combined, max(item[2] for item in overlapping)
+        if overlap > best_overlap:
+            best_overlap = overlap
+            best_text = cand.text_en
+    return best_text, best_overlap
+
+
+def _merged_duration(ranges: list[tuple[float, float]]) -> float:
+    if not ranges:
+        return 0.0
+    sorted_ranges = sorted(ranges, key=lambda item: item[0])
+    merged: list[tuple[float, float]] = []
+    for start, end in sorted_ranges:
+        if end <= start:
+            continue
+        if not merged or start > merged[-1][1]:
+            merged.append((start, end))
+        else:
+            merged[-1] = (merged[-1][0], max(merged[-1][1], end))
+    return sum(end - start for start, end in merged)
+
+
+def _caption_matches_asr(caption: str, asr_text: str) -> bool:
+    cap_norm = normalize_text(caption)
+    asr_norm = normalize_text(asr_text)
+    if not cap_norm:
+        return True
+    if cap_norm in asr_norm:
+        return True
+    cap_words = cap_norm.split()
+    asr_words = set(asr_norm.split())
+    if cap_words:
+        overlap_ratio = sum(1 for word in cap_words if word in asr_words) / len(cap_words)
+        if overlap_ratio >= 0.7:
+            return True
+    return word_divergence(caption, asr_text) <= DIVERGENCE_WORD_THRESHOLD
 
 
 def cross_validate(caption: list[Segment], asr: list[Segment]) -> tuple[list[Segment], ValidationResult]:
@@ -71,20 +100,28 @@ def cross_validate(caption: list[Segment], asr: list[Segment]) -> tuple[list[Seg
     if total_duration <= 0:
         return caption, ValidationResult(False, "Invalid duration")
 
-    divergent_duration = 0.0
+    document_divergence = word_divergence(
+        " ".join(s.text_en for s in caption),
+        " ".join(s.text_en for s in asr),
+    )
+
+    divergent_ranges: list[tuple[float, float]] = []
     merged: list[Segment] = []
     asr_by_time = list(asr)
 
     for cap in caption:
-        asr_text, best_overlap = _combined_asr_text(cap, asr_by_time)
-        if asr_text:
-            best_div = word_divergence(cap.text_en, asr_text)
+        asr_text, _best_overlap = _combined_asr_text(cap, asr_by_time)
+        if asr_text and _caption_matches_asr(cap.text_en, asr_text):
             chosen_text = asr_text
+            is_divergent = False
+        elif asr_text:
+            chosen_text = asr_text
+            is_divergent = True
         else:
-            best_div = 1.0
             chosen_text = cap.text_en
-        if best_div > DIVERGENCE_WORD_THRESHOLD:
-            divergent_duration += cap.duration()
+            is_divergent = True
+        if is_divergent:
+            divergent_ranges.append((cap.start, cap.end))
         merged.append(
             Segment(
                 segment_id=cap.segment_id,
@@ -95,12 +132,16 @@ def cross_validate(caption: list[Segment], asr: list[Segment]) -> tuple[list[Seg
             )
         )
 
+    divergent_duration = _merged_duration(divergent_ranges)
     ratio = divergent_duration / total_duration
+    details = {"divergent_ratio": ratio, "document_divergence": document_divergence}
+    if document_divergence <= DIVERGENCE_WORD_THRESHOLD:
+        return merged, ValidationResult(True, "OK", details)
     if ratio > DIVERGENCE_DURATION_BLOCK:
         return merged, ValidationResult(
             False,
             f"Cross-validate divergence duration {ratio:.1%} exceeds {DIVERGENCE_DURATION_BLOCK:.0%}",
-            {"divergent_ratio": ratio},
+            details,
         )
 
-    return merged, ValidationResult(True, "OK", {"divergent_ratio": ratio})
+    return merged, ValidationResult(True, "OK", details)

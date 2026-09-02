@@ -32,7 +32,7 @@ from automation.listening.generate.update_index import check_duplicate
 from automation.listening.models import PipelineResult, Segment, VideoMeta
 from automation.listening.publish.publish import publish_to_repo
 from automation.listening.publish.stage import write_comparison, write_stage
-from automation.listening.script.canonical import group_paragraphs, merge_overlapping_segments, segments_from_raw
+from automation.listening.script.canonical import consolidate_caption_segments, group_paragraphs, merge_overlapping_segments, segments_from_raw
 from automation.listening.script.validate import cross_validate, validate_segments
 from automation.listening.script.vertex_transcribe import chunk_segments, transcribe_with_vertex
 from automation.listening.youtube.duration import fetch_youtube_duration
@@ -64,6 +64,7 @@ def run_pipeline(
     dry_run: bool = False,
     fixture: str | None = None,
     comparison: bool = False,
+    asr_override: list[Segment] | None = None,
 ) -> PipelineResult:
     load_config()
 
@@ -115,19 +116,23 @@ def run_pipeline(
             )
 
         try:
-            asr_segments = transcribe_with_vertex(meta.video_id, meta.duration or cap_duration)
+            if asr_override is not None:
+                asr_segments = asr_override
+            else:
+                asr_segments = transcribe_with_vertex(meta.video_id, meta.duration or cap_duration)
         except Exception as exc:
             return PipelineResult("BLOCKED", str(exc), video_id=meta.video_id)
 
         if caption_segments:
+            caps_for_cv = consolidate_caption_segments(caption_segments)
             if meta.duration > 15 * 60:
-                cap_chunks = chunk_segments(caption_segments, meta.duration)
+                cap_chunks = chunk_segments(caps_for_cv, meta.duration)
                 asr_chunks = chunk_segments(asr_segments, meta.duration)
                 merged_caps = merge_overlapping_segments(cap_chunks)
                 merged_asr = merge_overlapping_segments(asr_chunks)
                 verified, cv = cross_validate(merged_caps, merged_asr)
             else:
-                verified, cv = cross_validate(caption_segments, asr_segments)
+                verified, cv = cross_validate(caps_for_cv, asr_segments)
 
             if not cv.ok:
                 return PipelineResult("BLOCKED", cv.reason, video_id=meta.video_id)

@@ -61,6 +61,38 @@ def merge_overlapping_segments(chunks: list[list[Segment]]) -> list[Segment]:
     return merged
 
 
+def consolidate_caption_segments(segments: list[Segment], bucket_sec: float = 12.0) -> list[Segment]:
+    """Merge fragmented auto-caption windows into validation-sized buckets."""
+    if len(segments) < 100:
+        return segments
+
+    if not segments:
+        return segments
+
+    end_time = max(s.end for s in segments)
+    consolidated: list[Segment] = []
+    window_start = 0.0
+    idx = 1
+    while window_start < end_time:
+        window_end = window_start + bucket_sec
+        segs = [s for s in segments if s.start >= window_start and s.start < window_end]
+        if segs:
+            text = " ".join(s.text_en for s in segs).strip()
+            if text:
+                consolidated.append(
+                    Segment(
+                        segment_id=f"cap_{idx:05d}",
+                        start=window_start,
+                        end=min(window_end, max(s.end for s in segs)),
+                        text_en=text,
+                        source=segs[0].source,
+                    )
+                )
+                idx += 1
+        window_start = window_end
+    return consolidated or segments
+
+
 def group_paragraphs(segments: list[Segment], min_sentences: int = 3, max_sentences: int = 8) -> list[str]:
     from automation.listening.utils import split_sentences
 
