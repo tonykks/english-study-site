@@ -177,14 +177,15 @@ def validate_no_transcript_anomalies(segments: list[Segment]) -> ValidationResul
             return ValidationResult(False, f"Fragment segment detected: {seg.text_en[:80]}")
 
     full = " ".join(s.text_en for s in segments)
-    seen: dict[str, int] = {}
+    prev_sent_key = ""
     for sent in split_sentences(full):
         key = normalize_text(sent)
         if len(key.split()) < 4:
+            prev_sent_key = key
             continue
-        seen[key] = seen.get(key, 0) + 1
-        if seen[key] >= 2:
-            return ValidationResult(False, f"Duplicate sentence in transcript: {sent[:80]}")
+        if key and key == prev_sent_key:
+            return ValidationResult(False, f"Consecutive duplicate sentence in transcript: {sent[:80]}")
+        prev_sent_key = key
 
     prev_key = ""
     for seg in segments:

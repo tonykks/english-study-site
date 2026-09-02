@@ -90,6 +90,26 @@ def test_caption_word_order_preserved_to_04():
     assert validate_04_en_fidelity(verified, content_04).ok
 
 
+def test_consecutive_duplicate_sentence_fails_anomaly_check():
+    segments = [
+        Segment("c1", 0, 5, "This is a repeated sentence here."),
+        Segment("c2", 5, 10, "This is a repeated sentence here."),
+    ]
+    result = validate_no_transcript_anomalies(segments)
+    assert not result.ok
+    assert "duplicate" in result.reason.lower()
+
+
+def test_non_consecutive_repeat_allowed():
+    segments = [
+        Segment("c1", 0, 5, "Middle East and beyond."),
+        Segment("c2", 5, 10, "Other content here today."),
+        Segment("c3", 10, 15, "Middle East and beyond."),
+    ]
+    result = validate_no_transcript_anomalies(segments)
+    assert result.ok
+
+
 def test_duplicate_sentence_fails_anomaly_check():
     segments = [
         Segment("c1", 0, 5, "This is a repeated sentence here."),
