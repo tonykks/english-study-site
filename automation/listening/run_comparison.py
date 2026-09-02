@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from automation.listening.config import COMPARISON_ROOT, load_config
+from automation.listening.config import ASR_CACHE_ROOT, COMPARISON_ROOT, load_config
 from automation.listening.pipeline import run_pipeline
 from automation.listening.script.canonical import consolidate_caption_segments
 from automation.listening.utils import word_divergence
@@ -44,6 +44,8 @@ def _usage_from_response(response: Any) -> dict | None:
 def _call_kind(prompt: str) -> str:
     if "Return valid JSON only" in prompt:
         return "generate_json"
+    if "batch KR" in prompt or ('"id"' in prompt and "Input JSON:" in prompt):
+        return "translate_literal_kr_batch"
     if "literal translation" in prompt.lower() or "직역" in prompt:
         return "translate_literal_kr"
     return "generate_text"
@@ -146,17 +148,25 @@ def _install_metrics_hooks() -> None:
 
 
 def _asr_cache_path(video_id: str) -> Path:
+    return ASR_CACHE_ROOT / f"{video_id}.json"
+
+
+def _legacy_asr_cache_path(video_id: str) -> Path:
     return COMPARISON_ROOT / video_id / "asr_cache.json"
 
 
 def _load_asr_cache(video_id: str):
-    path = _asr_cache_path(video_id)
-    if not path.exists():
-        return None
     from automation.listening.script.canonical import segments_from_raw
 
-    raw = json.loads(path.read_text(encoding="utf-8"))
-    return segments_from_raw(raw, source="asr")
+    for path in (_asr_cache_path(video_id), _legacy_asr_cache_path(video_id)):
+        if not path.exists():
+            continue
+        raw = json.loads(path.read_text(encoding="utf-8"))
+        segments = segments_from_raw(raw, source="asr")
+        if path == _legacy_asr_cache_path(video_id):
+            _save_asr_cache(video_id, segments)
+        return segments
+    return None
 
 
 def _save_asr_cache(video_id: str, segments) -> None:

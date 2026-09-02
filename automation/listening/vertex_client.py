@@ -92,3 +92,55 @@ def transcribe_audio_bytes(audio_bytes: bytes, mime_type: str = "audio/mp4") -> 
 def translate_literal_kr(en_text: str) -> str:
     prompt = f"{LITERAL_KR_INSTRUCTION}\n\nEnglish:\n{en_text}"
     return generate_text(prompt)
+
+
+BATCH_KR_SUFFIX = """
+You will receive a JSON array of objects with "id" and "text" fields.
+Translate each "text" to Korean using the literal translation rules above.
+Return JSON array only with the same ids in the same order:
+[{"id": "...", "kr": "..."}]
+Rules:
+- Output count must equal input count
+- Each output id must match the corresponding input id
+- Do not merge, split, omit, or reorder items
+"""
+
+
+def validate_batch_kr_result(items: list[dict[str, str]], raw: Any) -> dict[str, str]:
+    if not isinstance(raw, list):
+        raise RuntimeError("BLOCKED: batch KR translation returned non-array JSON")
+    if len(raw) != len(items):
+        raise RuntimeError(
+            f"BLOCKED: batch KR translation count mismatch (expected {len(items)}, got {len(raw)})"
+        )
+    expected_ids = [item["id"] for item in items]
+    out: dict[str, str] = {}
+    for idx, (expected, row) in enumerate(zip(expected_ids, raw)):
+        if not isinstance(row, dict):
+            raise RuntimeError(f"BLOCKED: batch KR item {idx} is not an object")
+        row_id = str(row.get("id", "")).strip()
+        if row_id != expected:
+            raise RuntimeError(f"BLOCKED: batch KR id mismatch at index {idx} (expected {expected}, got {row_id})")
+        kr = str(row.get("kr", "")).strip()
+        if not kr:
+            raise RuntimeError(f"BLOCKED: batch KR empty for id {row_id}")
+        out[row_id] = kr
+    return out
+
+
+def translate_literal_kr_batch(items: list[tuple[str, str]], *, timeout_sec: int = 180) -> dict[str, str]:
+    """Translate multiple EN strings in one Vertex call. items: [(id, en_text), ...]"""
+    if not items:
+        return {}
+    if len(items) == 1:
+        item_id, text = items[0]
+        return {item_id: translate_literal_kr(text)}
+
+    payload = [{"id": item_id, "text": text} for item_id, text in items]
+    prompt = (
+        f"{LITERAL_KR_INSTRUCTION}\n{BATCH_KR_SUFFIX}\n\nInput JSON:\n"
+        f"{json.dumps(payload, ensure_ascii=False)}"
+    )
+    raw = generate_json(prompt, timeout_sec=timeout_sec)
+    structured = [{"id": item_id, "text": text} for item_id, text in items]
+    return validate_batch_kr_result(structured, raw)

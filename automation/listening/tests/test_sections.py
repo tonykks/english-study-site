@@ -43,13 +43,13 @@ def _wordcard_block(i: int) -> str:
 def test_section_alignment_pass():
     segments = _fixture_segments()
     sections = build_story_sections(segments, "fixture000001", allow_placeholder=True)
-    fill_section_content(sections, segments, allow_placeholder=True)
+    fill_section_content(sections, segments, level=1, allow_placeholder=True)
 
-    def fake_translate(en: str, *, allow_placeholder: bool = False) -> str:
-        return f"KR:{en[:20]}"
+    def fake_translate_batch(items, *, allow_placeholder: bool = False):
+        return {item_id: f"KR:{text[:20]}" for item_id, text in items}
 
-    core = render_core_file(sections, fake_translate, allow_placeholder=True)
-    summary = render_summary_file(sections, fake_translate, allow_placeholder=True)
+    core = render_core_file(sections, fake_translate_batch, allow_placeholder=True)
+    summary = render_summary_file(sections, fake_translate_batch, allow_placeholder=True)
     n = len(sections)
 
     files = {

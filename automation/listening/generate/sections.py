@@ -5,6 +5,7 @@ import logging
 import re
 
 from automation.listening.config import (
+    LEVEL_GENERATION_GUIDANCE,
     SECTION_CHUNK_MAX_SEGMENTS,
     SECTION_CHUNK_OVERLAP_SEGMENTS,
     SECTION_CROSS_CHUNK_BOUNDARY_EPS_SEC,
@@ -366,6 +367,116 @@ def _sentence_in_text(sentence: str, text: str) -> bool:
     return norm_sent in norm_text
 
 
+def _level_guidance(level: int) -> str:
+    return LEVEL_GENERATION_GUIDANCE.get(level, LEVEL_GENERATION_GUIDANCE[2])
+
+
+def _pick_core_sentences_batch(
+    sections: list[StorySection],
+    verified_text: str,
+    *,
+    allow_placeholder: bool,
+) -> dict[int, str]:
+    if not (vertex_configured() and not allow_placeholder):
+        picked: dict[int, str] = {}
+        for section in sections:
+            picked[section.index] = _pick_core_sentence(section, verified_text, allow_placeholder=allow_placeholder)
+        return picked
+
+    payload = [
+        {
+            "index": section.index,
+            "title": section.title,
+            "text": section.text_en[:4000],
+        }
+        for section in sections
+    ]
+    data = generate_json(
+        f"""Pick ONE representative English sentence per section.
+Rules:
+- For each section, copy ONE complete sentence verbatim from that section's text
+- Do NOT rewrite, summarize, or create a new sentence
+- Choose the sentence that best helps a learner recall the whole section
+
+Return JSON:
+{{"sections": [{{"index": 1, "sentence": "..."}}, ...]}}
+
+Sections:
+{json.dumps(payload, ensure_ascii=False)}
+"""
+    )
+    rows = data.get("sections") or []
+    if len(rows) != len(sections):
+        raise RuntimeError(
+            f"BLOCKED: Core batch returned {len(rows)} sentences, expected {len(sections)}"
+        )
+    by_index: dict[int, str] = {}
+    for row in rows:
+        idx = int(row.get("index", 0))
+        picked = str(row.get("sentence", "")).strip()
+        section = next((s for s in sections if s.index == idx), None)
+        if section is None:
+            raise RuntimeError(f"BLOCKED: Core batch returned unknown section index {idx}")
+        if not _sentence_in_text(picked, section.text_en):
+            raise RuntimeError(f"BLOCKED: Core sentence for section {idx} is not verbatim in section text")
+        if not _sentence_in_text(picked, verified_text):
+            raise RuntimeError(f"BLOCKED: Core sentence for section {idx} is not in verified full script")
+        by_index[idx] = picked
+    if len(by_index) != len(sections):
+        raise RuntimeError("BLOCKED: Core batch missing section indices")
+    return by_index
+
+
+def _pick_summaries_batch(
+    sections: list[StorySection],
+    level: int,
+    *,
+    allow_placeholder: bool,
+) -> dict[int, str]:
+    if not (vertex_configured() and not allow_placeholder):
+        return {
+            section.index: _pick_summary_en(section, level, allow_placeholder=allow_placeholder)
+            for section in sections
+        }
+
+    level_hint = _level_guidance(level)
+    payload = [
+        {"index": section.index, "title": section.title, "text": section.text_en[:4000]}
+        for section in sections
+    ]
+    data = generate_json(
+        f"""Write one short, clear English summary sentence per section for Level {level} learners.
+{level_hint}
+Rules:
+- One sentence per section; concise but complete
+- Summarize the section content; do not quote verbatim
+
+Return JSON:
+{{"sections": [{{"index": 1, "summary_en": "..."}}, ...]}}
+
+Sections:
+{json.dumps(payload, ensure_ascii=False)}
+"""
+    )
+    rows = data.get("sections") or []
+    if len(rows) != len(sections):
+        raise RuntimeError(
+            f"BLOCKED: Summary batch returned {len(rows)} items, expected {len(sections)}"
+        )
+    by_index: dict[int, str] = {}
+    for row in rows:
+        idx = int(row.get("index", 0))
+        summary = str(row.get("summary_en", "")).strip()
+        if not summary:
+            raise RuntimeError(f"BLOCKED: empty summary for section {idx}")
+        if idx not in {s.index for s in sections}:
+            raise RuntimeError(f"BLOCKED: Summary batch returned unknown section index {idx}")
+        by_index[idx] = summary
+    if len(by_index) != len(sections):
+        raise RuntimeError("BLOCKED: Summary batch missing section indices")
+    return by_index
+
+
 def _pick_core_sentence(section: StorySection, verified_text: str, *, allow_placeholder: bool) -> str:
     if vertex_configured() and not allow_placeholder:
         data = generate_json(
@@ -401,10 +512,12 @@ Section ({section.title}):
     return picked
 
 
-def _pick_summary_en(section: StorySection, *, allow_placeholder: bool) -> str:
+def _pick_summary_en(section: StorySection, level: int, *, allow_placeholder: bool) -> str:
+    level_hint = _level_guidance(level)
     if vertex_configured() and not allow_placeholder:
         data = generate_json(
-            f"""Write one short, clear English summary sentence for this section.
+            f"""Write one short, clear English summary sentence for Level {level} learners.
+{level_hint}
 Rules:
 - One sentence only; concise but complete
 - Summarize the section content; do not quote verbatim
@@ -428,42 +541,47 @@ def fill_section_content(
     sections: list[StorySection],
     segments: list[Segment],
     *,
+    level: int = 1,
     allow_placeholder: bool = False,
 ) -> None:
     verified_text = " ".join(s.text_en for s in segments)
+    core_by_index = _pick_core_sentences_batch(sections, verified_text, allow_placeholder=allow_placeholder)
+    summary_by_index = _pick_summaries_batch(sections, level, allow_placeholder=allow_placeholder)
     for section in sections:
-        section.core_sentence_en = _pick_core_sentence(section, verified_text, allow_placeholder=allow_placeholder)
-        section.summary_en = _pick_summary_en(section, allow_placeholder=allow_placeholder)
+        section.core_sentence_en = core_by_index[section.index]
+        section.summary_en = summary_by_index[section.index]
 
 
 def render_core_file(
     sections: list[StorySection],
-    translate_fn,
+    translate_batch_fn,
     *,
     allow_placeholder: bool = False,
 ) -> str:
+    items = [(f"s{section.index}", section.core_sentence_en) for section in sections]
+    kr_map = translate_batch_fn(items, allow_placeholder=allow_placeholder)
     lines: list[str] = []
     for section in sections:
-        kr = translate_fn(section.core_sentence_en, allow_placeholder=allow_placeholder)
         lines.append(f"[Sentence {section.index}]")
         lines.append(f"EN: {section.core_sentence_en}")
-        lines.append(f"KR: {kr}")
+        lines.append(f"KR: {kr_map[f's{section.index}']}")
         lines.append("")
     return "\n".join(lines).strip() + "\n"
 
 
 def render_summary_file(
     sections: list[StorySection],
-    translate_fn,
+    translate_batch_fn,
     *,
     allow_placeholder: bool = False,
 ) -> str:
+    items = [(f"p{section.index}", section.summary_en) for section in sections]
+    kr_map = translate_batch_fn(items, allow_placeholder=allow_placeholder)
     lines: list[str] = []
     for section in sections:
-        kr = translate_fn(section.summary_en, allow_placeholder=allow_placeholder)
         lines.append(f"[Part {section.index}]")
         lines.append(f"EN: {section.summary_en}")
-        lines.append(f"KR: {kr}")
+        lines.append(f"KR: {kr_map[f'p{section.index}']}")
         lines.append("")
     return "\n".join(lines).strip() + "\n"
 

@@ -7,6 +7,7 @@ from typing import Any
 
 from automation.listening.config import (
     FEW_SHOT_DIR,
+    LEVEL_GENERATION_GUIDANCE,
     LISTENING_ROOT,
     WORDCARD_MAX,
     WORDCARD_MIN,
@@ -28,6 +29,7 @@ from automation.listening.vertex_client import (
     LITERAL_KR_INSTRUCTION,
     generate_json,
     translate_literal_kr,
+    translate_literal_kr_batch,
     vertex_configured,
 )
 
@@ -139,12 +141,42 @@ def _translate(en: str, *, allow_placeholder: bool = False) -> str:
     raise RuntimeError("BLOCKED: Vertex AI (ADC) required for literal KR translation")
 
 
-def generate_intro_from_transcript(segments: list[Segment], *, allow_placeholder: bool = False) -> str:
+def _translate_batch(
+    items: list[tuple[str, str]],
+    *,
+    allow_placeholder: bool = False,
+) -> dict[str, str]:
+    if not items:
+        return {}
+    if allow_placeholder:
+        return {item_id: f"[KR translation pending: {text[:60]}...]" for item_id, text in items}
+    if vertex_configured():
+        try:
+            return translate_literal_kr_batch(items)
+        except Exception as exc:
+            raise RuntimeError(f"BLOCKED: batch literal KR translation failed: {exc}") from exc
+    if openai_configured():
+        return {item_id: _openai_literal(text) for item_id, text in items}
+    raise RuntimeError("BLOCKED: Vertex AI (ADC) required for batch literal KR translation")
+
+
+def _level_guidance(level: int) -> str:
+    return LEVEL_GENERATION_GUIDANCE.get(level, LEVEL_GENERATION_GUIDANCE[2])
+
+
+def generate_intro_from_transcript(
+    segments: list[Segment],
+    level: int,
+    *,
+    allow_placeholder: bool = False,
+) -> str:
     transcript = _transcript_text(segments)
+    level_hint = _level_guidance(level)
     if vertex_configured() and not allow_placeholder:
         example = _few_shot("01_intro.txt", 5)
         data = generate_json(
-            f"""Create one intro for an English listening lesson page.
+            f"""Create one intro for a Level {level} English listening lesson page.
+{level_hint}
 Example:
 {example}
 
@@ -167,6 +199,7 @@ Transcript excerpt:
 def build_sections_for_transcript(
     segments: list[Segment],
     video_id: str,
+    level: int,
     *,
     allow_placeholder: bool = False,
     chapters: list[dict] | None = None,
@@ -177,7 +210,7 @@ def build_sections_for_transcript(
         allow_placeholder=allow_placeholder,
         chapters=chapters,
     )
-    fill_section_content(sections, segments, allow_placeholder=allow_placeholder)
+    fill_section_content(sections, segments, level=level, allow_placeholder=allow_placeholder)
     return sections
 
 
@@ -186,7 +219,7 @@ def generate_core_from_sections(
     *,
     allow_placeholder: bool = False,
 ) -> str:
-    return render_core_file(sections, _translate, allow_placeholder=allow_placeholder)
+    return render_core_file(sections, _translate_batch, allow_placeholder=allow_placeholder)
 
 
 def generate_summary_from_sections(
@@ -194,7 +227,7 @@ def generate_summary_from_sections(
     *,
     allow_placeholder: bool = False,
 ) -> str:
-    return render_summary_file(sections, _translate, allow_placeholder=allow_placeholder)
+    return render_summary_file(sections, _translate_batch, allow_placeholder=allow_placeholder)
 
 
 def _level_wordcard_sample(level: int, max_lines: int = 45) -> str:
@@ -207,6 +240,27 @@ def _level_wordcard_sample(level: int, max_lines: int = 45) -> str:
     return _few_shot("05_wordcard.txt", max_lines)
 
 
+def _lemma_level1_headword(headword: str, part_of_speech: str) -> str:
+    """Normalize -ing gerunds/participles to base verb lemma for Level 1 headwords."""
+    word = headword.strip()
+    lw = word.lower()
+    pos = part_of_speech.lower()
+    if len(lw) <= 4 or not lw.endswith("ing"):
+        return word
+    stem = lw[:-3]
+    if len(stem) < 2:
+        return word
+    if len(stem) >= 2 and stem[-1] == stem[-2] and stem[-1] not in "aeiou":
+        lemma = stem[:-1]
+    elif stem[-1] in "tvklgp" and not stem.endswith("e"):
+        lemma = stem + "e"
+    else:
+        lemma = stem
+    if pos.startswith("verb") or "participle" in pos or "gerund" in pos or pos == "noun":
+        return lemma if word.islower() else lemma.capitalize()
+    return word
+
+
 def generate_wordcards_from_transcript(
     segments: list[Segment],
     core_text: str,
@@ -215,10 +269,18 @@ def generate_wordcards_from_transcript(
     allow_placeholder: bool = False,
 ) -> str:
     transcript = _transcript_text(segments)
+    level_hint = _level_guidance(level)
+    lemma_rule = ""
+    if level == 1:
+        lemma_rule = (
+            "- Level 1 headword must use dictionary base/lemma form, NOT -ing gerund/participle forms "
+            "(e.g. farming→farm, writing→write). Show the actual -ing form in example_en when needed.\n"
+        )
     if vertex_configured() and not allow_placeholder:
         example = _level_wordcard_sample(level)
         data = generate_json(
             f"""Create vocabulary word cards for Level {level} English listening learners.
+{level_hint}
 Rules:
 - Pick a natural count (typically around 10; range {WORDCARD_MIN}-{WORDCARD_MAX}) based on learning value, NOT a fixed number
 - Priority: context importance > level fit > learning value
@@ -227,7 +289,7 @@ Rules:
 - Skip overly common function words, trivial words, words chosen only for length or early appearance
 - Proper nouns only when essential for comprehension
 - Return English fields only (Korean will be added via literal translation separately)
-
+{lemma_rule}
 Return JSON: {{"cards": [{{"headword": "...", "part_of_speech": "...", "definition_en": "...", "example_en": "..."}}]}}
 
 Reference Level {level} vocabulary style:
@@ -248,6 +310,12 @@ Core sentences excerpt:
                 f"BLOCKED: Word card generation returned {len(cards)} cards "
                 f"(expected {WORDCARD_MIN}-{WORDCARD_MAX} based on content value)"
             )
+        if level == 1:
+            for card in cards:
+                hw = str(card.get("headword", "")).strip()
+                pos = str(card.get("part_of_speech", "")).strip()
+                if hw:
+                    card["headword"] = _lemma_level1_headword(hw, pos)
     else:
         cards = _heuristic_wordcards(core_text)
 
@@ -255,36 +323,42 @@ Core sentences excerpt:
 
 
 def _format_wordcards(cards: list[dict[str, Any]], *, allow_placeholder: bool) -> str:
-    lines: list[str] = []
+    batch_items: list[tuple[str, str]] = []
+    structured: list[dict[str, str]] = []
     for i, card in enumerate(cards, start=1):
         hw = str(card.get("headword", "word")).strip()
         pos = str(card.get("part_of_speech", "noun")).strip()
         def_en = str(card.get("definition_en", f"definition of {hw}")).strip()
         ex_en = str(card.get("example_en", f"This story mentions {hw}.")).strip()
-        meaning = _translate(hw, allow_placeholder=allow_placeholder)
-        def_kr = _translate(def_en, allow_placeholder=allow_placeholder)
-        ex_kr = _translate(ex_en, allow_placeholder=allow_placeholder)
+        structured.append({"hw": hw, "pos": pos, "def_en": def_en, "ex_en": ex_en})
+        batch_items.append((f"c{i}_m", hw))
+        batch_items.append((f"c{i}_d", def_en))
+        batch_items.append((f"c{i}_e", ex_en))
+
+    kr_map = _translate_batch(batch_items, allow_placeholder=allow_placeholder)
+
+    lines: list[str] = []
+    for i, card in enumerate(structured, start=1):
         lines.append(f"[Card {i}]")
-        lines.append(f"headword: {hw}")
-        lines.append(f"part_of_speech: {pos}")
-        lines.append(f"meaning_kr: {meaning}")
-        lines.append(f"definition_en: {def_en}")
-        lines.append(f"definition_kr_literal: {def_kr}")
-        lines.append(f"example_en: {ex_en}")
-        lines.append(f"example_kr_literal: {ex_kr}")
+        lines.append(f"headword: {card['hw']}")
+        lines.append(f"part_of_speech: {card['pos']}")
+        lines.append(f"meaning_kr: {kr_map[f'c{i}_m']}")
+        lines.append(f"definition_en: {card['def_en']}")
+        lines.append(f"definition_kr_literal: {kr_map[f'c{i}_d']}")
+        lines.append(f"example_en: {card['ex_en']}")
+        lines.append(f"example_kr_literal: {kr_map[f'c{i}_e']}")
         lines.append("")
     return "\n".join(lines).strip() + "\n"
 
 
 def translate_paragraphs_kr(paragraphs: list[str], *, allow_placeholder: bool = False) -> list[str]:
-    instruction = (
-        f"{LITERAL_KR_INSTRUCTION}\n"
-        "The English paragraph must map one-to-one to Korean. "
-        "Do not merge, split, omit, or add sentences."
-    )
-    return [
-        _translate_with_instruction(p, instruction, allow_placeholder=allow_placeholder) for p in paragraphs
-    ]
+    if not paragraphs:
+        return []
+    if allow_placeholder:
+        return [f"[KR translation pending: {p[:60]}...]" for p in paragraphs]
+    items = [(f"p{i}", p) for i, p in enumerate(paragraphs, start=1)]
+    kr_map = _translate_batch(items, allow_placeholder=allow_placeholder)
+    return [kr_map[f"p{i}"] for i in range(1, len(paragraphs) + 1)]
 
 
 def _translate_with_instruction(en: str, instruction: str, *, allow_placeholder: bool = False) -> str:

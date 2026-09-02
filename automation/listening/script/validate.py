@@ -8,7 +8,7 @@ from automation.listening.config import (
     GAP_BLOCK_SECONDS,
 )
 from automation.listening.models import Segment, ValidationResult
-from automation.listening.utils import normalize_text, word_divergence
+from automation.listening.utils import normalize_text, split_sentences, word_divergence
 
 
 def validate_segments(segments: list[Segment], duration: float) -> ValidationResult:
@@ -46,6 +46,10 @@ def validate_segments(segments: list[Segment], duration: float) -> ValidationRes
             return ValidationResult(False, "Abnormal duplicate block detected")
 
     return ValidationResult(True, "OK", {"coverage": coverage})
+
+
+def word_sequence_from_segments(segments: list[Segment]) -> list[str]:
+    return normalize_text(" ".join(s.text_en for s in segments)).split()
 
 
 def _combined_asr_text(cap: Segment, asr: list[Segment]) -> tuple[str, float]:
@@ -91,6 +95,7 @@ def _caption_matches_asr(caption: str, asr_text: str) -> bool:
 
 
 def cross_validate(caption: list[Segment], asr: list[Segment]) -> tuple[list[Segment], ValidationResult]:
+    """Use caption text as canonical; ASR is independent verification evidence only."""
     if not caption:
         return asr, ValidationResult(False, "No caption segments")
     if not asr:
@@ -106,28 +111,19 @@ def cross_validate(caption: list[Segment], asr: list[Segment]) -> tuple[list[Seg
     )
 
     divergent_ranges: list[tuple[float, float]] = []
-    merged: list[Segment] = []
+    verified: list[Segment] = []
     asr_by_time = list(asr)
 
     for cap in caption:
         asr_text, _best_overlap = _combined_asr_text(cap, asr_by_time)
-        if asr_text and _caption_matches_asr(cap.text_en, asr_text):
-            chosen_text = asr_text
-            is_divergent = False
-        elif asr_text:
-            chosen_text = asr_text
-            is_divergent = True
-        else:
-            chosen_text = cap.text_en
-            is_divergent = True
-        if is_divergent:
+        if asr_text and not _caption_matches_asr(cap.text_en, asr_text):
             divergent_ranges.append((cap.start, cap.end))
-        merged.append(
+        verified.append(
             Segment(
                 segment_id=cap.segment_id,
                 start=cap.start,
                 end=cap.end,
-                text_en=chosen_text,
+                text_en=cap.text_en,
                 source="verified",
             )
         )
@@ -135,13 +131,79 @@ def cross_validate(caption: list[Segment], asr: list[Segment]) -> tuple[list[Seg
     divergent_duration = _merged_duration(divergent_ranges)
     ratio = divergent_duration / total_duration
     details = {"divergent_ratio": ratio, "document_divergence": document_divergence}
-    if document_divergence <= DIVERGENCE_WORD_THRESHOLD:
-        return merged, ValidationResult(True, "OK", details)
+
     if ratio > DIVERGENCE_DURATION_BLOCK:
-        return merged, ValidationResult(
+        return verified, ValidationResult(
             False,
             f"Cross-validate divergence duration {ratio:.1%} exceeds {DIVERGENCE_DURATION_BLOCK:.0%}",
             details,
         )
+    if document_divergence > DIVERGENCE_WORD_THRESHOLD:
+        return verified, ValidationResult(
+            False,
+            f"Document divergence {document_divergence:.1%} exceeds {DIVERGENCE_WORD_THRESHOLD:.0%}",
+            details,
+        )
 
-    return merged, ValidationResult(True, "OK", details)
+    return verified, ValidationResult(True, "OK", details)
+
+
+def validate_transcript_fidelity(source: list[Segment], verified: list[Segment]) -> ValidationResult:
+    """Caption word content and order must survive unchanged into verified transcript."""
+    src_words = word_sequence_from_segments(source)
+    ver_words = word_sequence_from_segments(verified)
+    if src_words != ver_words:
+        return ValidationResult(
+            False,
+            "Verified transcript altered caption word content or order",
+            {"source_word_count": len(src_words), "verified_word_count": len(ver_words)},
+        )
+    return validate_no_transcript_anomalies(verified)
+
+
+def validate_no_transcript_anomalies(segments: list[Segment]) -> ValidationResult:
+    """Reject fragments and abnormal duplication in canonical transcript."""
+    if not segments:
+        return ValidationResult(False, "Empty transcript")
+
+    for seg in segments:
+        words = normalize_text(seg.text_en).split()
+        if 0 < len(words) < 3 and seg.duration() >= 2.0:
+            return ValidationResult(False, f"Fragment segment detected: {seg.text_en[:80]}")
+
+    full = " ".join(s.text_en for s in segments)
+    seen: dict[str, int] = {}
+    for sent in split_sentences(full):
+        key = normalize_text(sent)
+        if len(key.split()) < 4:
+            continue
+        seen[key] = seen.get(key, 0) + 1
+        if seen[key] >= 2:
+            return ValidationResult(False, f"Duplicate sentence in transcript: {sent[:80]}")
+
+    prev_key = ""
+    for seg in segments:
+        key = normalize_text(seg.text_en)
+        if key and key == prev_key:
+            return ValidationResult(False, "Consecutive duplicate segment in transcript")
+        prev_key = key
+
+    return ValidationResult(True, "OK")
+
+
+def validate_04_en_fidelity(verified: list[Segment], content_04: str) -> ValidationResult:
+    """04 EN paragraphs must preserve verified transcript words in order."""
+    en_lines = [
+        line.split(":", 1)[1].strip()
+        for line in content_04.splitlines()
+        if line.strip().upper().startswith("EN:")
+    ]
+    para_words = normalize_text(" ".join(en_lines)).split()
+    ver_words = word_sequence_from_segments(verified)
+    if para_words != ver_words:
+        return ValidationResult(
+            False,
+            "04_full_script EN altered verified transcript word content or order",
+            {"verified_word_count": len(ver_words), "paragraph_word_count": len(para_words)},
+        )
+    return ValidationResult(True, "OK")

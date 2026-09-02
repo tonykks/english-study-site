@@ -33,7 +33,12 @@ from automation.listening.models import PipelineResult, Segment, VideoMeta
 from automation.listening.publish.publish import publish_to_repo
 from automation.listening.publish.stage import write_comparison, write_stage
 from automation.listening.script.canonical import consolidate_caption_segments, group_paragraphs, merge_overlapping_segments, segments_from_raw
-from automation.listening.script.validate import cross_validate, validate_segments
+from automation.listening.script.validate import (
+    cross_validate,
+    validate_04_en_fidelity,
+    validate_segments,
+    validate_transcript_fidelity,
+)
 from automation.listening.script.vertex_transcribe import chunk_segments, transcribe_with_vertex
 from automation.listening.youtube.duration import fetch_youtube_duration
 from automation.listening.youtube.metadata import fetch_metadata
@@ -137,6 +142,10 @@ def run_pipeline(
             if not cv.ok:
                 return PipelineResult("BLOCKED", cv.reason, video_id=meta.video_id)
 
+            fidelity = validate_transcript_fidelity(caps_for_cv, verified)
+            if not fidelity.ok:
+                return PipelineResult("BLOCKED", fidelity.reason, video_id=meta.video_id)
+
         val = validate_segments(verified, meta.duration or cap_duration)
         if not val.ok:
             return PipelineResult("BLOCKED", val.reason, video_id=meta.video_id)
@@ -151,6 +160,9 @@ def run_pipeline(
     content_04_en, manifest = assemble_04_en(verified)
     if not verify_04_en_manifest(verified, content_04_en, manifest):
         return PipelineResult("BLOCKED", "04 EN manifest verification failed", video_id=meta.video_id)
+    fidelity_04 = validate_04_en_fidelity(verified, content_04_en)
+    if not fidelity_04.ok:
+        return PipelineResult("BLOCKED", fidelity_04.reason, video_id=meta.video_id)
 
     allow_placeholder = bool(fixture)
     try:
@@ -160,13 +172,16 @@ def run_pipeline(
         sections = build_sections_for_transcript(
             verified,
             meta.video_id,
+            level,
             allow_placeholder=allow_placeholder,
             chapters=fixture_chapters,
         )
         core_text = generate_core_from_sections(sections, allow_placeholder=allow_placeholder)
         files = {
             "00_meta.txt": generate_meta(meta, level),
-            "01_intro.txt": generate_intro_from_transcript(verified, allow_placeholder=allow_placeholder),
+            "01_intro.txt": generate_intro_from_transcript(
+                verified, level, allow_placeholder=allow_placeholder
+            ),
             "02_core.txt": core_text,
             "03_summary.txt": generate_summary_from_sections(sections, allow_placeholder=allow_placeholder),
             "04_full_script.txt": content_04,

@@ -10,6 +10,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 LISTENING_ROOT = REPO_ROOT / "pages" / "listening"
 STAGING_ROOT = REPO_ROOT / "automation" / ".staging"
 COMPARISON_ROOT = REPO_ROOT / "automation" / ".comparison"
+ASR_CACHE_ROOT = COMPARISON_ROOT / "_asr_cache"
 TEMPLATE_PATH = Path(__file__).resolve().parent / "templates" / "lesson_page.html"
 FIXTURES_DIR = Path(__file__).resolve().parent / "tests" / "fixtures"
 FEW_SHOT_DIR = REPO_ROOT / "pages" / "listening" / "level2" / "KFC_Success_Story"
@@ -32,6 +33,21 @@ SECTION_CROSS_CHUNK_BOUNDARY_EPS_SEC = 15
 
 LEVEL_MAP = {1: "level1", 2: "level2", 3: "level3"}
 LEVEL_LABEL = {1: "Level 1", 2: "Level 2", 3: "Level 3"}
+
+LEVEL_GENERATION_GUIDANCE = {
+    1: (
+        "Level 1 learners: use short, clear sentences and basic everyday vocabulary. "
+        "Express the video content accurately but avoid unnecessary abstract, academic, or advanced terms "
+        "(e.g. systemic, geopolitical, humanitarian, legacy, upheaval)."
+    ),
+    2: (
+        "Level 2 learners: use clear intermediate vocabulary and moderately detailed sentences. "
+        "Avoid overly academic jargon unless essential to the story."
+    ),
+    3: (
+        "Level 3 learners: richer vocabulary and more nuanced phrasing are acceptable when faithful to the content."
+    ),
+}
 
 
 def load_config() -> None:
