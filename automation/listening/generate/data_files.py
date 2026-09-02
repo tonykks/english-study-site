@@ -24,6 +24,7 @@ from automation.listening.generate.sections import (
 )
 from automation.listening.models import Segment, StorySection, VideoMeta
 from automation.listening.script.canonical import group_paragraphs
+from automation.listening.script.caption_restore import is_complete_sentence
 from automation.listening.utils import normalize_text, segment_hash, split_sentences
 from automation.listening.vertex_client import (
     LITERAL_KR_INSTRUCTION,
@@ -500,6 +501,8 @@ def validate_format_files(
     for sent in extract_core_sentences(files.get("02_core.txt", "")):
         if normalize_text(sent) not in norm_script:
             return False, f"02_core.txt sentence not found in verified full script: {sent[:80]}"
+        if not is_complete_sentence(sent):
+            return False, f"02_core.txt core is not a complete sentence: {sent[:80]}"
 
     ok, reason = _validate_wordcards(files.get("05_wordcard.txt", ""))
     if not ok:

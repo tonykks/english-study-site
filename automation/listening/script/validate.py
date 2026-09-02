@@ -8,6 +8,7 @@ from automation.listening.config import (
     GAP_BLOCK_SECONDS,
 )
 from automation.listening.models import Segment, ValidationResult
+from automation.listening.script.caption_restore import is_complete_sentence, validate_no_artificial_sentence_breaks
 from automation.listening.utils import normalize_text, split_sentences, word_divergence
 
 
@@ -177,6 +178,10 @@ def validate_no_transcript_anomalies(segments: list[Segment]) -> ValidationResul
             return ValidationResult(False, f"Fragment segment detected: {seg.text_en[:80]}")
 
     full = " ".join(s.text_en for s in segments)
+    artificial = validate_no_artificial_sentence_breaks(full)
+    if not artificial.ok:
+        return artificial
+
     prev_sent_key = ""
     for sent in split_sentences(full):
         key = normalize_text(sent)

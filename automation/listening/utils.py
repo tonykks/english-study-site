@@ -39,11 +39,7 @@ def capitalize_first(text: str) -> str:
 
 
 def cleanup_caption_text(text: str) -> str:
-    """Punctuation/capitalization only — no word add/remove."""
-    text = re.sub(r"\s+", " ", (text or "").strip())
-    if not text:
-        return text
-    text = capitalize_first(text)
-    if text[-1] not in ".!?":
-        text += "."
-    return text
+    """Whitespace normalization for raw caption fragments — no forced sentence punctuation."""
+    from automation.listening.script.caption_restore import normalize_caption_fragment
+
+    return normalize_caption_fragment(text)

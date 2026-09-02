@@ -12,6 +12,7 @@ from automation.listening.config import (
     SECTION_CROSS_CHUNK_OVERLAP_MIN,
 )
 from automation.listening.models import Segment, StorySection
+from automation.listening.script.caption_restore import is_complete_sentence
 from automation.listening.utils import normalize_text, split_sentences
 from automation.listening.vertex_client import generate_json, vertex_configured
 from automation.listening.youtube.chapters import fetch_youtube_chapters
@@ -421,6 +422,8 @@ Sections:
             raise RuntimeError(f"BLOCKED: Core sentence for section {idx} is not verbatim in section text")
         if not _sentence_in_text(picked, verified_text):
             raise RuntimeError(f"BLOCKED: Core sentence for section {idx} is not in verified full script")
+        if not is_complete_sentence(picked):
+            raise RuntimeError(f"BLOCKED: Core sentence for section {idx} is not a complete sentence")
         by_index[idx] = picked
     if len(by_index) != len(sections):
         raise RuntimeError("BLOCKED: Core batch missing section indices")
@@ -500,6 +503,10 @@ Section ({section.title}):
         if not _sentence_in_text(picked, verified_text):
             raise RuntimeError(
                 f"BLOCKED: Core sentence for section {section.index} is not in verified full script"
+            )
+        if not is_complete_sentence(picked):
+            raise RuntimeError(
+                f"BLOCKED: Core sentence for section {section.index} is not a complete sentence"
             )
         return picked
 

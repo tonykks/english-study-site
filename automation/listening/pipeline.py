@@ -33,6 +33,14 @@ from automation.listening.models import PipelineResult, Segment, VideoMeta
 from automation.listening.publish.publish import publish_to_repo
 from automation.listening.publish.stage import write_comparison, write_stage
 from automation.listening.script.canonical import consolidate_caption_segments, group_paragraphs, merge_overlapping_segments, segments_from_raw
+from automation.listening.script.caption_restore import (
+    is_complete_sentence,
+    restore_caption_segments,
+    validate_no_artificial_sentence_breaks,
+    words_unchanged,
+    join_caption_fragments,
+)
+from automation.listening.generate.cta_filter import segments_for_learning
 from automation.listening.script.validate import (
     cross_validate,
     validate_04_en_fidelity,
@@ -128,8 +136,25 @@ def run_pipeline(
         except Exception as exc:
             return PipelineResult("BLOCKED", str(exc), video_id=meta.video_id)
 
+        try:
+            restored_caption = restore_caption_segments(caption_segments, asr_segments)
+        except RuntimeError as exc:
+            return PipelineResult("BLOCKED", str(exc), video_id=meta.video_id)
+
+        restored_full = " ".join(s.text_en for s in restored_caption)
+        break_check = validate_no_artificial_sentence_breaks(restored_full)
+        if not break_check.ok:
+            return PipelineResult("BLOCKED", break_check.reason, video_id=meta.video_id)
+
+        if not words_unchanged(join_caption_fragments(caption_segments), restored_full):
+            return PipelineResult(
+                "BLOCKED",
+                "Caption restoration altered word content or order",
+                video_id=meta.video_id,
+            )
+
         if caption_segments:
-            caps_for_cv = consolidate_caption_segments(caption_segments)
+            caps_for_cv = consolidate_caption_segments(restored_caption)
             if meta.duration > 15 * 60:
                 cap_chunks = chunk_segments(caps_for_cv, meta.duration)
                 asr_chunks = chunk_segments(asr_segments, meta.duration)
@@ -170,7 +195,7 @@ def run_pipeline(
         kr_paragraphs = translate_paragraphs_kr(paragraphs, allow_placeholder=allow_placeholder)
         content_04 = inject_kr_into_04(content_04_en, kr_paragraphs)
         sections = build_sections_for_transcript(
-            verified,
+            segments_for_learning(verified),
             meta.video_id,
             level,
             allow_placeholder=allow_placeholder,
