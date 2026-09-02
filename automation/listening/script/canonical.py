@@ -63,10 +63,12 @@ def merge_overlapping_segments(chunks: list[list[Segment]]) -> list[Segment]:
 
 def consolidate_caption_segments(segments: list[Segment], bucket_sec: float = 12.0) -> list[Segment]:
     """Merge fragmented auto-caption windows into validation-sized buckets."""
-    if len(segments) < 100:
+    if not segments:
+        return segments
+    if segments[0].source == "caption_restored":
         return segments
 
-    if not segments:
+    if len(segments) < 100:
         return segments
 
     end_time = max(s.end for s in segments)

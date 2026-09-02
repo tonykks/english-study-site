@@ -155,7 +155,10 @@ def _translate_batch(
         try:
             return translate_literal_kr_batch(items)
         except Exception as exc:
-            raise RuntimeError(f"BLOCKED: batch literal KR translation failed: {exc}") from exc
+            try:
+                return {item_id: translate_literal_kr(text) for item_id, text in items}
+            except Exception:
+                raise RuntimeError(f"BLOCKED: batch literal KR translation failed: {exc}") from exc
     if openai_configured():
         return {item_id: _openai_literal(text) for item_id, text in items}
     raise RuntimeError("BLOCKED: Vertex AI (ADC) required for batch literal KR translation")

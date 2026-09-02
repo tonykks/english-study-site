@@ -82,25 +82,14 @@ INCOMPLETE_BEFORE_PERIOD = frozenset(
         "first",
         "second",
         "third",
-        "many",
-        "some",
-        "any",
-        "every",
-        "each",
-        "both",
         "became",
         "called",
         "named",
-        "became",
         "become",
         "becomes",
-        "became",
         "very",
         "more",
         "most",
-        "such",
-        "other",
-        "another",
         "not",
         "no",
         "also",
@@ -324,6 +313,7 @@ def restore_caption_text(segments: list[Segment], asr_segments: list[Segment] | 
     fixed = fix_artificial_period_breaks(joined)
     asr_text = " ".join(s.text_en for s in asr_segments) if asr_segments else None
     restored = restore_sentence_boundaries(fixed, asr_text)
+    restored = fix_artificial_period_breaks(restored)
     if not words_unchanged(joined, restored):
         raise RuntimeError("BLOCKED: caption restoration altered word content or order")
     return restored
@@ -383,7 +373,7 @@ def restore_caption_segments(
                 start=start,
                 end=max(end, start + 0.01),
                 text_en=sentence,
-                source=segments[0].source,
+                source="caption_restored",
             )
         )
     if len(times) < len(sentences):
@@ -395,9 +385,16 @@ def restore_caption_segments(
                     start=prev_end,
                     end=prev_end + 0.01,
                     text_en=sentence,
-                    source=segments[0].source,
+                    source="caption_restored",
                 )
             )
+    if restored:
+        restored[0].start = segments[0].start
+        restored[-1].end = segments[-1].end
+        for i in range(len(restored) - 1):
+            boundary = (restored[i].end + restored[i + 1].start) / 2.0
+            restored[i].end = boundary
+            restored[i + 1].start = boundary
     return restored
 
 

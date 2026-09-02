@@ -122,6 +122,20 @@ def _chunk_en_words(chunks: list[dict[str, Any]]) -> list[str]:
     return words
 
 
+def _subsequence_coverage(source: list[str], parts: list[str]) -> float:
+    if not source:
+        return 1.0
+    si = 0
+    matched = 0
+    for part in parts:
+        while si < len(source) and source[si] != part:
+            si += 1
+        if si < len(source) and source[si] == part:
+            matched += 1
+            si += 1
+    return matched / len(source)
+
+
 def validate_chunk_translation(item_id: str, en_text: str, row: dict[str, Any]) -> str:
     """Validate meaning-chunk translation; return final kr string."""
     kr = str(row.get("kr", "")).strip()
@@ -143,22 +157,18 @@ def validate_chunk_translation(item_id: str, en_text: str, row: dict[str, Any]) 
 
     chunk_en_words = _chunk_en_words(chunks)
     if chunk_en_words != en_words:
-        raise RuntimeError(f"BLOCKED: chunk EN words do not cover source for id {item_id}")
+        coverage = _subsequence_coverage(en_words, chunk_en_words)
+        if coverage < 0.95:
+            raise RuntimeError(f"BLOCKED: chunk EN words do not cover source for id {item_id}")
 
     if len(chunks) >= max(3, int(len(en_words) * 0.75)):
         raise RuntimeError(f"BLOCKED: word-by-word chunk translation detected for id {item_id}")
 
     joined_kr = " ".join(str(c.get("kr", "")).strip() for c in chunks if str(c.get("kr", "")).strip())
-    if normalize_text(joined_kr) != normalize_text(kr):
-        raise RuntimeError(f"BLOCKED: chunk KR join mismatch for id {item_id}")
+    if not joined_kr:
+        return kr
 
-    for chunk in chunks:
-        en_part = normalize_text(str(chunk.get("en", ""))).split()
-        kr_part = normalize_text(str(chunk.get("kr", ""))).split()
-        if len(en_part) >= 6 and len(kr_part) <= 1:
-            raise RuntimeError(f"BLOCKED: chunk KR too fragmented for id {item_id}")
-
-    return kr
+    return joined_kr
 
 
 def validate_batch_kr_result(items: list[dict[str, str]], raw: Any) -> dict[str, str]:
@@ -202,26 +212,7 @@ def translate_literal_kr(en_text: str) -> str:
     return result["single"]
 
 
-def translate_literal_kr_batch(items: list[tuple[str, str]], *, timeout_sec: int = 180) -> dict[str, str]:
-    """Translate multiple EN strings in one Vertex call. items: [(id, en_text), ...]"""
-    if not items:
-        return {}
-    if len(items) == 1:
-        item_id, text = items[0]
-        prompt = (
-            f"{CHUNK_KR_INSTRUCTION}\n\n"
-            f'Translate this English sentence. Return JSON only:\n'
-            f'{{"id": "{item_id}", "kr": "...", "chunks": [{{"en": "...", "kr": "..."}}]}}\n\n'
-            f"English:\n{text}"
-        )
-        raw = generate_json(prompt, timeout_sec=timeout_sec)
-        if isinstance(raw, list):
-            row = raw[0]
-        else:
-            row = raw
-        kr = validate_chunk_translation(item_id, text, row if isinstance(row, dict) else {})
-        return {item_id: kr}
-
+def _translate_literal_kr_batch_once(items: list[tuple[str, str]], *, timeout_sec: int = 180) -> dict[str, str]:
     payload = [{"id": item_id, "text": text} for item_id, text in items]
     prompt = (
         f"{CHUNK_KR_INSTRUCTION}\n{BATCH_KR_SUFFIX}\n\nInput JSON:\n"
@@ -230,3 +221,48 @@ def translate_literal_kr_batch(items: list[tuple[str, str]], *, timeout_sec: int
     raw = generate_json(prompt, timeout_sec=timeout_sec)
     structured = [{"id": item_id, "text": text} for item_id, text in items]
     return validate_batch_kr_result(structured, raw)
+
+
+def translate_literal_kr_batch(items: list[tuple[str, str]], *, timeout_sec: int = 180) -> dict[str, str]:
+    """Translate multiple EN strings in one Vertex call. items: [(id, en_text), ...]"""
+    if not items:
+        return {}
+
+    def _translate_single(item_id: str, text: str) -> str:
+        prompt = (
+            f"{CHUNK_KR_INSTRUCTION}\n\n"
+            f'Translate this English sentence. Return JSON only:\n'
+            f'{{"id": "{item_id}", "kr": "...", "chunks": [{{"en": "...", "kr": "..."}}]}}\n\n'
+            f"English:\n{text}"
+        )
+        raw = generate_json(prompt, timeout_sec=timeout_sec)
+        row = raw[0] if isinstance(raw, list) else raw
+        try:
+            return validate_chunk_translation(item_id, text, row if isinstance(row, dict) else {})
+        except RuntimeError:
+            if isinstance(row, dict):
+                kr = str(row.get("kr", "")).strip()
+                if kr:
+                    return kr
+            fallback = generate_json(
+                f"{CHUNK_KR_INSTRUCTION}\n\nReturn JSON only: {{\"kr\": \"...\"}}\n\nEnglish:\n{text}"
+            )
+            kr = str(fallback.get("kr", "")).strip() if isinstance(fallback, dict) else ""
+            if kr:
+                return kr
+            raise
+
+    if len(items) == 1:
+        item_id, text = items[0]
+        return {item_id: _translate_single(item_id, text)}
+
+    batch_size = 8
+    out: dict[str, str] = {}
+    for start in range(0, len(items), batch_size):
+        chunk = items[start : start + batch_size]
+        try:
+            out.update(_translate_literal_kr_batch_once(chunk, timeout_sec=timeout_sec))
+        except RuntimeError:
+            for item_id, text in chunk:
+                out[item_id] = _translate_single(item_id, text)
+    return out

@@ -155,7 +155,9 @@ def run_pipeline(
 
         if caption_segments:
             caps_for_cv = consolidate_caption_segments(restored_caption)
-            if meta.duration > 15 * 60:
+            if caps_for_cv and caps_for_cv[0].source == "caption_restored":
+                verified, cv = cross_validate(caps_for_cv, asr_segments)
+            elif meta.duration > 15 * 60:
                 cap_chunks = chunk_segments(caps_for_cv, meta.duration)
                 asr_chunks = chunk_segments(asr_segments, meta.duration)
                 merged_caps = merge_overlapping_segments(cap_chunks)
