@@ -113,14 +113,41 @@ def test_chunk_segments_for_long_transcript():
     assert sum(len(c) for c in chunks) > len(expanded)
 
 
-def test_merge_section_candidates_deduplicates_chunk_overlap():
+def test_merge_preserves_three_adjacent_sections_same_chunk():
     candidates = [
-        {"title": "Intro", "start": 0.0, "end": 300.0},
-        {"title": "Intro continued", "start": 280.0, "end": 600.0},
-        {"title": "Main story", "start": 700.0, "end": 1200.0},
+        {"title": "Part A", "start": 0.0, "end": 300.0, "source_chunk": 0},
+        {"title": "Part B", "start": 300.0, "end": 600.0, "source_chunk": 0},
+        {"title": "Part C", "start": 600.0, "end": 900.0, "source_chunk": 0},
     ]
     merged = merge_section_candidates(candidates)
-    assert len(merged) == 2
-    assert merged[0]["end"] == 600.0
-    assert merged[1]["title"] == "Main story"
+    assert len(merged) == 3
+    assert [m["start"] for m in merged] == [0.0, 300.0, 600.0]
+    assert [m["end"] for m in merged] == [300.0, 600.0, 900.0]
+
+
+def test_merge_deduplicates_cross_chunk_overlap_only():
+    candidates = [
+        {"title": "Part A", "start": 0.0, "end": 300.0, "source_chunk": 0},
+        {"title": "Part B", "start": 300.0, "end": 600.0, "source_chunk": 0},
+        {"title": "Part B overlap", "start": 280.0, "end": 600.0, "source_chunk": 1},
+        {"title": "Part C", "start": 600.0, "end": 900.0, "source_chunk": 1},
+    ]
+    merged = merge_section_candidates(candidates)
+    assert len(merged) == 3
+    assert merged[0]["start"] == 0.0
+    assert merged[0]["end"] == 300.0
+    assert merged[1]["start"] == 280.0
+    assert merged[1]["end"] == 600.0
+    assert merged[2]["start"] == 600.0
+    assert merged[2]["end"] == 900.0
+
+
+def test_merge_without_source_chunk_does_not_merge_adjacent():
+    candidates = [
+        {"title": "Intro", "start": 0.0, "end": 300.0},
+        {"title": "Middle", "start": 300.0, "end": 600.0},
+        {"title": "End", "start": 600.0, "end": 900.0},
+    ]
+    merged = merge_section_candidates(candidates)
+    assert len(merged) == 3
 

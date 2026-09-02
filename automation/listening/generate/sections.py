@@ -5,9 +5,10 @@ import logging
 import re
 
 from automation.listening.config import (
-    SECTION_BOUNDARY_MERGE_GAP_SEC,
     SECTION_CHUNK_MAX_SEGMENTS,
     SECTION_CHUNK_OVERLAP_SEGMENTS,
+    SECTION_CROSS_CHUNK_BOUNDARY_EPS_SEC,
+    SECTION_CROSS_CHUNK_OVERLAP_MIN,
 )
 from automation.listening.models import Segment, StorySection
 from automation.listening.utils import normalize_text, split_sentences
@@ -66,33 +67,87 @@ def chunk_segments_for_inference(
     return chunks
 
 
+def _candidate_span(cand: dict) -> tuple[float, float]:
+    start = float(cand.get("start", 0.0))
+    end = float(cand.get("end", start))
+    if end <= start:
+        end = start + 1.0
+    return start, end
+
+
+def _overlap_ratio(a_start: float, a_end: float, b_start: float, b_end: float) -> float:
+    overlap = max(0.0, min(a_end, b_end) - max(a_start, b_start))
+    if overlap <= 0.0:
+        return 0.0
+    min_span = min(a_end - a_start, b_end - b_start)
+    return overlap / min_span if min_span > 0.0 else 0.0
+
+
+def _normalize_candidate(cand: dict) -> dict:
+    start, end = _candidate_span(cand)
+    normalized = {
+        "title": str(cand.get("title") or "Section").strip(),
+        "start": start,
+        "end": end,
+    }
+    if "source_chunk" in cand:
+        normalized["source_chunk"] = cand["source_chunk"]
+    return normalized
+
+
+def _should_merge_cross_chunk(existing: dict, cand: dict) -> bool:
+    """Merge only when different chunks produced overlapping duplicate section candidates."""
+    chunk_a = existing.get("source_chunk")
+    chunk_b = cand.get("source_chunk")
+    if chunk_a is None or chunk_b is None:
+        return False
+    if chunk_a == chunk_b:
+        return False
+
+    a_start, a_end = _candidate_span(existing)
+    b_start, b_end = _candidate_span(cand)
+    if _overlap_ratio(a_start, a_end, b_start, b_end) >= SECTION_CROSS_CHUNK_OVERLAP_MIN:
+        return True
+
+    return (
+        abs(a_start - b_start) <= SECTION_CROSS_CHUNK_BOUNDARY_EPS_SEC
+        and abs(a_end - b_end) <= SECTION_CROSS_CHUNK_BOUNDARY_EPS_SEC
+    )
+
+
 def merge_section_candidates(candidates: list[dict]) -> list[dict]:
     if not candidates:
         return []
 
-    sorted_cands = sorted(
-        candidates,
-        key=lambda c: (float(c.get("start", 0.0)), float(c.get("end", 0.0))),
-    )
+    normalized = [_normalize_candidate(c) for c in candidates]
+    sorted_cands = sorted(normalized, key=lambda c: (c["start"], c["end"]))
     merged: list[dict] = []
+
     for cand in sorted_cands:
-        start = float(cand.get("start", 0.0))
-        end = float(cand.get("end", start))
-        title = str(cand.get("title") or "Section").strip()
-        if end <= start:
-            end = start + 1.0
-        if not merged:
-            merged.append({"title": title, "start": start, "end": end})
+        merge_idx: int | None = None
+        best_ratio = 0.0
+        for i, existing in enumerate(merged):
+            if not _should_merge_cross_chunk(existing, cand):
+                continue
+            a_start, a_end = _candidate_span(existing)
+            b_start, b_end = _candidate_span(cand)
+            ratio = _overlap_ratio(a_start, a_end, b_start, b_end)
+            if ratio > best_ratio:
+                best_ratio = ratio
+                merge_idx = i
+
+        if merge_idx is None:
+            merged.append(dict(cand))
             continue
 
-        last = merged[-1]
-        gap = start - last["end"]
-        if gap <= SECTION_BOUNDARY_MERGE_GAP_SEC or start < last["end"]:
-            last["end"] = max(last["end"], end)
-            if len(title) > len(last["title"]):
-                last["title"] = title
-        else:
-            merged.append({"title": title, "start": start, "end": end})
+        target = merged[merge_idx]
+        cand_start, cand_end = _candidate_span(cand)
+        target["start"] = min(float(target["start"]), cand_start)
+        target["end"] = max(float(target["end"]), cand_end)
+        if len(cand["title"]) > len(target["title"]):
+            target["title"] = cand["title"]
+
+    merged.sort(key=lambda c: (c["start"], c["end"]))
     return merged
 
 
@@ -210,9 +265,12 @@ def _infer_sections_vertex_chunked(segments: list[Segment]) -> list[StorySection
 
     all_candidates: list[dict] = []
     for i, chunk in enumerate(chunks):
-        candidates = _infer_chunk_section_candidates(chunk, i, len(chunks))
-        all_candidates.extend(candidates)
-        logger.info("Chunk %d/%d yielded %d section candidates", i + 1, len(chunks), len(candidates))
+        raw_candidates = _infer_chunk_section_candidates(chunk, i, len(chunks))
+        for cand in raw_candidates:
+            tagged = dict(cand)
+            tagged["source_chunk"] = i
+            all_candidates.append(tagged)
+        logger.info("Chunk %d/%d yielded %d section candidates", i + 1, len(chunks), len(raw_candidates))
 
     merged = merge_section_candidates(all_candidates)
     if len(chunks) > 1:
