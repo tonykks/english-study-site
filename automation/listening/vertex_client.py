@@ -25,6 +25,9 @@ Rules:
 - Do NOT summarize, paraphrase, omit, or add meaning
 - Each English chunk must map clearly to one Korean chunk
 - Chunk-internal Korean grammar should be understandable (e.g. "became a center" → "하나의 중심지가 되었다")
+- Keep verb phrases together: "became a center", "could stay in one place", "helped humans build"
+- Do NOT split auxiliary+verb or verb+complement into separate one-word chunks
+- Avoid 1-word or 2-word chunks unless the English chunk is truly atomic (e.g. a short subject)
 - You do not need to output "/" in the final kr text; join chunks with spaces
 
 Examples:
@@ -164,6 +167,22 @@ def validate_chunk_translation(item_id: str, en_text: str, row: dict[str, Any]) 
     if len(chunks) >= max(3, int(len(en_words) * 0.75)):
         raise RuntimeError(f"BLOCKED: word-by-word chunk translation detected for id {item_id}")
 
+    tiny_chunks = 0
+    for chunk in chunks:
+        en_part = normalize_text(str(chunk.get("en", ""))).split()
+        kr_part = str(chunk.get("kr", "")).strip()
+        if len(en_part) >= 3 and len(kr_part.split()) <= 1:
+            tiny_chunks += 1
+        if len(en_part) == 1 and len(en_words) >= 8:
+            tiny_chunks += 1
+    if len(en_words) >= 8 and tiny_chunks >= max(2, len(chunks) // 2):
+        raise RuntimeError(f"BLOCKED: fragmented one-word chunks for id {item_id}")
+
+    if len(en_words) >= 8:
+        avg_en_words = len(chunk_en_words) / len(chunks)
+        if avg_en_words < 2.0:
+            raise RuntimeError(f"BLOCKED: chunks too small (avg {avg_en_words:.1f} EN words) for id {item_id}")
+
     joined_kr = " ".join(str(c.get("kr", "")).strip() for c in chunks if str(c.get("kr", "")).strip())
     if not joined_kr:
         return kr
@@ -242,14 +261,9 @@ def translate_literal_kr_batch(items: list[tuple[str, str]], *, timeout_sec: int
         except RuntimeError:
             if isinstance(row, dict):
                 kr = str(row.get("kr", "")).strip()
-                if kr:
+                chunks = row.get("chunks")
+                if kr and isinstance(chunks, list) and len(chunks) >= 2:
                     return kr
-            fallback = generate_json(
-                f"{CHUNK_KR_INSTRUCTION}\n\nReturn JSON only: {{\"kr\": \"...\"}}\n\nEnglish:\n{text}"
-            )
-            kr = str(fallback.get("kr", "")).strip() if isinstance(fallback, dict) else ""
-            if kr:
-                return kr
             raise
 
     if len(items) == 1:

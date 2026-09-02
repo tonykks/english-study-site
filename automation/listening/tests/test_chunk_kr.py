@@ -44,12 +44,27 @@ def test_chunk_translation_missing_words_rejected():
         validate_chunk_translation("s3", en, row)
 
 
-def test_chunk_translation_too_few_chunks_rejected():
+def test_chunk_regression_became_a_center():
     en = "The Middle East became a center of learning and exchange."
     row = {
-        "id": "s4",
-        "kr": "중동은 하나의 중심지가 되었다.",
-        "chunks": [{"en": en, "kr": "중동은 하나의 중심지가 되었다."}],
+        "id": "r1",
+        "kr": "중동은 하나의 중심지가 되었다 학습과 교류의.",
+        "chunks": [
+            {"en": "The Middle East", "kr": "중동은"},
+            {"en": "became a center", "kr": "하나의 중심지가 되었다"},
+            {"en": "of learning and exchange", "kr": "학습과 교류의"},
+        ],
     }
-    with pytest.raises(RuntimeError, match="too few"):
-        validate_chunk_translation("s4", en, row)
+    kr = validate_chunk_translation("r1", en, row)
+    assert "하나의 중심지가 되었다" in kr
+
+
+def test_chunk_rejects_single_word_fragments():
+    en = "Because of the rivers, people could stay in one place instead of moving all the time."
+    row = {
+        "id": "r2",
+        "kr": "강들 덕분에 사람들은 머물 수 있었다 한 장소에.",
+        "chunks": [{"en": w.strip(",."), "kr": w} for w in en.replace(".", "").split()],
+    }
+    with pytest.raises(RuntimeError):
+        validate_chunk_translation("r2", en, row)

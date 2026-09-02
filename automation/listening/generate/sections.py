@@ -368,6 +368,21 @@ def _sentence_in_text(sentence: str, text: str) -> bool:
     return norm_sent in norm_text
 
 
+def _best_complete_core_sentence(section: StorySection, verified_text: str) -> str:
+    candidates = [
+        sent.strip()
+        for sent in split_sentences(section.text_en)
+        if is_complete_sentence(sent.strip())
+        and _sentence_in_text(sent.strip(), section.text_en)
+        and _sentence_in_text(sent.strip(), verified_text)
+    ]
+    if not candidates:
+        raise RuntimeError(
+            f"BLOCKED: No complete core sentence available for section {section.index}"
+        )
+    return max(candidates, key=lambda s: len(normalize_text(s).split()))
+
+
 def _level_guidance(level: int) -> str:
     return LEVEL_GENERATION_GUIDANCE.get(level, LEVEL_GENERATION_GUIDANCE[2])
 
@@ -423,7 +438,8 @@ Sections:
         if not _sentence_in_text(picked, verified_text):
             raise RuntimeError(f"BLOCKED: Core sentence for section {idx} is not in verified full script")
         if not is_complete_sentence(picked):
-            raise RuntimeError(f"BLOCKED: Core sentence for section {idx} is not a complete sentence")
+            section = next(s for s in sections if s.index == idx)
+            picked = _best_complete_core_sentence(section, verified_text)
         by_index[idx] = picked
     if len(by_index) != len(sections):
         raise RuntimeError("BLOCKED: Core batch missing section indices")
@@ -505,18 +521,10 @@ Section ({section.title}):
                 f"BLOCKED: Core sentence for section {section.index} is not in verified full script"
             )
         if not is_complete_sentence(picked):
-            raise RuntimeError(
-                f"BLOCKED: Core sentence for section {section.index} is not a complete sentence"
-            )
+            picked = _best_complete_core_sentence(section, verified_text)
         return picked
 
-    sents = split_sentences(section.text_en)
-    if not sents:
-        raise RuntimeError(f"BLOCKED: section {section.index} has no sentences for core pick")
-    picked = sents[len(sents) // 2]
-    if not _sentence_in_text(picked, verified_text):
-        raise RuntimeError(f"BLOCKED: heuristic core sentence not in verified script for section {section.index}")
-    return picked
+    return _best_complete_core_sentence(section, verified_text)
 
 
 def _pick_summary_en(section: StorySection, level: int, *, allow_placeholder: bool) -> str:

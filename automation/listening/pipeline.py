@@ -37,6 +37,7 @@ from automation.listening.script.caption_restore import (
     is_complete_sentence,
     restore_caption_segments,
     validate_no_artificial_sentence_breaks,
+    validate_sentence_boundaries,
     words_unchanged,
     join_caption_fragments,
 )
@@ -145,6 +146,10 @@ def run_pipeline(
         break_check = validate_no_artificial_sentence_breaks(restored_full)
         if not break_check.ok:
             return PipelineResult("BLOCKED", break_check.reason, video_id=meta.video_id)
+
+        boundary_check = validate_sentence_boundaries(restored_full)
+        if not boundary_check.ok:
+            return PipelineResult("BLOCKED", boundary_check.reason, video_id=meta.video_id)
 
         if not words_unchanged(join_caption_fragments(caption_segments), restored_full):
             return PipelineResult(

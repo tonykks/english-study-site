@@ -83,3 +83,21 @@ def test_restore_caption_segments_complete_sentences():
 def test_real_sentence_end_preserved():
     text = "Water made the land good for farming. Because of the rivers, people stayed."
     assert validate_no_artificial_sentence_breaks(text).ok
+
+
+def test_run_on_split_after_alignment_gap():
+    from automation.listening.script.caption_restore import restore_sentence_boundaries, validate_run_on_sentences
+
+    joined = (
+        "The Persians ruled a huge area including modern day Iran Iraq and parts of Turkey "
+        "They were known for fairness good roads and trade "
+        "Merchants could travel safely and sell goods like spices silk and gold"
+    )
+    asr = (
+        "The Persians ruled a huge area including modern-day Iran, Iraq, and parts of Turkey. "
+        "They were known for fairness, good roads, and trade. "
+        "Merchants could travel safely and sell goods like spices, silk, and gold."
+    )
+    restored = restore_sentence_boundaries(joined, asr)
+    assert "Turkey." in restored or "turkey." in restored.lower()
+    assert validate_run_on_sentences(restored).ok

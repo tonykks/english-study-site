@@ -13,6 +13,7 @@ from typing import Any
 from automation.listening.config import ASR_CACHE_ROOT, COMPARISON_ROOT, load_config
 from automation.listening.pipeline import run_pipeline
 from automation.listening.script.canonical import consolidate_caption_segments
+from automation.listening.script.golden_reference import compare_video_golden_reference
 from automation.listening.utils import word_divergence
 from automation.listening.youtube.duration import fetch_youtube_duration
 from automation.listening.youtube.transcript import fetch_caption_segments
@@ -240,6 +241,22 @@ def main(argv: list[str] | None = None) -> int:
     elapsed = time.perf_counter() - started
     video_id = result.video_id if result else video_id
 
+    golden_report = None
+    if result and result.status == "COMPARISON" and video_id:
+        content_04_path = COMPARISON_ROOT / video_id / "04_full_script.txt"
+        if content_04_path.exists():
+            golden = compare_video_golden_reference(video_id, content_04_path.read_text(encoding="utf-8"))
+            if golden is not None:
+                golden_report = golden.to_report()
+                if not golden.ok:
+                    result = type(result)(
+                        "NEEDS_FIX",
+                        f"Golden reference compare failed: {golden.reason}",
+                        folder=result.folder,
+                        video_id=result.video_id,
+                        staging_dir=result.staging_dir,
+                    )
+
     report = {
         "started_at_utc": started_at,
         "elapsed_sec": round(elapsed, 2),
@@ -257,6 +274,8 @@ def main(argv: list[str] | None = None) -> int:
         "calls": METRICS["calls"],
         "billing_note": "Exact USD cost requires Google Cloud Billing export; usage_totals are from Vertex usage_metadata when available.",
     }
+    if golden_report is not None:
+        report["golden_compare"] = golden_report
 
     out_dir = COMPARISON_ROOT / video_id if video_id else COMPARISON_ROOT / "unknown"
     out_dir.mkdir(parents=True, exist_ok=True)
