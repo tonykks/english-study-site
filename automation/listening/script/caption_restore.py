@@ -470,6 +470,7 @@ def _should_split_before_next(
     next_norm: str,
     *,
     current_raw: str = "",
+    prev_norm: str = "",
 ) -> bool:
     if current_norm in INCOMPLETE_BEFORE_PERIOD:
         # "more/most/other" can end a clause before a new capitalized starter.
@@ -488,6 +489,9 @@ def _should_split_before_next(
         return False
     if next_norm in PROPER_NOUN_TOKENS:
         return False
+    # "by/at the time Name..." is a clause opener, not a sentence end.
+    if current_norm == "time" and prev_norm == "the":
+        return False
     if next_norm in SENTENCE_STARTERS or next_word == "I":
         return True
     if current_norm in TERMINAL_BEFORE_CAPITAL:
@@ -504,7 +508,14 @@ def _heuristic_sentence_end_indices(words: list[str]) -> set[int]:
         next_word = words[i + 1]
         current_norm = normalize_text(clean)
         next_norm = normalize_text(re.sub(r"[.!?]+$", "", next_word))
-        if _should_split_before_next(current_norm, next_word, next_norm, current_raw=clean):
+        prev_norm = normalize_text(re.sub(r"[.!?]+$", "", words[i - 1])) if i > 0 else ""
+        if _should_split_before_next(
+            current_norm,
+            next_word,
+            next_norm,
+            current_raw=clean,
+            prev_norm=prev_norm,
+        ):
             ends.add(i)
     return ends
 
@@ -587,6 +598,7 @@ def _restore_boundaries_with_asr(cap_words: list[str], asr_text: str) -> str:
                 span_words[local_i + 1],
                 cap_norm[abs_i + 1],
                 current_raw=span_words[local_i],
+                prev_norm=cap_norm[abs_i - 1] if abs_i > 0 else "",
             ):
                 end_indices.add(abs_i)
 
@@ -594,11 +606,17 @@ def _restore_boundaries_with_asr(cap_words: list[str], asr_text: str) -> str:
 
     safe_ends: set[int] = set()
     for idx in sorted(end_indices):
+        if cap_norm[idx] == "time" and idx > 0 and cap_norm[idx - 1] == "the":
+            continue
         if cap_norm[idx] in INCOMPLETE_BEFORE_PERIOD and idx != len(cap_clean) - 1:
             next_raw = cap_clean[idx + 1] if idx + 1 < len(cap_clean) else ""
             next_norm = cap_norm[idx + 1] if idx + 1 < len(cap_norm) else ""
             if not _should_split_before_next(
-                cap_norm[idx], next_raw, next_norm, current_raw=cap_clean[idx]
+                cap_norm[idx],
+                next_raw,
+                next_norm,
+                current_raw=cap_clean[idx],
+                prev_norm=cap_norm[idx - 1] if idx > 0 else "",
             ):
                 continue
         safe_ends.add(idx)
@@ -659,7 +677,14 @@ def _sentence_time_ranges(
     raw_segments: list[Segment],
     sentences: list[str],
 ) -> list[tuple[float, float]]:
+    """Map restored sentences onto caption word order with monotonic timestamps.
+
+    YouTube auto-captions often overlap; raw fragment times can go backwards in
+    spoken-word order. Clamp each word so start/end never move earlier than the
+    previous word (preserves caption word order; does not sort segments).
+    """
     word_times: list[tuple[str, float, float]] = []
+    prev_end = float(raw_segments[0].start) if raw_segments else 0.0
     for seg in raw_segments:
         words = normalize_caption_fragment(seg.text_en).split()
         if not words:
@@ -667,7 +692,12 @@ def _sentence_time_ranges(
         duration = max(seg.end - seg.start, 0.01)
         step = duration / len(words)
         for i, word in enumerate(words):
-            word_times.append((normalize_text(word), seg.start + i * step, seg.start + (i + 1) * step))
+            raw_start = seg.start + i * step
+            raw_end = seg.start + (i + 1) * step
+            start = max(raw_start, prev_end)
+            end = max(raw_end, start + 0.001)
+            word_times.append((normalize_text(word), start, end))
+            prev_end = end
 
     ranges: list[tuple[float, float]] = []
     cursor = 0
@@ -683,9 +713,43 @@ def _sentence_time_ranges(
             continue
         start_t = word_times[start_idx][1]
         end_t = word_times[end_idx - 1][2] if end_idx > start_idx else word_times[start_idx][2]
+        if end_t <= start_t:
+            end_t = start_t + 0.01
         ranges.append((start_t, end_t))
         cursor = end_idx
     return ranges
+
+
+def _enforce_monotonic_segment_times(
+    restored: list[Segment],
+    *,
+    first_start: float,
+    last_end: float,
+) -> None:
+    """Keep caption word order; force non-decreasing start/end times in place."""
+    if not restored:
+        return
+    restored[0].start = first_start
+    cursor = first_start
+    for i, seg in enumerate(restored):
+        start = max(seg.start, cursor)
+        end = max(seg.end, start + 0.01)
+        if i + 1 < len(restored):
+            # Abut neighbors to avoid validate_segments order violations.
+            next_raw = restored[i + 1].start
+            if next_raw <= start:
+                end = start + 0.01
+                restored[i + 1].start = end
+            elif next_raw < end:
+                mid = (start + next_raw) / 2.0 if next_raw > start else start + 0.01
+                end = mid
+                restored[i + 1].start = mid
+        seg.start = start
+        seg.end = end
+        cursor = end
+    restored[-1].end = max(restored[-1].end, last_end)
+    if restored[-1].end <= restored[-1].start:
+        restored[-1].end = restored[-1].start + 0.01
 
 
 def restore_caption_segments(
@@ -725,12 +789,11 @@ def restore_caption_segments(
                 )
             )
     if restored:
-        restored[0].start = segments[0].start
-        restored[-1].end = segments[-1].end
-        for i in range(len(restored) - 1):
-            boundary = (restored[i].end + restored[i + 1].start) / 2.0
-            restored[i].end = boundary
-            restored[i + 1].start = boundary
+        _enforce_monotonic_segment_times(
+            restored,
+            first_start=segments[0].start,
+            last_end=segments[-1].end,
+        )
     return restored
 
 
@@ -769,7 +832,14 @@ def find_missing_short_boundaries(text: str) -> list[str]:
         next_word = words[i + 1]
         next_norm = normalize_text(re.sub(r"[.!?]+$", "", next_word))
         current_norm = normalize_text(clean)
-        if _should_split_before_next(current_norm, next_word, next_norm, current_raw=clean):
+        prev_norm = normalize_text(re.sub(r"[,:;]+$", "", re.sub(r"[.!?]+$", "", words[i - 1]))) if i > 0 else ""
+        if _should_split_before_next(
+            current_norm,
+            next_word,
+            next_norm,
+            current_raw=clean,
+            prev_norm=prev_norm,
+        ):
             hits.append(f"{clean} {next_word}")
     return hits
 

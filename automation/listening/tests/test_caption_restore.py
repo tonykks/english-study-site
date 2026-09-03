@@ -183,3 +183,40 @@ def test_run_on_split_after_alignment_gap():
     restored = restore_sentence_boundaries(joined, asr)
     assert "Turkey." in restored or "turkey." in restored.lower()
     assert validate_run_on_sentences(restored).ok
+
+
+def test_overlapping_caption_times_stay_monotonic_after_restore():
+    """Overlapping YouTube caption windows must not invert restored segment times."""
+    from automation.listening.script.caption_restore import restore_caption_segments
+    from automation.listening.script.validate import validate_segments
+
+    raw = [
+        {"start": 0.0, "duration": 3.0, "text": "It was not easy but Harland"},
+        {"start": 1.5, "duration": 3.0, "text": "but Harland was strong"},
+        {"start": 3.0, "duration": 2.0, "text": "and never gave up"},
+    ]
+    caps = segments_from_raw(raw, source="caption")
+    asr = segments_from_raw(
+        [
+            {"start": 0.0, "duration": 2.0, "text": "It was not easy."},
+            {"start": 2.0, "duration": 2.0, "text": "But Harland was strong and never gave up."},
+        ],
+        source="asr",
+    )
+    restored = restore_caption_segments(caps, asr)
+    assert len(restored) >= 2
+    for i in range(1, len(restored)):
+        assert restored[i].start >= restored[i - 1].end - 0.01
+        assert restored[i].end > restored[i].start
+    assert validate_segments(restored, restored[-1].end).ok
+
+
+def test_by_the_time_not_split_before_proper_name():
+    from automation.listening.script.caption_restore import restore_sentence_boundaries, words_unchanged
+
+    caption = "By the time Harlon Sanders turned 40 he had already faced more failures"
+    asr = "By the time Harland Sanders turned 40, he had already faced more failures."
+    restored = restore_sentence_boundaries(caption, asr)
+    assert words_unchanged(caption, restored)
+    assert "By the time Harlon" in restored or "By the time Harland" in restored
+    assert "time." not in restored

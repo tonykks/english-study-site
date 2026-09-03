@@ -113,23 +113,82 @@ def _download_audio(video_id: str) -> str:
     return out_path
 
 
+def parse_asr_response(text: str) -> list[dict]:
+    """Parse Vertex ASR JSON; repair truncated/malformed arrays when possible."""
+    blob = (text or "").strip()
+    if not blob:
+        raise RuntimeError("BLOCKED: ASR returned empty response")
+    match = re.search(r"\[.*\]", blob, re.DOTALL)
+    candidate = match.group(0) if match else blob
+    try:
+        raw = json.loads(candidate)
+        if isinstance(raw, list):
+            return raw
+    except json.JSONDecodeError:
+        pass
+
+    # Fallback: extract individual segment objects even if the array is truncated.
+    objects: list[dict] = []
+    for m in re.finditer(
+        r'\{\s*"start"\s*:\s*([0-9.]+)\s*,\s*"end"\s*:\s*([0-9.]+)\s*,\s*"text"\s*:\s*"((?:\\.|[^"\\])*)"\s*\}',
+        candidate,
+    ):
+        objects.append(
+            {
+                "start": float(m.group(1)),
+                "end": float(m.group(2)),
+                "text": _unescape_json_string(m.group(3)),
+            }
+        )
+    if not objects:
+        # Looser fallback for broken wrappers around valid fields.
+        for m in re.finditer(
+            r'"start"\s*:\s*([0-9.]+).*?"end"\s*:\s*([0-9.]+).*?"text"\s*:\s*"((?:\\.|[^"\\])*)"',
+            candidate,
+            re.DOTALL,
+        ):
+            objects.append(
+                {
+                    "start": float(m.group(1)),
+                    "end": float(m.group(2)),
+                    "text": _unescape_json_string(m.group(3)),
+                }
+            )
+    if not objects:
+        raise RuntimeError("BLOCKED: ASR returned invalid format")
+    return objects
+
+
+def _unescape_json_string(value: str) -> str:
+    try:
+        return json.loads(f'"{value}"')
+    except Exception:
+        return (
+            value.replace(r"\"", '"')
+            .replace(r"\n", "\n")
+            .replace(r"\\", "\\")
+        )
+
+
 def _transcribe_audio_vertex(audio_path: str) -> list[Segment]:
     with open(audio_path, "rb") as f:
         audio_bytes = f.read()
     text = transcribe_audio_bytes(audio_bytes, mime_type="audio/mp4")
-    match = re.search(r"\[.*\]", text, re.DOTALL)
-    if not match:
-        raise RuntimeError("BLOCKED: ASR returned invalid format")
-    raw = json.loads(match.group(0))
+    raw = parse_asr_response(text)
     cleaned = []
     for item in raw:
+        if not isinstance(item, dict):
+            continue
+        start = float(item.get("start", 0.0))
         cleaned.append(
             {
-                "start": float(item["start"]),
-                "end": float(item.get("end", float(item["start"]) + 1.0)),
+                "start": start,
+                "end": float(item.get("end", start + 1.0)),
                 "text": cleanup_caption_text(str(item.get("text", ""))),
             }
         )
+    if not cleaned:
+        raise RuntimeError("BLOCKED: ASR returned no usable segments")
     return segments_from_raw(cleaned, source="asr")
 
 

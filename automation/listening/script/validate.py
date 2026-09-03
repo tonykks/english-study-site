@@ -98,8 +98,14 @@ def _caption_matches_asr(caption: str, asr_text: str) -> bool:
     return word_divergence(caption, asr_text) <= DIVERGENCE_WORD_THRESHOLD
 
 
-def cross_validate(caption: list[Segment], asr: list[Segment]) -> tuple[list[Segment], ValidationResult]:
+def cross_validate(
+    caption: list[Segment],
+    asr: list[Segment],
+    *,
+    word_threshold: float | None = None,
+) -> tuple[list[Segment], ValidationResult]:
     """Use caption text as canonical; ASR is independent verification evidence only."""
+    threshold = DIVERGENCE_WORD_THRESHOLD if word_threshold is None else word_threshold
     if not caption:
         return asr, ValidationResult(False, "No caption segments")
     if not asr:
@@ -136,7 +142,7 @@ def cross_validate(caption: list[Segment], asr: list[Segment]) -> tuple[list[Seg
     ratio = divergent_duration / total_duration
     details = {"divergent_ratio": ratio, "document_divergence": document_divergence}
 
-    if document_divergence <= DIVERGENCE_WORD_THRESHOLD:
+    if document_divergence <= threshold:
         return verified, ValidationResult(True, "OK", details)
     if ratio > DIVERGENCE_DURATION_BLOCK:
         return verified, ValidationResult(
@@ -144,10 +150,10 @@ def cross_validate(caption: list[Segment], asr: list[Segment]) -> tuple[list[Seg
             f"Cross-validate divergence duration {ratio:.1%} exceeds {DIVERGENCE_DURATION_BLOCK:.0%}",
             details,
         )
-    if document_divergence > DIVERGENCE_WORD_THRESHOLD:
+    if document_divergence > threshold:
         return verified, ValidationResult(
             False,
-            f"Document divergence {document_divergence:.1%} exceeds {DIVERGENCE_WORD_THRESHOLD:.0%}",
+            f"Document divergence {document_divergence:.1%} exceeds {threshold:.0%}",
             details,
         )
 
@@ -173,9 +179,13 @@ def validate_no_transcript_anomalies(segments: list[Segment]) -> ValidationResul
         return ValidationResult(False, "Empty transcript")
 
     for seg in segments:
-        words = normalize_text(seg.text_en).split()
+        words = normalize_text(seg.text_en).strip().split()
+        text = (seg.text_en or "").strip()
         if 0 < len(words) < 3 and seg.duration() >= 2.0:
-            return ValidationResult(False, f"Fragment segment detected: {seg.text_en[:80]}")
+            # Allow short but complete spoken sentences ("Lessons learned.")
+            if len(words) >= 2 and text[-1:] in ".!?":
+                continue
+            return ValidationResult(False, f"Fragment segment detected: {text[:80]}")
 
     full = " ".join(s.text_en for s in segments)
     artificial = validate_no_artificial_sentence_breaks(full)

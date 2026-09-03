@@ -433,12 +433,11 @@ Sections:
         section = next((s for s in sections if s.index == idx), None)
         if section is None:
             raise RuntimeError(f"BLOCKED: Core batch returned unknown section index {idx}")
-        if not _sentence_in_text(picked, section.text_en):
-            raise RuntimeError(f"BLOCKED: Core sentence for section {idx} is not verbatim in section text")
-        if not _sentence_in_text(picked, verified_text):
-            raise RuntimeError(f"BLOCKED: Core sentence for section {idx} is not in verified full script")
-        if not is_complete_sentence(picked):
-            section = next(s for s in sections if s.index == idx)
+        if (
+            not _sentence_in_text(picked, section.text_en)
+            or not _sentence_in_text(picked, verified_text)
+            or not is_complete_sentence(picked)
+        ):
             picked = _best_complete_core_sentence(section, verified_text)
         by_index[idx] = picked
     if len(by_index) != len(sections):
@@ -512,16 +511,12 @@ Section ({section.title}):
 """
         )
         picked = str(data.get("sentence", "")).strip()
-        if not _sentence_in_text(picked, section.text_en):
-            raise RuntimeError(
-                f"BLOCKED: Core sentence for section {section.index} is not verbatim in section text"
-            )
-        if not _sentence_in_text(picked, verified_text):
-            raise RuntimeError(
-                f"BLOCKED: Core sentence for section {section.index} is not in verified full script"
-            )
-        if not is_complete_sentence(picked):
-            picked = _best_complete_core_sentence(section, verified_text)
+        if (
+            not _sentence_in_text(picked, section.text_en)
+            or not _sentence_in_text(picked, verified_text)
+            or not is_complete_sentence(picked)
+        ):
+            return _best_complete_core_sentence(section, verified_text)
         return picked
 
     return _best_complete_core_sentence(section, verified_text)

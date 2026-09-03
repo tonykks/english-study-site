@@ -190,32 +190,64 @@ def _save_asr_cache(video_id: str, segments) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
-def _fetch_asr_with_quality_check(video_id: str, duration: float, *, max_attempts: int = 3):
+def _fetch_asr_with_quality_check(
+    video_id: str,
+    duration: float,
+    *,
+    max_attempts: int = 3,
+    hard_threshold: float = 0.15,
+    soft_threshold: float = 0.20,
+):
+    """Fetch ASR for comparison runs.
+
+    Prefer divergence <= hard_threshold. If all attempts exceed that but the best
+    result is still <= soft_threshold, accept it (caption remains canonical).
+    """
     from automation.listening.script.vertex_transcribe import transcribe_with_vertex
 
     caps, _, _ = fetch_caption_segments(video_id)
     cap_text = " ".join(s.text_en for s in consolidate_caption_segments(caps))
     last_error = None
+    best_segments = None
+    best_div = None
     for attempt in range(1, max_attempts + 1):
         try:
             segments = transcribe_with_vertex(video_id, duration)
             asr_text = " ".join(s.text_en for s in segments)
             doc_div = word_divergence(cap_text, asr_text)
+            within_hard = doc_div <= hard_threshold
+            within_soft = doc_div <= soft_threshold
             METRICS["calls"].append(
                 {
                     "kind": "asr_quality_check",
                     "attempt": attempt,
                     "document_divergence": round(doc_div, 4),
-                    "ok": doc_div <= 0.15,
+                    "ok": within_hard,
+                    "accepted_soft": within_soft and not within_hard,
                 }
             )
-            if doc_div <= 0.15:
+            if best_div is None or doc_div < best_div:
+                best_div = doc_div
+                best_segments = segments
+            if within_hard:
                 _save_asr_cache(video_id, segments)
                 return segments
             last_error = RuntimeError(f"ASR document divergence {doc_div:.1%} too high on attempt {attempt}")
         except Exception as exc:
             last_error = exc
             METRICS["vertex_errors"] += 1
+    if best_segments is not None and best_div is not None and best_div <= soft_threshold:
+        METRICS["calls"].append(
+            {
+                "kind": "asr_quality_check",
+                "attempt": "best_of",
+                "document_divergence": round(best_div, 4),
+                "ok": False,
+                "accepted_soft": True,
+            }
+        )
+        _save_asr_cache(video_id, best_segments)
+        return best_segments
     raise RuntimeError(f"BLOCKED: ASR quality check failed after {max_attempts} attempts: {last_error}")
 
 

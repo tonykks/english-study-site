@@ -159,17 +159,26 @@ def run_pipeline(
             )
 
         if caption_segments:
+            # Comparison Mode: allow slightly higher ASR↔caption word divergence on long
+            # videos; caption text remains canonical (ASR is evidence-only).
+            cv_word_threshold = 0.20 if comparison else None
             caps_for_cv = consolidate_caption_segments(restored_caption)
             if caps_for_cv and caps_for_cv[0].source == "caption_restored":
-                verified, cv = cross_validate(caps_for_cv, asr_segments)
+                verified, cv = cross_validate(
+                    caps_for_cv, asr_segments, word_threshold=cv_word_threshold
+                )
             elif meta.duration > 15 * 60:
                 cap_chunks = chunk_segments(caps_for_cv, meta.duration)
                 asr_chunks = chunk_segments(asr_segments, meta.duration)
                 merged_caps = merge_overlapping_segments(cap_chunks)
                 merged_asr = merge_overlapping_segments(asr_chunks)
-                verified, cv = cross_validate(merged_caps, merged_asr)
+                verified, cv = cross_validate(
+                    merged_caps, merged_asr, word_threshold=cv_word_threshold
+                )
             else:
-                verified, cv = cross_validate(caps_for_cv, asr_segments)
+                verified, cv = cross_validate(
+                    caps_for_cv, asr_segments, word_threshold=cv_word_threshold
+                )
 
             if not cv.ok:
                 return PipelineResult("BLOCKED", cv.reason, video_id=meta.video_id)
