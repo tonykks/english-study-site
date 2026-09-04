@@ -360,27 +360,106 @@ def build_story_sections(
     return sections
 
 
-def _sentence_in_text(sentence: str, text: str) -> bool:
-    norm_sent = normalize_text(sentence)
-    norm_text = normalize_text(text)
-    if not norm_sent:
-        return False
-    return norm_sent in norm_text
+def _whitespace_key(sentence: str) -> str:
+    return re.sub(r"\s+", " ", (sentence or "").strip())
+
+
+def _exact_sentence_candidates(section_text: str, verified_text: str) -> list[str]:
+    """Complete sentences that exactly match a verified Full Script sentence.
+
+    Whitespace normalization only — punctuation/boundaries must match.
+    """
+    verified_candidates = {
+        _whitespace_key(sentence): sentence.strip()
+        for sentence in split_sentences(verified_text)
+        if sentence.strip()
+    }
+    out: list[str] = []
+    seen: set[str] = set()
+    for sent in split_sentences(section_text):
+        candidate = sent.strip()
+        if not candidate or not is_complete_sentence(candidate):
+            continue
+        key = _whitespace_key(candidate)
+        if key not in verified_candidates or key in seen:
+            continue
+        seen.add(key)
+        # The verified Full Script is authoritative, including punctuation and
+        # casing; never return model/section text merely because it compares equal.
+        out.append(verified_candidates[key])
+    return out
+
+
+def _sentence_exact_in_script(sentence: str, verified_text: str) -> str | None:
+    key = _whitespace_key(sentence)
+    for sent in split_sentences(verified_text):
+        candidate = sent.strip()
+        if candidate and _whitespace_key(candidate) == key:
+            return candidate
+    return None
+
+
+def _score_representative(sentence: str, section: StorySection) -> float:
+    words = normalize_text(sentence).split()
+    if not words:
+        return -1.0
+    stop_words = {
+        "a", "an", "and", "are", "as", "at", "be", "but", "by", "for",
+        "from", "had", "has", "he", "her", "his", "in", "is", "it", "of",
+        "on", "or", "she", "that", "the", "their", "they", "this", "to",
+        "was", "were", "with", "would", "you",
+    }
+    content_words = set(words) - stop_words
+    score = min(len(words), 30) * 0.45 + min(len(content_words), 18) * 0.35
+    title_words = set(normalize_text(section.title).split()) - {
+        "the",
+        "a",
+        "an",
+        "of",
+        "and",
+        "to",
+        "in",
+        "for",
+    }
+    overlap = len(title_words & set(words))
+    score += overlap * 4.0
+
+    # Internal capitalization is stronger entity evidence than the first word.
+    internal_caps = re.findall(r"\b[A-Z][a-zA-Z']+\b", sentence)[1:]
+    score += min(len(internal_caps), 3) * 3.0
+
+    event_or_result_words = {
+        "achieved", "became", "began", "built", "changed", "chose", "created",
+        "decided", "discovered", "earned", "failed", "founded", "grew", "invented",
+        "learned", "lost", "opened", "overcame", "realized", "refused", "returned",
+        "sold", "started", "succeeded", "transformed", "turned", "won",
+    }
+    turning_point_words = {
+        "after", "because", "despite", "eventually", "finally", "however",
+        "instead", "result", "until", "when",
+    }
+    score += min(len(set(words) & event_or_result_words), 3) * 2.5
+    score += min(len(set(words) & turning_point_words), 2) * 2.0
+
+    if len(words) <= 6:
+        score -= 7.0
+    generic_markers = (
+        "and guess", "most people", "the problem", "this is", "you know",
+        "you see", "some people", "many people",
+    )
+    low = sentence.lower()
+    if any(m in low for m in generic_markers):
+        score -= 8.0
+    return score
 
 
 def _best_complete_core_sentence(section: StorySection, verified_text: str) -> str:
-    candidates = [
-        sent.strip()
-        for sent in split_sentences(section.text_en)
-        if is_complete_sentence(sent.strip())
-        and _sentence_in_text(sent.strip(), section.text_en)
-        and _sentence_in_text(sent.strip(), verified_text)
-    ]
+    candidates = _exact_sentence_candidates(section.text_en, verified_text)
     if not candidates:
         raise RuntimeError(
             f"BLOCKED: No complete core sentence available for section {section.index}"
         )
-    return max(candidates, key=lambda s: len(normalize_text(s).split()))
+    return max(candidates, key=lambda s: _score_representative(s, section))
 
 
 def _level_guidance(level: int) -> str:
@@ -396,26 +475,43 @@ def _pick_core_sentences_batch(
     if not (vertex_configured() and not allow_placeholder):
         picked: dict[int, str] = {}
         for section in sections:
-            picked[section.index] = _pick_core_sentence(section, verified_text, allow_placeholder=allow_placeholder)
+            picked[section.index] = _pick_core_sentence(
+                section, verified_text, allow_placeholder=allow_placeholder
+            )
         return picked
 
-    payload = [
-        {
-            "index": section.index,
-            "title": section.title,
-            "text": section.text_en[:4000],
-        }
-        for section in sections
-    ]
+    payload = []
+    candidates_by_section: dict[int, dict[str, str]] = {}
+    for section in sections:
+        candidates = _exact_sentence_candidates(section.text_en, verified_text)
+        if not candidates:
+            raise RuntimeError(
+                f"BLOCKED: No exact core candidates for section {section.index}"
+            )
+        id_map = {f"c{i}": sent for i, sent in enumerate(candidates, start=1)}
+        candidates_by_section[section.index] = id_map
+        payload.append(
+            {
+                "index": section.index,
+                "title": section.title,
+                "candidates": [
+                    {"id": cid, "sentence": sent} for cid, sent in id_map.items()
+                ],
+            }
+        )
+
     data = generate_json(
-        f"""Pick ONE representative English sentence per section.
+        f"""Pick the most representative English sentence for each section.
 Rules:
-- For each section, copy ONE complete sentence verbatim from that section's text
-- Do NOT rewrite, summarize, or create a new sentence
-- Choose the sentence that best helps a learner recall the whole section
+- Choose ONLY from the provided candidates by returning the candidate id
+- Do NOT rewrite or invent a sentence
+- Prefer the sentence that best recalls the whole section:
+  1) key event / claim / turning point
+  2) section-specific people / outcomes
+  3) avoid generic filler
 
 Return JSON:
-{{"sections": [{{"index": 1, "sentence": "..."}}, ...]}}
+{{"sections": [{{"index": 1, "candidate_id": "c1"}}, ...]}}
 
 Sections:
 {json.dumps(payload, ensure_ascii=False)}
@@ -429,15 +525,21 @@ Sections:
     by_index: dict[int, str] = {}
     for row in rows:
         idx = int(row.get("index", 0))
-        picked = str(row.get("sentence", "")).strip()
         section = next((s for s in sections if s.index == idx), None)
         if section is None:
             raise RuntimeError(f"BLOCKED: Core batch returned unknown section index {idx}")
-        if (
-            not _sentence_in_text(picked, section.text_en)
-            or not _sentence_in_text(picked, verified_text)
-            or not is_complete_sentence(picked)
-        ):
+        id_map = candidates_by_section[idx]
+        candidate_id = str(row.get("candidate_id", "")).strip()
+        picked = id_map.get(candidate_id)
+        if not picked:
+            # Backward-compatible if model returns sentence text instead of id.
+            raw = str(row.get("sentence", "")).strip()
+            picked = _sentence_exact_in_script(raw, verified_text) if raw else None
+            if picked and _whitespace_key(picked) not in {
+                _whitespace_key(v) for v in id_map.values()
+            }:
+                picked = None
+        if not picked:
             picked = _best_complete_core_sentence(section, verified_text)
         by_index[idx] = picked
     if len(by_index) != len(sections):
@@ -496,29 +598,35 @@ Sections:
 
 
 def _pick_core_sentence(section: StorySection, verified_text: str, *, allow_placeholder: bool) -> str:
+    candidates = _exact_sentence_candidates(section.text_en, verified_text)
+    if not candidates:
+        raise RuntimeError(
+            f"BLOCKED: No exact core candidates for section {section.index}"
+        )
     if vertex_configured() and not allow_placeholder:
+        id_map = {f"c{i}": sent for i, sent in enumerate(candidates, start=1)}
         data = generate_json(
-            f"""Pick ONE representative English sentence for this section.
+            f"""Pick the most representative English sentence for this section.
 Rules:
-- Copy ONE complete sentence verbatim from the section text below
-- Do NOT rewrite, summarize, or create a new sentence
-- Choose the sentence that best helps a learner recall the whole section
+- Choose ONLY from candidates by candidate id
+- Do NOT rewrite or invent a sentence
+- Prefer key event / claim / turning point with section-specific detail
 
-Return JSON: {{"sentence": "..."}}
+Return JSON: {{"candidate_id": "c1"}}
 
-Section ({section.title}):
-{section.text_en[:6000]}
+Section title: {section.title}
+Candidates:
+{json.dumps([{"id": cid, "sentence": sent} for cid, sent in id_map.items()], ensure_ascii=False)}
 """
         )
-        picked = str(data.get("sentence", "")).strip()
-        if (
-            not _sentence_in_text(picked, section.text_en)
-            or not _sentence_in_text(picked, verified_text)
-            or not is_complete_sentence(picked)
-        ):
-            return _best_complete_core_sentence(section, verified_text)
-        return picked
-
+        candidate_id = str(data.get("candidate_id", "")).strip()
+        picked = id_map.get(candidate_id)
+        if picked:
+            return picked
+        raw = str(data.get("sentence", "")).strip()
+        exact = _sentence_exact_in_script(raw, verified_text) if raw else None
+        if exact and _whitespace_key(exact) in {_whitespace_key(v) for v in id_map.values()}:
+            return exact
     return _best_complete_core_sentence(section, verified_text)
 
 

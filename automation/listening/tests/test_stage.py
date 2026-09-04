@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 from automation.listening.publish.stage import write_stage
 
 
@@ -40,3 +42,27 @@ def test_write_stage_includes_html(tmp_path, monkeypatch):
         reject_placeholders=False,
     )
     assert (stage / "Lesson.html").read_text(encoding="utf-8") == "<html>lesson</html>"
+    assert json.loads((stage / "proper_name_corrections.json").read_text(encoding="utf-8")) == []
+
+
+def test_write_stage_persists_proper_name_evidence(tmp_path, monkeypatch):
+    monkeypatch.setattr("automation.listening.publish.stage.STAGING_ROOT", tmp_path)
+    evidence = [
+        {
+            "before": "Harlon",
+            "after": "Harland",
+            "count": 2,
+            "evidence": "development_oracle",
+        }
+    ]
+    stage = write_stage(
+        "vid123",
+        _valid_files(),
+        [],
+        None,
+        reject_placeholders=False,
+        proper_name_corrections=evidence,
+    )
+    assert json.loads(
+        (stage / "proper_name_corrections.json").read_text(encoding="utf-8")
+    ) == evidence

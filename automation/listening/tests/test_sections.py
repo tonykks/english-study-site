@@ -91,7 +91,7 @@ def test_core_sentence_must_exist_in_script():
     }
     ok, reason = validate_format_files(files, reject_placeholders=False)
     assert not ok
-    assert "not found in verified full script" in reason
+    assert "not an exact Full Script sentence" in reason or "not found in verified full script" in reason
 
 
 def test_chunk_segments_for_long_transcript():

@@ -26,6 +26,7 @@ def _write_output_dir(
     html_content: str | None = None,
     html_name: str | None = None,
     reject_placeholders: bool = True,
+    proper_name_corrections: list[dict[str, str | int]] | None = None,
 ) -> Path:
     if output_dir.exists():
         shutil.rmtree(output_dir)
@@ -35,6 +36,10 @@ def _write_output_dir(
     if html_content and html_name:
         (output_dir / html_name).write_text(html_content, encoding="utf-8")
     (output_dir / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    (output_dir / "proper_name_corrections.json").write_text(
+        json.dumps(proper_name_corrections or [], ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
     ok, reason = validate_format_files(files, segments=segments, reject_placeholders=reject_placeholders)
     if not ok:
         raise ValueError(f"Output validation failed: {reason}")
@@ -52,6 +57,7 @@ def write_stage(
     html_content: str | None = None,
     html_name: str | None = None,
     reject_placeholders: bool = True,
+    proper_name_corrections: list[dict[str, str | int]] | None = None,
 ) -> Path:
     return _write_output_dir(
         staging_dir_for(video_id),
@@ -61,6 +67,7 @@ def write_stage(
         html_content=html_content,
         html_name=html_name,
         reject_placeholders=reject_placeholders,
+        proper_name_corrections=proper_name_corrections,
     )
 
 
@@ -73,6 +80,7 @@ def write_comparison(
     html_content: str | None = None,
     html_name: str | None = None,
     reject_placeholders: bool = True,
+    proper_name_corrections: list[dict[str, str | int]] | None = None,
 ) -> Path:
     return _write_output_dir(
         comparison_dir_for(video_id),
@@ -82,6 +90,7 @@ def write_comparison(
         html_content=html_content,
         html_name=html_name,
         reject_placeholders=reject_placeholders,
+        proper_name_corrections=proper_name_corrections,
     )
 
 

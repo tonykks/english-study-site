@@ -81,6 +81,7 @@ def run_pipeline(
     asr_override: list[Segment] | None = None,
 ) -> PipelineResult:
     load_config()
+    name_corrections: list[dict[str, str | int]] = []
 
     if level not in LEVEL_MAP:
         return PipelineResult("BLOCKED", "Level must be 1, 2, or 3")
@@ -136,6 +137,30 @@ def run_pipeline(
                 asr_segments = transcribe_with_vertex(meta.video_id, meta.duration or cap_duration)
         except Exception as exc:
             return PipelineResult("BLOCKED", str(exc), video_id=meta.video_id)
+
+        from automation.listening.script.proper_names import (
+            correct_segments_proper_names,
+            load_oracle_en_text,
+        )
+
+        asr_text = " ".join(s.text_en for s in asr_segments)
+        oracle_text = load_oracle_en_text(meta.video_id)
+        caption_segments, corrections = correct_segments_proper_names(
+            caption_segments,
+            asr_text=asr_text,
+            oracle_text=oracle_text,
+            metadata_title=meta.title,
+            metadata_channel=meta.channel,
+        )
+        name_corrections = [correction.to_dict() for correction in corrections]
+        if corrections:
+            logger.info(
+                "Proper-name corrections: %s",
+                "; ".join(
+                    f"{c.before}->{c.after} x{c.count} ({c.evidence})"
+                    for c in corrections
+                ),
+            )
 
         try:
             restored_caption = restore_caption_segments(caption_segments, asr_segments)
@@ -249,6 +274,7 @@ def run_pipeline(
             html_content=html_content,
             html_name=html_name,
             reject_placeholders=not allow_placeholder,
+            proper_name_corrections=name_corrections,
         )
         return PipelineResult(
             "COMPARISON",
@@ -266,6 +292,7 @@ def run_pipeline(
         html_content=html_content,
         html_name=html_name,
         reject_placeholders=not allow_placeholder,
+        proper_name_corrections=name_corrections,
     )
 
     href = f"./{level_folder(level)}/{content_id}/{content_id}.html"

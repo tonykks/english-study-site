@@ -139,6 +139,145 @@ INCOMPLETE_BEFORE_PERIOD = frozenset(
     }
 )
 
+# Phrase-final particles that can end a sentence before a clause starter
+# (e.g. "knock on. He", "go through. But") even when listed as incomplete.
+# Keep this narrow: "yet" is accepted only before a strong starter such as
+# "Every", while the context guard below still rejects "And yet, he".
+PHRASE_FINAL_BEFORE_STARTER = frozenset(
+    {
+        "on",
+        "through",
+        "yet",
+    }
+)
+
+# Apposition / honorific heads — not new-sentence starters after nouns like "people".
+TITLE_OR_ROLE_TOKENS = frozenset(
+    {
+        "colonel",
+        "mr",
+        "mrs",
+        "ms",
+        "dr",
+        "prof",
+        "sir",
+        "madam",
+        "captain",
+        "general",
+        "president",
+        "professor",
+        "king",
+        "queen",
+        "prince",
+        "princess",
+    }
+)
+
+# Starters strong enough to end a phrase-final particle ("knock on. He").
+# Keep narrower than SENTENCE_STARTERS to avoid "on this journey" false splits.
+CLAUSE_STARTERS_AFTER_PARTICLE = frozenset(
+    {
+        "he",
+        "she",
+        "they",
+        "we",
+        "i",
+        "but",
+        "however",
+        "instead",
+        "then",
+        "later",
+        "still",
+        "suddenly",
+        "eventually",
+        "finally",
+        "meanwhile",
+        "nevertheless",
+        "every",
+    }
+)
+
+# A caption-native period before a personal-pronoun subject is strong boundary
+# evidence on its own.  Keep this separate from heuristic starter lists: ASR
+# may omit or misalign the same words, and grammatical cleanup must not erase
+# source punctuation such as "looks like. He was not lucky."
+CAPTION_NATIVE_PRONOUN_STARTERS = frozenset({"he", "she", "they", "we", "i"})
+
+# Words that can legitimately finish a clause through pronoun use, ellipsis,
+# or preposition/particle stranding.  This is for validation only: restoration
+# still requires caption/ASR agreement or one of the narrower guards above.
+CONTEXTUAL_SENTENCE_ENDS = frozenset(
+    {
+        "this",
+        "that",
+        "these",
+        "those",
+        "one",
+        "all",
+        "half",
+        "more",
+        "most",
+        "other",
+        "not",
+        "no",
+        "also",
+        "just",
+        "only",
+        "even",
+        "still",
+        "already",
+        "yet",
+        "on",
+        "at",
+        "by",
+        "with",
+        "from",
+        "into",
+        "onto",
+        "upon",
+        "about",
+        "for",
+        "through",
+        "before",
+        "after",
+        "above",
+        "below",
+        "between",
+        "under",
+        "over",
+        "within",
+        "against",
+        "among",
+        "toward",
+        "towards",
+        "since",
+        "like",
+        "is",
+        "are",
+        "was",
+        "were",
+        "be",
+        "been",
+        "being",
+        "am",
+        "have",
+        "has",
+        "had",
+        "do",
+        "does",
+        "did",
+        "will",
+        "would",
+        "could",
+        "should",
+        "may",
+        "might",
+        "must",
+        "shall",
+        "can",
+    }
+)
+
 # Multi-word proper-noun continuations — do not split before the next token.
 PROPER_NOUN_CONTINUATIONS = frozenset(
     {
@@ -244,6 +383,9 @@ SENTENCE_STARTERS = frozenset(
         "because",
         "although",
         "over",
+        "all",
+        "every",
+        "keep",
         "long",
         "hundreds",
         "thousands",
@@ -375,10 +517,10 @@ def words_unchanged(before: str, after: str) -> bool:
 
 
 def join_caption_fragments(segments: list[Segment]) -> str:
+    """Join caption fragments without discarding source-native punctuation."""
     parts: list[str] = []
     for seg in segments:
         text = normalize_caption_fragment(seg.text_en)
-        text = re.sub(r"[.!?]+$", "", text).strip()
         if text:
             parts.append(text)
     return " ".join(parts)
@@ -397,13 +539,24 @@ def _lower_unless_proper(word: str) -> str:
     return lower
 
 
-def fix_artificial_period_breaks(text: str) -> str:
+def fix_artificial_period_breaks(
+    text: str,
+    *,
+    keep_end_indices: set[int] | None = None,
+) -> str:
     """Merge caption fragments split by artificial mid-phrase periods."""
     result = text
+    protected = keep_end_indices or set()
     while True:
         def _repl(match: re.Match[str]) -> str:
             before = match.group(1)
             after = match.group(2)
+            # keep_end_indices uses the whitespace-token positions consumed by
+            # the restoration path.  Do not use normalize_text here: it splits
+            # hyphenated tokens and makes later protected positions drift.
+            before_idx = len(result[: match.end(1)].split()) - 1
+            if before_idx in protected:
+                return match.group(0)
             if _is_kept_boundary(before, after):
                 return match.group(0)
             return f"{before} {_lower_unless_proper(after)}"
@@ -417,7 +570,7 @@ def fix_artificial_period_breaks(text: str) -> str:
 
 def tokenize_words_with_punct(text: str) -> list[tuple[str, str]]:
     """Return (word, trailing punctuation) pairs from ASR or caption text."""
-    return [(m.group(1), m.group(2)) for m in re.finditer(r"([A-Za-z0-9']+)([,;:?!]*)", text or "")]
+    return [(m.group(1), m.group(2)) for m in re.finditer(r"([A-Za-z0-9']+)([,;:.?!]*)", text or "")]
 
 
 def _internal_punct(punct: str) -> str:
@@ -435,6 +588,8 @@ def _end_mark_from_punct(punct: str) -> str:
         return "!"
     if "?" in (punct or ""):
         return "?"
+    if "." in (punct or ""):
+        return "."
     return ""
 
 
@@ -464,6 +619,22 @@ def _map_caption_to_asr(cap_norm: list[str], asr_norm: list[str]) -> dict[int, i
     return mapping
 
 
+def _agreed_caption_end_indices(caption_text: str, asr_text: str) -> set[int]:
+    """Return positions where aligned caption and ASR tokens have explicit ends."""
+    cap_words = caption_text.split()
+    asr_words, _, asr_puncts = _build_asr_word_lists(asr_text)
+    cap_norm = [normalize_text(re.sub(r"[.!?]+$", "", word)) for word in cap_words]
+    asr_norm = [normalize_text(word) for word in asr_words]
+    mapping = _map_caption_to_asr(cap_norm, asr_norm)
+    return {
+        ci
+        for ci, aj in mapping.items()
+        if re.search(r"[.!?]$", cap_words[ci])
+        and aj < len(asr_puncts)
+        and bool(_end_mark_from_punct(asr_puncts[aj]))
+    }
+
+
 def _should_split_before_next(
     current_norm: str,
     next_word: str,
@@ -471,30 +642,77 @@ def _should_split_before_next(
     *,
     current_raw: str = "",
     prev_norm: str = "",
+    prev2_norm: str = "",
 ) -> bool:
+    next_is_starter = next_norm in SENTENCE_STARTERS or next_word in {"I", "i"}
+    next_is_particle_starter = next_norm in CLAUSE_STARTERS_AFTER_PARTICLE or next_word in {"I", "i"}
     if current_norm in INCOMPLETE_BEFORE_PERIOD:
-        # "more/most/other" can end a clause before a new capitalized starter.
-        if not (
-            current_norm in TERMINAL_BEFORE_CAPITAL
-            and (next_norm in SENTENCE_STARTERS or next_word == "I")
-        ):
+        allow_phrase_final = (
+            current_norm in PHRASE_FINAL_BEFORE_STARTER and next_is_particle_starter
+        )
+        allow_terminal_starter = current_norm in TERMINAL_BEFORE_CAPITAL and next_is_starter
+        if not (allow_phrase_final or allow_terminal_starter):
             return False
-    if not next_word or not next_word[0].isupper():
+    if not next_word:
         return False
     if current_raw and current_raw[0].isupper() and next_word[0].isupper():
         return False
     if re.match(r"^(Mr|Mrs|Ms|Dr|St)\.?$", current_norm, re.IGNORECASE):
         return False
+    if next_norm in TITLE_OR_ROLE_TOKENS:
+        return False
     if current_norm in PROPER_NOUN_CONTINUATIONS and next_norm in PROPER_NOUN_TOKENS:
         return False
     if next_norm in PROPER_NOUN_TOKENS:
         return False
-    # "by/at the time Name..." is a clause opener, not a sentence end.
-    if current_norm == "time" and prev_norm == "the":
+    # "Over the years, Name..." — discourse span, not "years. Name"
+    if current_norm == "years" and prev_norm == "the":
         return False
-    if next_norm in SENTENCE_STARTERS or next_word == "I":
-        return True
-    if current_norm in TERMINAL_BEFORE_CAPITAL:
+    # "by/at the time Name/he..." is a clause opener; allow true sentence starts
+    # such as "at the time. All he knew".
+    if current_norm == "time" and prev_norm == "the":
+        if next_norm in {"all", "everyone", "everything", "nobody", "nothing"}:
+            return True
+        if next_word[0].isupper() and next_is_starter and next_norm not in {
+            "he",
+            "she",
+            "they",
+            "we",
+            "it",
+            "his",
+            "her",
+            "their",
+            "this",
+            "that",
+            "these",
+            "those",
+        }:
+            return True
+        return False
+    # Discourse adverbials kept with following clause ("Once again, he").
+    if current_norm == "again" and prev_norm == "once":
+        return False
+    if current_norm == "yet" and prev_norm == "and":
+        return False
+    if current_norm == "down" and prev_norm == "deep":
+        return False
+    if current_norm == "again" and prev_norm == "once" and prev2_norm == "so":
+        return False
+
+    if next_word[0].isupper():
+        if next_is_starter or next_word == "I":
+            return True
+        if current_norm in TERMINAL_BEFORE_CAPITAL:
+            # Mid-clause contractions keep the prior noun ("story It's not...").
+            if "'" in next_word:
+                return False
+            return True
+        return False
+
+    # Lowercase caption starters only after phrase-final particles
+    # ("knock on he", "go through but") — not after every TERMINAL word
+    # (avoids "learning and exchange" / "on this journey" false splits).
+    if next_is_particle_starter and current_norm in PHRASE_FINAL_BEFORE_STARTER:
         return True
     return False
 
@@ -509,12 +727,14 @@ def _heuristic_sentence_end_indices(words: list[str]) -> set[int]:
         current_norm = normalize_text(clean)
         next_norm = normalize_text(re.sub(r"[.!?]+$", "", next_word))
         prev_norm = normalize_text(re.sub(r"[.!?]+$", "", words[i - 1])) if i > 0 else ""
+        prev2_norm = normalize_text(re.sub(r"[.!?]+$", "", words[i - 2])) if i > 1 else ""
         if _should_split_before_next(
             current_norm,
             next_word,
             next_norm,
             current_raw=clean,
             prev_norm=prev_norm,
+            prev2_norm=prev2_norm,
         ):
             ends.add(i)
     return ends
@@ -538,6 +758,30 @@ def _apply_sentence_ends(
         else:
             core = re.sub(r"[.!?]+$", "", word)
             output.append(core)
+    # Capitalize clause starters after restored sentence ends.
+    for i in range(len(output) - 1):
+        if not re.search(r"[.!?]$", output[i]):
+            continue
+        nxt = output[i + 1]
+        if not nxt or not nxt[0].islower():
+            continue
+        nxt_norm = normalize_text(re.sub(r"[,;:.!?]+$", "", nxt))
+        if nxt_norm in SENTENCE_STARTERS:
+            output[i + 1] = nxt[0].upper() + nxt[1:]
+    # After ASR/caption commas, lower false-capitalized clause words
+    # ("lifetime, But" → "lifetime, but") unless proper/title.
+    for i in range(len(output) - 1):
+        if not re.search(r"[,;]$", output[i]):
+            continue
+        nxt = output[i + 1]
+        if not nxt or not nxt[0].isupper():
+            continue
+        core = re.sub(r"[,;:.!?]+$", "", nxt)
+        nxt_norm = normalize_text(core)
+        if nxt_norm in PROPER_NOUN_TOKENS or nxt_norm in TITLE_OR_ROLE_TOKENS:
+            continue
+        if nxt_norm in SENTENCE_STARTERS or nxt_norm in CLAUSE_STARTERS_AFTER_PARTICLE:
+            output[i + 1] = nxt[0].lower() + nxt[1:]
     return " ".join(output)
 
 
@@ -568,18 +812,46 @@ def _restore_boundaries_with_asr(cap_words: list[str], asr_text: str) -> str:
     asr_norm = [normalize_text(w) for w in asr_words]
     cap_clean = [re.sub(r"[.!?]+$", "", w) for w in cap_words]
     cap_norm = [normalize_text(w) for w in cap_clean]
+    # Caption-native sentence ends (auto-captions sometimes already punctuate).
+    caption_ends = {
+        i for i, w in enumerate(cap_words) if re.search(r"[.!?]$", w or "")
+    }
 
     mapping = _map_caption_to_asr(cap_norm, asr_norm)
+
+    def _asr_blocks_heuristic_end(cap_idx: int) -> bool:
+        """ASR comma/semicolon continuation wins over local split heuristics.
+
+        Never block a caption-native period — misaligned ASR commas must not
+        erase an existing caption sentence end.
+        """
+        if cap_idx in caption_ends:
+            return False
+        aj = mapping.get(cap_idx)
+        if aj is None or aj >= len(asr_puncts):
+            return False
+        if aj in asr_ends:
+            return False
+        return bool(_internal_punct(asr_puncts[aj]))
 
     end_indices: set[int] = set()
     for ci, aj in mapping.items():
         if aj in asr_ends:
             end_indices.add(ci)
+    end_indices.update(caption_ends)
     if cap_clean:
         end_indices.add(len(cap_clean) - 1)
 
     # Local heuristic recovery only inside run-on spans.
     end_indices = _split_long_sentences(" ".join(cap_clean), end_indices, max_words=RUN_ON_WARN_WORDS)
+    end_indices = {
+        i
+        for i in end_indices
+        if not _asr_blocks_heuristic_end(i)
+        or i in caption_ends
+        or i in {ci for ci, aj in mapping.items() if aj in asr_ends}
+        or i == len(cap_clean) - 1
+    }
 
     # Conservative starter/terminal refinement between existing boundaries, including short spans.
     ordered = sorted(end_indices)
@@ -593,32 +865,61 @@ def _restore_boundaries_with_asr(cap_words: list[str], asr_text: str) -> str:
             abs_i = start + local_i
             if abs_i in end_indices:
                 continue
+            if _asr_blocks_heuristic_end(abs_i):
+                continue
             if _should_split_before_next(
                 cap_norm[abs_i],
                 span_words[local_i + 1],
                 cap_norm[abs_i + 1],
                 current_raw=span_words[local_i],
                 prev_norm=cap_norm[abs_i - 1] if abs_i > 0 else "",
+                prev2_norm=cap_norm[abs_i - 2] if abs_i > 1 else "",
             ):
                 end_indices.add(abs_i)
 
-    end_indices.update(_heuristic_sentence_end_indices(cap_clean))
+    for hi in _heuristic_sentence_end_indices(cap_clean):
+        if hi == len(cap_clean) - 1 or not _asr_blocks_heuristic_end(hi):
+            aj = mapping.get(hi)
+            if aj in asr_ends or hi in caption_ends or not _asr_blocks_heuristic_end(hi):
+                end_indices.add(hi)
 
+    asr_mapped_ends = {ci for ci, aj in mapping.items() if aj in asr_ends}
     safe_ends: set[int] = set()
     for idx in sorted(end_indices):
-        if cap_norm[idx] == "time" and idx > 0 and cap_norm[idx - 1] == "the":
+        next_raw = cap_clean[idx + 1] if idx + 1 < len(cap_clean) else ""
+        next_norm = cap_norm[idx + 1] if idx + 1 < len(cap_norm) else ""
+        prev_norm = cap_norm[idx - 1] if idx > 0 else ""
+        prev2_norm = cap_norm[idx - 2] if idx > 1 else ""
+        if idx == len(cap_clean) - 1:
+            safe_ends.add(idx)
             continue
-        if cap_norm[idx] in INCOMPLETE_BEFORE_PERIOD and idx != len(cap_clean) - 1:
-            next_raw = cap_clean[idx + 1] if idx + 1 < len(cap_clean) else ""
-            next_norm = cap_norm[idx + 1] if idx + 1 < len(cap_norm) else ""
+        if idx in caption_ends:
+            safe_ends.add(idx)
+            continue
+        if idx not in asr_mapped_ends:
             if not _should_split_before_next(
                 cap_norm[idx],
                 next_raw,
                 next_norm,
                 current_raw=cap_clean[idx],
-                prev_norm=cap_norm[idx - 1] if idx > 0 else "",
+                prev_norm=prev_norm,
+                prev2_norm=prev2_norm,
             ):
                 continue
+            if _asr_blocks_heuristic_end(idx):
+                continue
+        else:
+            # Drop ASR ends that our guards reject (e.g. "the time Jordan").
+            if cap_norm[idx] == "time" and prev_norm == "the":
+                if not _should_split_before_next(
+                    cap_norm[idx],
+                    next_raw,
+                    next_norm,
+                    current_raw=cap_clean[idx],
+                    prev_norm=prev_norm,
+                    prev2_norm=prev2_norm,
+                ):
+                    continue
         safe_ends.add(idx)
     if cap_clean:
         safe_ends.add(len(cap_clean) - 1)
@@ -628,13 +929,26 @@ def _restore_boundaries_with_asr(cap_words: list[str], asr_text: str) -> str:
     for i, word in enumerate(cap_clean):
         base = re.sub(r"[,;:?!]+$", "", word)
         extra = _internal_punct(word)
+        orig = cap_words[i] if i < len(cap_words) else word
+        caption_end_mark = ""
+        if re.search(r"!$", orig or ""):
+            caption_end_mark = "!"
+        elif re.search(r"\?$", orig or ""):
+            caption_end_mark = "?"
+        elif re.search(r"\.$", orig or ""):
+            caption_end_mark = "."
         aj = mapping.get(i)
         if aj is not None and aj < len(asr_puncts):
-            if not extra:
-                extra = _internal_punct(asr_puncts[aj])
+            # Caption sentence ends beat misaligned ASR commas.
+            if not caption_end_mark:
+                if not extra:
+                    extra = _internal_punct(asr_puncts[aj])
             mark = _end_mark_from_punct(asr_puncts[aj])
             if mark:
                 end_marks[i] = mark
+        if caption_end_mark:
+            end_marks[i] = caption_end_mark
+            extra = ""
         decorated.append(base + extra)
 
     return _apply_sentence_ends(decorated, safe_ends, end_marks)
@@ -663,10 +977,11 @@ def restore_sentence_boundaries(text: str, asr_text: str | None = None) -> str:
 
 def restore_caption_text(segments: list[Segment], asr_segments: list[Segment] | None = None) -> str:
     joined = join_caption_fragments(segments)
-    fixed = fix_artificial_period_breaks(joined)
     asr_text = " ".join(s.text_en for s in asr_segments) if asr_segments else None
+    agreed_ends = _agreed_caption_end_indices(joined, asr_text) if asr_text else set()
+    fixed = fix_artificial_period_breaks(joined, keep_end_indices=agreed_ends)
     restored = restore_sentence_boundaries(fixed, asr_text)
-    restored = fix_artificial_period_breaks(restored)
+    restored = fix_artificial_period_breaks(restored, keep_end_indices=agreed_ends)
     restored = fix_punctuation_anomalies(restored)
     if not words_unchanged(joined, restored):
         raise RuntimeError("BLOCKED: caption restoration altered word content or order")
@@ -798,17 +1113,36 @@ def restore_caption_segments(
 
 
 def _is_kept_boundary(before: str, after: str) -> bool:
-    return before.lower() in TERMINAL_BEFORE_CAPITAL and after.lower() in SENTENCE_STARTERS
+    b = before.lower()
+    a = after.lower()
+    if a in CAPTION_NATIVE_PRONOUN_STARTERS:
+        return True
+    if b in TERMINAL_BEFORE_CAPITAL and a in SENTENCE_STARTERS:
+        return True
+    if b in PHRASE_FINAL_BEFORE_STARTER and a in CLAUSE_STARTERS_AFTER_PARTICLE:
+        return True
+    return False
+
+
+def _is_valid_sentence_boundary(before: str, after: str) -> bool:
+    """Accept plausible boundaries without weakening restoration decisions."""
+    if _is_kept_boundary(before, after):
+        return True
+    return (
+        before.lower() in CONTEXTUAL_SENTENCE_ENDS
+        and bool(after)
+        and after[0].isupper()
+    )
 
 
 def validate_no_artificial_sentence_breaks(text: str) -> ValidationResult:
     for match in ARTIFICIAL_BREAK_RE.finditer(text or ""):
-        if _is_kept_boundary(match.group(1), match.group(2)):
+        if _is_valid_sentence_boundary(match.group(1), match.group(2)):
             continue
         return ValidationResult(False, f"Artificial sentence break detected: {match.group(0)}")
     for sent in split_sentences(text):
         for match in ARTIFICIAL_BREAK_RE.finditer(sent):
-            if _is_kept_boundary(match.group(1), match.group(2)):
+            if _is_valid_sentence_boundary(match.group(1), match.group(2)):
                 continue
             return ValidationResult(False, f"Artificial sentence break in sentence: {sent[:80]}")
     return ValidationResult(True, "OK")
@@ -826,19 +1160,24 @@ def find_missing_short_boundaries(text: str) -> list[str]:
     hits: list[str] = []
     words = (text or "").split()
     for i in range(len(words) - 1):
-        if re.search(r"[.!?]$", words[i]):
+        # Sentence punctuation and strong clause punctuation are not missing
+        # boundaries. A comma still goes through the contextual detector so a
+        # comma splice cannot hide a genuine missed sentence boundary.
+        if re.search(r"[;:.!?]$", words[i]):
             continue
         clean = re.sub(r"[,:;]+$", "", re.sub(r"[.!?]+$", "", words[i]))
         next_word = words[i + 1]
         next_norm = normalize_text(re.sub(r"[.!?]+$", "", next_word))
         current_norm = normalize_text(clean)
         prev_norm = normalize_text(re.sub(r"[,:;]+$", "", re.sub(r"[.!?]+$", "", words[i - 1]))) if i > 0 else ""
+        prev2_norm = normalize_text(re.sub(r"[,:;]+$", "", re.sub(r"[.!?]+$", "", words[i - 2]))) if i > 1 else ""
         if _should_split_before_next(
             current_norm,
             next_word,
             next_norm,
             current_raw=clean,
             prev_norm=prev_norm,
+            prev2_norm=prev2_norm,
         ):
             hits.append(f"{clean} {next_word}")
     return hits
@@ -893,7 +1232,7 @@ def is_complete_sentence(text: str) -> bool:
         return False
     if ARTIFICIAL_BREAK_RE.search(text):
         for match in ARTIFICIAL_BREAK_RE.finditer(text):
-            if not _is_kept_boundary(match.group(1), match.group(2)):
+            if not _is_valid_sentence_boundary(match.group(1), match.group(2)):
                 return False
     words = word_sequence(text)
     return len(words) >= 4

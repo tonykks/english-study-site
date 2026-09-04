@@ -635,10 +635,15 @@ def validate_format_files(
         return False, "02_core.txt has no sentences (need at least 1 section)"
 
     verified = _verified_script_text(segments, files.get("04_full_script.txt", ""))
-    norm_script = normalize_text(verified)
+    verified_keys = {
+        re.sub(r"\s+", " ", s.strip())
+        for s in split_sentences(verified)
+        if s.strip()
+    }
     for sent in extract_core_sentences(files.get("02_core.txt", "")):
-        if normalize_text(sent) not in norm_script:
-            return False, f"02_core.txt sentence not found in verified full script: {sent[:80]}"
+        key = re.sub(r"\s+", " ", sent.strip())
+        if key not in verified_keys:
+            return False, f"02_core.txt sentence is not an exact Full Script sentence: {sent[:80]}"
         if not is_complete_sentence(sent):
             return False, f"02_core.txt core is not a complete sentence: {sent[:80]}"
 
