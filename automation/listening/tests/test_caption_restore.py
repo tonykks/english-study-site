@@ -151,6 +151,28 @@ def test_stranded_to_before_discourse_starter_is_valid_boundary():
     assert validate_no_artificial_sentence_breaks(text).ok
 
 
+def test_stranded_in_before_capitalized_starter_is_valid_boundary():
+    text = "It felt like the walls were closing in. Discouraged by the debt, he left."
+    assert validate_no_artificial_sentence_breaks(text).ok
+
+
+def test_caption_and_asr_agreement_overrides_incomplete_word_heuristic():
+    text = "It was a center of. Learning continued."
+    assert validate_no_artificial_sentence_breaks(
+        text,
+        caption_text=text,
+        asr_text=text,
+    ).ok
+
+
+def test_unrelated_caption_and_asr_boundary_does_not_override_text():
+    assert not validate_no_artificial_sentence_breaks(
+        "It was a center of. Learning continued.",
+        caption_text="They used to. For example, they walked.",
+        asr_text="They used to. For example, they walked.",
+    ).ok
+
+
 def test_of_before_capitalized_continuation_is_still_artificial():
     assert not validate_no_artificial_sentence_breaks("It was a center of. Learning continued.").ok
 

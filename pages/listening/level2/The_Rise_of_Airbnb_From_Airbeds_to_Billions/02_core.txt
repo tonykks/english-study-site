@@ -1,0 +1,35 @@
+[Sentence 1]
+EN: How did Airbnb, a $38 billion company with more rooms than all of the largest hotel chains combined, become the giant that it is today?
+KR: 어떻게 에어비앤비는 380억 달러 규모의 회사가 모든 가장 큰 호텔 체인들을 합친 것보다 더 많은 방을 가진 되었는가 오늘날의 거인이
+
+[Sentence 2]
+EN: First, they were notified that their rent was increased by 25%, due next month.
+KR: 먼저 그들은 통보받았다 임대료가 25% 인상되었다고 다음 달부터 적용되는
+
+[Sentence 3]
+EN: Disappointed that people who wanted to attend the conference couldn’t come, as well as desperate for a way to make a few bucks, Joe suggested that they offer their own place to anybody who wanted to stay on the airbeds they had in the closet.
+KR: 실망하여 사람들이 컨퍼런스에 참석하고 싶어 했던 오지 못했다는 것에 또한 절박하여 방법이 필요한 약간의 돈을 벌, 조는 제안했다 그들이 제공할 것을 그들의 공간을 누구에게나 머무르고 싶어 하는 에어베드에서 그들이 옷장에 가지고 있던
+
+[Sentence 4]
+EN: In just 4 weeks, they went from 0 listings to over 800 listings.
+KR: 단 4주 만에 그들은 갔다 0개의 리스팅에서 800개가 넘는 리스팅으로
+
+[Sentence 5]
+EN: They ended up selling over 800 boxes and generating over $30,000, in profits.
+KR: 그들은 결국 팔았다 800개가 넘는 상자를 그리고 벌어들였다 3만 달러가 넘는 수익을
+
+[Sentence 6]
+EN: Rather, Graham agreed to take them on because of their self-starting attitude and their hustle and grit in selling simple cereal boxes to make $30,000.
+KR: 오히려 그레이엄은 동의했다 그들을 받아들이기로 그들의 자기 주도적인 태도와 그들의 열정과 끈기 때문에 간단한 시리얼 상자를 팔아 3만 달러를 벌어들인
+
+[Sentence 7]
+EN: Incredibly, Airbnb’s fortuitous timing helped change the perception of housing from a liability to a means of making extra money.
+KR: 놀랍게도 에어비앤비의 우연한 타이밍은 도왔다 바꾸도록 인식을 주거에 대한 부채에서 수단으로 여분의 돈을 만드는
+
+[Sentence 8]
+EN: By early 2011, Airbnb had hit the 1-million listing mark and had homes in 89 countries, including a boat, a treehouse, an 11-century manor in the English countryside, and a deluxe villa on the beaches of Bali.
+KR: 2011년 초까지 에어비앤비는 도달했다 100만 리스팅 기록에 그리고 가졌다 집들을 89개국에 포함하여 보트, 트리하우스, 11세기 저택을 영국 시골에 있는, 그리고 호화 빌라를 발리 해변에 있는
+
+[Sentence 9]
+EN: Joe and Brian’s innovation in the accommodation industry is a game-changer.
+KR: 조와 브라이언의 혁신은 숙박 업계에서의 이다 게임 체인저가
