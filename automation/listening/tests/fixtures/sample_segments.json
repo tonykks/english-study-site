@@ -1,0 +1,22 @@
+{
+  "video_id": "fixture000001",
+  "title": "Fixture Sample Story",
+  "channel": "Test Channel",
+  "duration": 180.0,
+  "segments": [
+    {"start": 0.0, "end": 5.0, "text": "Hello everyone, welcome to this English lesson today."},
+    {"start": 5.0, "end": 12.0, "text": "We will learn useful expressions through a short story."},
+    {"start": 12.0, "end": 20.0, "text": "Listen carefully and repeat each sentence for better pronunciation."},
+    {"start": 20.0, "end": 30.0, "text": "The main character faced many challenges but never gave up hope."},
+    {"start": 30.0, "end": 42.0, "text": "She worked hard every day and practiced speaking with confidence."},
+    {"start": 42.0, "end": 55.0, "text": "Eventually her effort paid off and she achieved her dream goal."},
+    {"start": 55.0, "end": 70.0, "text": "This story teaches us that persistence and courage matter most."},
+    {"start": 70.0, "end": 85.0, "text": "Remember to review the vocabulary cards after finishing the script."},
+    {"start": 85.0, "end": 100.0, "text": "Thank you for studying with us and see you in the next lesson."},
+    {"start": 100.0, "end": 115.0, "text": "Keep practicing and you will improve step by step every week."},
+    {"start": 115.0, "end": 130.0, "text": "Success comes to those who continue even when progress feels slow."},
+    {"start": 130.0, "end": 145.0, "text": "Believe in yourself and keep moving forward with patience."},
+    {"start": 145.0, "end": 160.0, "text": "Every small step builds stronger English skills over time."},
+    {"start": 160.0, "end": 175.0, "text": "Your dedication today will create better results tomorrow."}
+  ]
+}

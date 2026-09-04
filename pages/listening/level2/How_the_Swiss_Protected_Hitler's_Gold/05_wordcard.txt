@@ -1,0 +1,89 @@
+[Card 1]
+headword: neutrality
+part_of_speech: noun
+meaning_kr: 중립
+definition_en: the state of not supporting or helping either side in a conflict
+definition_kr_literal: 그 상태는 이다 지원하거나 돕지 않는 어느 쪽도 갈등 속의
+example_en: Switzerland is famous for its long-standing policy of neutrality during wars.
+example_kr_literal: 스위스는 이다 유명한 그것의 오래된 중립 정책으로 전쟁 중
+
+[Card 2]
+headword: anonymity
+part_of_speech: noun
+meaning_kr: 익명성
+definition_en: the state of being unknown or having no name revealed
+definition_kr_literal: 그 상태는 이다 알려지지 않은 또는 이름이 밝혀지지 않은
+example_en: The bank’s rules protected the anonymity of its customers so no one knew who they were.
+example_kr_literal: 그 은행의 규칙들은 보호했다 그 고객들의 익명성을 그래서 아무도 몰랐다 그들이 누구인지
+
+[Card 3]
+headword: plunder
+part_of_speech: verb
+meaning_kr: 약탈하다
+definition_en: to steal goods from a place or person, typically using force in a time of war
+definition_kr_literal: 훔치는 것이다 물품들을 장소나 사람으로부터 전형적으로 무력을 사용하는 전쟁 시기에
+example_en: The invading army began to plunder the national bank to pay for their war supplies.
+example_kr_literal: 침략군은 시작했다 약탈하는 것을 국립 은행을 지불하기 위해 그들의 전쟁 물자를
+
+[Card 4]
+headword: reserve
+part_of_speech: noun
+meaning_kr: 비축물
+definition_en: a supply of a commodity not needed for immediate use but kept for a future time
+definition_kr_literal: 공급이다 상품의 필요하지 않은 즉각적인 사용에는 그러나 보관되는 미래를 위해
+example_en: The government keeps a large gold reserve to protect the country's economic stability.
+example_kr_literal: 그 정부는 유지한다 거대한 금 비축량을 보호하기 위해 그 나라의 경제적 안정을
+
+[Card 5]
+headword: appropriation
+part_of_speech: noun
+meaning_kr: 도용
+definition_en: the act of taking something for one's own use, typically without permission
+definition_kr_literal: 무언가를 취하는 행위는 자신의 용도로 쓰기 위해 전형적으로 허가 없이
+example_en: The government's illegal appropriation of private property caused great suffering for many families.
+example_kr_literal: 정부의 불법적인 전유는 사유 재산의 야기했다 큰 고통을 많은 가족들에게
+
+[Card 6]
+headword: blatant
+part_of_speech: adjective
+meaning_kr: 뻔한
+definition_en: done openly and unashamedly; very obvious
+definition_kr_literal: 행해지는 공개적으로 그리고 뻔뻔하게 매우 분명한
+example_en: His blatant disregard for the rules made everyone in the office angry.
+example_kr_literal: 그의 노골적인 무시는 규칙들에 만들었다 모든 사람들을 사무실 안의 화나게
+
+[Card 7]
+headword: atrocity
+part_of_speech: noun
+meaning_kr: 잔학 행위
+definition_en: an extremely wicked or cruel act, typically one involving physical violence
+definition_kr_literal: 극도로 사악하거나 잔인한 행위는 전형적으로 포함하는 신체적 폭력을
+example_en: History will never forget the atrocities committed during the war.
+example_kr_literal: 역사는 결코 잊지 않을 것이다 잔학 행위들을 저질러진 전쟁 동안에
+
+[Card 8]
+headword: smuggle
+part_of_speech: verb
+meaning_kr: 밀수하다
+definition_en: to move goods illegally into or out of a country
+definition_kr_literal: 움직이는 것이다 상품들을 불법적으로 안으로 또는 밖으로 한 국가의
+example_en: They tried to smuggle the stolen gold across the border in hidden trucks.
+example_kr_literal: 그들은 시도했다 밀수하기를 훔친 금을 가로질러 국경을 숨겨진 트럭들 안에서
+
+[Card 9]
+headword: lawsuit
+part_of_speech: noun
+meaning_kr: 소송
+definition_en: a claim or dispute brought to a court of law for a decision
+definition_kr_literal: 하나의 주장이나 분쟁이 제기된 법정으로 결정을 위해
+example_en: The families filed a lawsuit against the bank to get their money back.
+example_kr_literal: 그 가족들은 제기했다 소송을 은행을 상대로 그들의 돈을 되돌려 받기 위해
+
+[Card 10]
+headword: safeguard
+part_of_speech: verb
+meaning_kr: 보호하다
+definition_en: to protect something from harm or damage
+definition_kr_literal: 보호하기 위해서 무언가를 해로움이나 손상으로부터
+example_en: The new laws were created to safeguard the rights of all citizens.
+example_kr_literal: 새로운 법들은 만들어졌다 보호하기 위해 모든 시민들의 권리를
