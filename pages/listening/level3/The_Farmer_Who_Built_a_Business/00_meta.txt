@@ -1,0 +1,7 @@
+title: The Farmer Who Built a Business | Level 3
+level: Level 3
+source: YouTube transcript + Meaning Chunk (integration test)
+video_url: https://youtu.be/Oj23P0lwM48
+video_id: Oj23P0lwM48
+channel: Listen & Learn English
+notes: Full tabs; sentence-boundary Meaning Chunk; caption-first verified script

@@ -1,0 +1,89 @@
+[Card 1]
+headword: determination
+part_of_speech: noun
+meaning_kr: 결단력
+definition_en: the quality of trying to do something even when it is difficult
+definition_kr_literal: 어려울 때에도 무언가를 계속 해내려는 성질
+example_en: He showed great determination / to finish the work / despite many obstacles.
+example_kr_literal: 그는 큰 결단력을 보였다 / 그 일을 끝내기 위해 / 많은 장애물에도 불구하고.
+
+[Card 2]
+headword: fragile
+part_of_speech: adjective
+meaning_kr: 연약한
+definition_en: easily broken, damaged, or weak
+definition_kr_literal: 쉽게 부서지거나 약해지는
+example_en: The tiny plant looked fragile / but grew strong / with care.
+example_kr_literal: 그 작은 식물은 연약해 보였지만 / 강하게 자랐다 / 보살핌으로.
+
+[Card 3]
+headword: persistence
+part_of_speech: noun
+meaning_kr: 끈기
+definition_en: the act of continuing to do something in a determined way despite difficulties
+definition_kr_literal: 어려움에도 불구하고 결심하게 계속하는 것
+example_en: Success often depends more / on persistence / than on talent.
+example_kr_literal: 성공은 종종 더 좌우된다 / 끈기에 / 재능보다.
+
+[Card 4]
+headword: cooperative
+part_of_speech: noun
+meaning_kr: 협동조합
+definition_en: an organization owned and run by the people involved for their mutual benefit
+definition_kr_literal: 관련 사람들이 공동 이익을 위해 소유하고 운영하는 조직
+example_en: The farmers formed a cooperative / to sell their vegetables / for better prices.
+example_kr_literal: 농부들은 협동조합을 만들었다 / 채소를 팔기 위해 / 더 나은 가격에.
+
+[Card 5]
+headword: ambition
+part_of_speech: noun
+meaning_kr: 야망
+definition_en: a strong desire to achieve something, typically power, wealth, or success
+definition_kr_literal: 성공이나 권력 등을 이루려는 강한 바람
+example_en: His ambition to build a bigger business / kept him working / late into the night.
+example_kr_literal: 더 큰 사업을 일구겠다는 그의 야망은 / 그를 계속 일하게 했다 / 밤늦게까지.
+
+[Card 6]
+headword: practicality
+part_of_speech: noun
+meaning_kr: 실용성
+definition_en: the quality of being sensible and realistic in one's actions
+definition_kr_literal: 현실적으로 현명하게 행동하는 성질
+example_en: He balanced his wild dreams / with the practicality / of managing his daily costs.
+example_kr_literal: 그는 원대한 꿈과 균형을 맞췄다 / 실용성과 / 매일의 비용을 관리하는.
+
+[Card 7]
+headword: unshakable
+part_of_speech: adjective
+meaning_kr: 흔들리지 않는
+definition_en: firmly held and impossible to change or weaken
+definition_kr_literal: 굳게 지켜져 바뀌거나 약해지지 않는
+example_en: He had an unshakable belief / that his hard work / would eventually pay off.
+example_kr_literal: 그는 흔들리지 않는 믿음을 가졌다 / 그의 노력이 / 결국 보상받을 것이라는.
+
+[Card 8]
+headword: perseverance
+part_of_speech: noun
+meaning_kr: 인내
+definition_en: continued effort to do something despite setbacks or failure
+definition_kr_literal: 좌절에도 불구하고 계속하는 노력
+example_en: It takes years of perseverance / to master / a new skill.
+example_kr_literal: 수년의 인내가 필요하다 / 익히기 위해 / 새로운 기술을.
+
+[Card 9]
+headword: transform
+part_of_speech: verb
+meaning_kr: 바꾸다
+definition_en: to change the form, appearance, or character of something completely
+definition_kr_literal: 형태나 성격 등을 완전히 바꾸다
+example_en: The new workshop helped him transform his small farm / into a successful business.
+example_kr_literal: 새로운 워크숍은 그가 작은 농장을 바꾸도록 도왔다 / 성공적인 사업으로.
+
+[Card 10]
+headword: optimism
+part_of_speech: noun
+meaning_kr: 낙관
+definition_en: a feeling that good things will happen or that something will be successful
+definition_kr_literal: 좋은 일이 일어날 것이라는 느낌
+example_en: Small early successes / filled him with a sense of cautious optimism.
+example_kr_literal: 초기의 작은 성공들은 / 그를 조심스러운 낙관으로 채웠다.
