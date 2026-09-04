@@ -167,16 +167,25 @@ def run_pipeline(
         except RuntimeError as exc:
             return PipelineResult("BLOCKED", str(exc), video_id=meta.video_id)
 
+        caption_text = join_caption_fragments(caption_segments)
         restored_full = " ".join(s.text_en for s in restored_caption)
-        break_check = validate_no_artificial_sentence_breaks(restored_full)
+        break_check = validate_no_artificial_sentence_breaks(
+            restored_full,
+            caption_text=caption_text,
+            asr_text=asr_text,
+        )
         if not break_check.ok:
             return PipelineResult("BLOCKED", break_check.reason, video_id=meta.video_id)
 
-        boundary_check = validate_sentence_boundaries(restored_full)
+        boundary_check = validate_sentence_boundaries(
+            restored_full,
+            caption_text=caption_text,
+            asr_text=asr_text,
+        )
         if not boundary_check.ok:
             return PipelineResult("BLOCKED", boundary_check.reason, video_id=meta.video_id)
 
-        if not words_unchanged(join_caption_fragments(caption_segments), restored_full):
+        if not words_unchanged(caption_text, restored_full):
             return PipelineResult(
                 "BLOCKED",
                 "Caption restoration altered word content or order",

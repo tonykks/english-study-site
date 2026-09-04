@@ -237,6 +237,7 @@ CONTEXTUAL_SENTENCE_ENDS = frozenset(
         "upon",
         "about",
         "for",
+        "in",
         "through",
         "before",
         "after",
@@ -638,6 +639,33 @@ def _agreed_caption_end_indices(caption_text: str, asr_text: str) -> set[int]:
         and aj < len(asr_puncts)
         and bool(_end_mark_from_punct(asr_puncts[aj]))
     }
+
+
+def _agreed_text_end_indices(text: str, caption_text: str, asr_text: str) -> set[int]:
+    """Return text positions whose boundary span is explicit in caption and ASR."""
+    text_words = text.split()
+    cap_words = caption_text.split()
+    asr_words, _, asr_puncts = _build_asr_word_lists(asr_text)
+    text_norm = [normalize_text(re.sub(r"[.!?]+$", "", word)) for word in text_words]
+    cap_norm = [normalize_text(re.sub(r"[.!?]+$", "", word)) for word in cap_words]
+    asr_norm = [normalize_text(word) for word in asr_words]
+    text_to_cap = _map_caption_to_asr(text_norm, cap_norm)
+    cap_to_asr = _map_caption_to_asr(cap_norm, asr_norm)
+    agreed: set[int] = set()
+    for text_idx in range(len(text_words) - 1):
+        cap_idx = text_to_cap.get(text_idx)
+        if cap_idx is None or text_to_cap.get(text_idx + 1) != cap_idx + 1:
+            continue
+        asr_idx = cap_to_asr.get(cap_idx)
+        if asr_idx is None or cap_to_asr.get(cap_idx + 1) != asr_idx + 1:
+            continue
+        if (
+            re.search(r"[.!?]$", cap_words[cap_idx])
+            and asr_idx < len(asr_puncts)
+            and _end_mark_from_punct(asr_puncts[asr_idx])
+        ):
+            agreed.add(text_idx)
+    return agreed
 
 
 def _should_split_before_next(
@@ -1147,8 +1175,21 @@ def _is_valid_sentence_boundary(before: str, after: str) -> bool:
     )
 
 
-def validate_no_artificial_sentence_breaks(text: str) -> ValidationResult:
+def validate_no_artificial_sentence_breaks(
+    text: str,
+    *,
+    caption_text: str | None = None,
+    asr_text: str | None = None,
+) -> ValidationResult:
+    agreed_end_indices = (
+        _agreed_text_end_indices(text, caption_text, asr_text)
+        if caption_text is not None and asr_text is not None
+        else set()
+    )
     for match in ARTIFICIAL_BREAK_RE.finditer(text or ""):
+        before_idx = len(text[: match.end(1)].split()) - 1
+        if before_idx in agreed_end_indices:
+            continue
         if _is_valid_sentence_boundary(match.group(1), match.group(2)):
             continue
         return ValidationResult(False, f"Artificial sentence break detected: {match.group(0)}")
@@ -1220,8 +1261,17 @@ def validate_run_on_sentences(text: str, *, block_words: int = RUN_ON_BLOCK_WORD
     return ValidationResult(True, "OK")
 
 
-def validate_sentence_boundaries(text: str) -> ValidationResult:
-    artificial = validate_no_artificial_sentence_breaks(text)
+def validate_sentence_boundaries(
+    text: str,
+    *,
+    caption_text: str | None = None,
+    asr_text: str | None = None,
+) -> ValidationResult:
+    artificial = validate_no_artificial_sentence_breaks(
+        text,
+        caption_text=caption_text,
+        asr_text=asr_text,
+    )
     if not artificial.ok:
         return artificial
     run_on = validate_run_on_sentences(text)
