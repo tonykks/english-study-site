@@ -58,3 +58,23 @@ def test_fallback_prefers_section_specific_event_over_generic_line():
     assert _best_complete_core_sentence(section, verified) == (
         "After years of rejection, Maya built a thriving restaurant in Detroit."
     )
+
+
+def test_relative_clause_fragment_is_not_a_core_candidate():
+    fragment = (
+        "A chapter that would begin with nothing but an old pressure cooker "
+        "and one simple recipe."
+    )
+    complete = "His persistence eventually built a successful business."
+    verified = f"{fragment} {complete}"
+    assert _exact_sentence_candidates(verified, verified) == [complete]
+    complete_relative = "A chapter that would begin quietly changed his life."
+    assert _exact_sentence_candidates(complete_relative, complete_relative) == [complete_relative]
+
+
+def test_malformed_caption_number_is_avoided_when_clean_candidate_exists():
+    malformed = "He finally sold 1,09, meals in one year."
+    clean = "His small restaurant became a national success."
+    verified = f"{malformed} {clean}"
+    assert _exact_sentence_candidates(verified, verified) == [clean]
+    assert _exact_sentence_candidates(malformed, malformed) == [malformed]

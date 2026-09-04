@@ -437,6 +437,11 @@ SENTENCE_STARTERS = frozenset(
     }
 )
 
+# Explicit sentence punctuation plus one of these capitalized starters is
+# enough validation evidence for a stranded "to" (for example, "used to.
+# For example").  Keep this narrower than accepting every capitalized word.
+DISCOURSE_SENTENCE_STARTERS = SENTENCE_STARTERS | {"for"}
+
 # Adjective/adverb/noun endings that complete a clause before a new capitalized subject.
 TERMINAL_BEFORE_CAPITAL = frozenset(
     {
@@ -1128,6 +1133,13 @@ def _is_valid_sentence_boundary(before: str, after: str) -> bool:
     """Accept plausible boundaries without weakening restoration decisions."""
     if _is_kept_boundary(before, after):
         return True
+    if (
+        before.lower() == "to"
+        and bool(after)
+        and after[0].isupper()
+        and after.lower() in DISCOURSE_SENTENCE_STARTERS
+    ):
+        return True
     return (
         before.lower() in CONTEXTUAL_SENTENCE_ENDS
         and bool(after)
@@ -1160,10 +1172,10 @@ def find_missing_short_boundaries(text: str) -> list[str]:
     hits: list[str] = []
     words = (text or "").split()
     for i in range(len(words) - 1):
-        # Sentence punctuation and strong clause punctuation are not missing
-        # boundaries. A comma still goes through the contextual detector so a
-        # comma splice cannot hide a genuine missed sentence boundary.
-        if re.search(r"[;:.!?]$", words[i]):
+        # Any source clause punctuation is boundary evidence. In particular,
+        # do not strip a real comma and reinterpret its continuation as a
+        # missing period ("Yet, they" / "at the same time, European...").
+        if re.search(r"[,;:.!?]$", words[i]):
             continue
         clean = re.sub(r"[,:;]+$", "", re.sub(r"[.!?]+$", "", words[i]))
         next_word = words[i + 1]

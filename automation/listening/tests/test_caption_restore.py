@@ -4,10 +4,12 @@ import re
 
 from automation.listening.models import Segment
 from automation.listening.script.caption_restore import (
+    find_missing_short_boundaries,
     fix_artificial_period_breaks,
     join_caption_fragments,
     restore_caption_segments,
     restore_caption_text,
+    validate_missing_short_boundaries,
     validate_no_artificial_sentence_breaks,
     words_unchanged,
 )
@@ -126,6 +128,31 @@ def test_artificial_break_detection_blocks():
     bad = "one of the first. Writing systems in history."
     result = validate_no_artificial_sentence_breaks(bad)
     assert not result.ok
+
+
+def test_comma_continuations_are_not_missing_boundaries():
+    assert find_missing_short_boundaries("Yet, they never gave up on their beliefs.") == []
+    assert find_missing_short_boundaries(
+        "At the same time, European nations competed for influence."
+    ) == []
+
+
+def test_unpunctuated_phrase_final_boundaries_are_still_missing():
+    assert not validate_missing_short_boundaries(
+        "There was another door to knock on he understood the lesson."
+    ).ok
+    assert not validate_missing_short_boundaries(
+        "It was hard to go through but what came next mattered."
+    ).ok
+
+
+def test_stranded_to_before_discourse_starter_is_valid_boundary():
+    text = "Life was not as simple as it used to. For example, a person had 100 units."
+    assert validate_no_artificial_sentence_breaks(text).ok
+
+
+def test_of_before_capitalized_continuation_is_still_artificial():
+    assert not validate_no_artificial_sentence_breaks("It was a center of. Learning continued.").ok
 
 
 def test_restore_caption_segments_complete_sentences():

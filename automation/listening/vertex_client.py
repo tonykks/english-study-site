@@ -17,14 +17,15 @@ CHUNK_KR_INSTRUCTION = """Translate to Korean using Meaning-Chunk Literal Transl
 Purpose: Korean learners first catch the English subject + verb, then attach the remaining information in the same order English presents it (what / where / why / how).
 
 Rules:
-- Split the English sentence into meaningful chunks
-- The first chunks should capture subject + verb (or subject + predicate head)
+- Split the English sentence into meaning chunks, not isolated words
+- Put the subject + verb first, then follow English information order
 - Remaining chunks follow English order: object, complement, place, reason, manner
-- Translate each chunk into understandable Korean
+- Keep Korean particles and endings intact enough for every chunk to retain its meaning
+- Translate each chunk into understandable Korean without collapsing its grammar
 - Preserve the original English chunk order in Korean output
 - Do NOT rearrange chunks into natural Korean sentence order
-- Do NOT translate every English word as its own chunk
-- Do NOT summarize, paraphrase, omit, or add meaning
+- Do NOT make a 1:1 mechanical single-word translation
+- Do NOT duplicate, summarize, paraphrase, omit, or add meaning
 - Verb and complement MAY be separate chunks. That is intended.
   Example allowed: "became" → "되었다", "a center" → "하나의 중심지가"
 - Do NOT force verb+complement into one chunk
@@ -68,7 +69,24 @@ Chunks:
 - People believed → 사람들은 믿었다
 - that many gods controlled → 많은 신들이 통제한다고
 - nature and daily life → 자연과 일상생활을
-Final kr: 사람들은 믿었다 많은 신들이 통제한다고 자연과 일상생활을"""
+Final kr: 사람들은 믿었다 많은 신들이 통제한다고 자연과 일상생활을
+
+English: You can fail many times and still win in the end, if you keep going.
+Chunks:
+- You can fail → 당신은 실패할 수 있다
+- many times → 여러 번
+- and still win → 그리고도 이길 수 있다
+- in the end → 결국에는
+- if you keep going → 당신이 계속 나아간다면
+Final kr: 당신은 실패할 수 있다 여러 번 그리고도 이길 수 있다 결국에는 당신이 계속 나아간다면
+
+English: They planted the seeds of the man who would one day become Colonel Sanders, the founder of KFC.
+Chunks:
+- They planted → 그들은 심었다
+- the seeds → 씨앗을
+- of the man who would one day become Colonel Sanders → 훗날 커널 샌더스가 될 그 사람의
+- the founder of KFC → KFC의 창립자가
+Final kr: 그들은 심었다 씨앗을 훗날 커널 샌더스가 될 그 사람의 KFC의 창립자가"""
 
 LITERAL_KR_INSTRUCTION = CHUNK_KR_INSTRUCTION
 
@@ -244,6 +262,9 @@ Rules:
 - "kr" must equal all chunk "kr" values joined in order (space-separated)
 - Chunk EN words must cover the full source sentence in order with no omissions
 - Use meaningful chunks following subject+verb first, then remaining English-order information
+- Keep Korean particles/endings intact so each meaning chunk remains understandable
+- Do not duplicate meaning or use mechanical one-English-word/one-Korean-word chunks
+- Do not rearrange chunks into natural full-sentence Korean order
 - Verb and complement MAY be separate chunks
 - Do not merge, split, omit, or reorder input items
 """

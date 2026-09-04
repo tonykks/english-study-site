@@ -84,3 +84,19 @@ def test_chunk_rejects_single_word_fragments():
     }
     with pytest.raises(RuntimeError):
         validate_chunk_translation("r2", en, row)
+
+
+def test_owner_style_subject_verb_then_english_information_order():
+    en = "You can fail many times and still win in the end, if you keep going."
+    row = {
+        "id": "owner1",
+        "kr": "당신은 실패할 수 있다 여러 번 그리고도 이길 수 있다 결국에는 당신이 계속 나아간다면",
+        "chunks": [
+            {"en": "You can fail", "kr": "당신은 실패할 수 있다"},
+            {"en": "many times", "kr": "여러 번"},
+            {"en": "and still win", "kr": "그리고도 이길 수 있다"},
+            {"en": "in the end", "kr": "결국에는"},
+            {"en": "if you keep going", "kr": "당신이 계속 나아간다면"},
+        ],
+    }
+    assert validate_chunk_translation("owner1", en, row) == row["kr"]

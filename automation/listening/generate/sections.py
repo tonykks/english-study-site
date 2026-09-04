@@ -364,6 +364,45 @@ def _whitespace_key(sentence: str) -> str:
     return re.sub(r"\s+", " ", (sentence or "").strip())
 
 
+_LEADING_MODAL_RELATIVE_RE = re.compile(
+    r"^(?:a|an|the|this|these|those)\s+"
+    r"(?:(?!(?:that|which|who)\b)[a-z][a-z'-]*\s+){1,6}"
+    r"(?:that|which|who)\s+(?:would|could|should|will|can|may|might|must)\b"
+    r"(?P<tail>.*)$",
+    re.IGNORECASE,
+)
+_MATRIX_VERB_RE = re.compile(
+    r"\b(?:am|is|are|was|were|has|have|had|do|does|did|"
+    r"became|began|built|came|found|gave|grew|made|proved|ran|said|"
+    r"showed|succeeded|took|turned|went|won|[a-z]+ed)\b",
+    re.IGNORECASE,
+)
+
+
+def _is_independent_core_sentence(sentence: str) -> bool:
+    """Reject clear noun-phrase fragments headed by a modal relative clause."""
+    match = _LEADING_MODAL_RELATIVE_RE.match(sentence.strip())
+    if not match:
+        return True
+    # The first lexical verb belongs to the modal relative predicate. A later
+    # finite verb supplies the missing main-clause predicate.
+    tail_words = re.findall(r"[A-Za-z][A-Za-z'-]*", match.group("tail"))
+    remainder = " ".join(tail_words[1:]) if tail_words else ""
+    return bool(_MATRIX_VERB_RE.search(remainder))
+
+
+def _has_malformed_caption_number(sentence: str) -> bool:
+    """Identify comma-grouped numbers whose post-comma groups are not 3 digits."""
+    for match in re.finditer(r"\b\d[\d,]*\b,?", sentence):
+        token = match.group(0).rstrip(",")
+        if "," not in token:
+            continue
+        groups = token.split(",")
+        if any(len(group) != 3 for group in groups[1:]):
+            return True
+    return False
+
+
 def _exact_sentence_candidates(section_text: str, verified_text: str) -> list[str]:
     """Complete sentences that exactly match a verified Full Script sentence.
 
@@ -378,7 +417,11 @@ def _exact_sentence_candidates(section_text: str, verified_text: str) -> list[st
     seen: set[str] = set()
     for sent in split_sentences(section_text):
         candidate = sent.strip()
-        if not candidate or not is_complete_sentence(candidate):
+        if (
+            not candidate
+            or not is_complete_sentence(candidate)
+            or not _is_independent_core_sentence(candidate)
+        ):
             continue
         key = _whitespace_key(candidate)
         if key not in verified_candidates or key in seen:
@@ -387,6 +430,10 @@ def _exact_sentence_candidates(section_text: str, verified_text: str) -> list[st
         # The verified Full Script is authoritative, including punctuation and
         # casing; never return model/section text merely because it compares equal.
         out.append(verified_candidates[key])
+    # Preserve source text exactly. Only suppress a malformed caption-number
+    # candidate when this section has another clean exact sentence available.
+    if any(not _has_malformed_caption_number(sentence) for sentence in out):
+        out = [sentence for sentence in out if not _has_malformed_caption_number(sentence)]
     return out
 
 
@@ -430,9 +477,10 @@ def _score_representative(sentence: str, section: StorySection) -> float:
 
     event_or_result_words = {
         "achieved", "became", "began", "built", "changed", "chose", "created",
-        "decided", "discovered", "earned", "failed", "founded", "grew", "invented",
-        "learned", "lost", "opened", "overcame", "realized", "refused", "returned",
-        "sold", "started", "succeeded", "transformed", "turned", "won",
+        "decided", "demonstrated", "discovered", "earned", "established", "failed",
+        "founded", "grew", "invented", "learned", "lost", "opened", "overcame",
+        "proved", "realized", "refused", "returned", "revealed", "showed", "sold",
+        "started", "succeeded", "transformed", "turned", "won",
     }
     turning_point_words = {
         "after", "because", "despite", "eventually", "finally", "however",
@@ -440,6 +488,8 @@ def _score_representative(sentence: str, section: StorySection) -> float:
     }
     score += min(len(set(words) & event_or_result_words), 3) * 2.5
     score += min(len(set(words) & turning_point_words), 2) * 2.0
+    result_nouns = {"achievement", "outcome", "result", "success", "victory"}
+    score += min(len(set(words) & result_nouns), 2) * 2.0
 
     if len(words) <= 6:
         score -= 7.0
