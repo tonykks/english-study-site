@@ -1,0 +1,107 @@
+[Card 1]
+headword: entrepreneur
+part_of_speech: noun
+meaning_kr: 기업가
+definition_en: a person who organizes and operates a business, taking on financial risk to do so
+definition_kr_literal: 한 사람은 조직하고 운영한다 하나의 사업을 떠맡으면서 재정적 위험을 그렇게 하기 위해
+example_en: Sir Richard Branson is a famous entrepreneur who started hundreds of different companies.
+example_kr_literal: 리처드 브랜슨 경은 이다 유명한 사업가가 시작했던 수백 개의 다른 회사들을
+
+[Card 2]
+headword: stranded
+part_of_speech: adjective
+meaning_kr: 오도 가도 못하는
+definition_en: left in a helpless situation without a way to move or travel further
+definition_kr_literal: 남겨졌다 무력한 상황 속에 방법 없이 이동하거나 더 나아갈
+example_en: The passengers were stranded at the airport after their flight was cancelled in the middle of the night.
+example_kr_literal: 승객들은 고립되었다 공항에 그들의 비행편이 취소된 후 한밤중에
+
+[Card 3]
+headword: charter
+part_of_speech: verb
+meaning_kr: 전세 내다
+definition_en: to hire an aircraft, boat, or bus for private use
+definition_kr_literal: 임대하다 항공기, 보트, 또는 버스를 개인적인 사용을 위해
+example_en: Branson decided to charter a plane to reach his destination when no commercial flights were available.
+example_kr_literal: 브랜슨은 결정했다 전세기를 빌리기로 그의 목적지에 도달하기 위해 이용 가능한 상업 비행기가 없었을 때
+
+[Card 4]
+headword: audacious
+part_of_speech: adjective
+meaning_kr: 대담한
+definition_en: showing a willingness to take surprisingly bold risks
+definition_kr_literal: 보여주면서 의지를 감수하려는 놀라울 정도로 과감한 위험을
+example_en: It was an audacious plan to challenge a massive airline company with only one small plane.
+example_kr_literal: 그것은 이었다 대담한 계획 도전하려는 거대한 항공사에 단 하나의 작은 비행기로
+
+[Card 5]
+headword: disruption
+part_of_speech: noun
+meaning_kr: 중단
+definition_en: the action of preventing something from continuing as usual, often by changing the way it works
+definition_kr_literal: 어떤 것을 막는 행위는 계속되는 것으로부터 평소처럼 종종 바꾸면서 그것이 작동하는 방식을
+example_en: The new technology caused a major disruption in the traditional taxi industry.
+example_kr_literal: 새로운 기술은 일으켰다 주요한 혼란을 전통적인 택시 산업에서
+
+[Card 6]
+headword: infamous
+part_of_speech: adjective
+meaning_kr: 악명 높은
+definition_en: well known for some bad quality or deed
+definition_kr_literal: 잘 알려진 상태이다 어떤 나쁜 특성이나 행위로 인해
+example_en: The airline was infamous for its poor service and frequently lost passenger luggage.
+example_kr_literal: 그 항공사는 악명 높았다 그것의 형편없는 서비스로 그리고 종종 잃어버렸다 승객의 수하물을
+
+[Card 7]
+headword: monopoly
+part_of_speech: noun
+meaning_kr: 독점
+definition_en: the exclusive possession or control of the supply of a service or product
+definition_kr_literal: 독점적인 소유나 통제는 서비스나 제품의 공급에 대한
+example_en: The company held a monopoly on the airport, meaning travelers had no other choice for their flights.
+example_kr_literal: 그 회사는 가졌다 독점을 공항에 대해 의미하면서 여행객들이 가질 수 없었다 다른 선택권을 그들의 비행을 위해
+
+[Card 8]
+headword: covert
+part_of_speech: adjective
+meaning_kr: 비밀의
+definition_en: not openly acknowledged or displayed; secret
+definition_kr_literal: 공개적으로 인정되거나 드러나지 않은 상태이다 비밀인
+example_en: The airline formed a covert team to secretly sabotage their competitor's reputation.
+example_kr_literal: 그 항공사는 구성했다 비밀 팀을 비밀리에 방해하기 위해 그들 경쟁사의 평판을
+
+[Card 9]
+headword: libel
+part_of_speech: noun
+meaning_kr: 명예훼손
+definition_en: a published false statement that is damaging to a person's or company's reputation
+definition_kr_literal: 게시된 거짓 진술이다 해를 끼치는 한 사람이나 회사의 평판에
+example_en: Branson sued the airline for libel because they were spreading false rumors to destroy his business.
+example_kr_literal: 브랜슨은 고소했다 그 항공사를 명예훼손으로 왜냐하면 그들이 퍼뜨리고 있었기 때문이다 거짓 소문들을 그의 사업을 파괴하기 위해
+
+[Card 10]
+headword: solvency
+part_of_speech: noun
+meaning_kr: 지불 능력
+definition_en: the ability of a company to meet its long-term financial obligations
+definition_kr_literal: 한 회사의 능력이다 한 회사의 이행할 수 있는 장기적인 재정 의무를
+example_en: Rumors about the company's lack of solvency caused many investors to worry about its future.
+example_kr_literal: 소문들은 그 회사의 지불 능력 부족에 대한 야기했다 많은 투자자들이 걱정하도록 그것의 미래에 대해
+
+[Card 11]
+headword: victorious
+part_of_speech: adjective
+meaning_kr: 승리한
+definition_en: having won a battle, contest, or struggle
+definition_kr_literal: 승리한 상태이다 전투, 대회, 또는 투쟁에서
+example_en: After years of legal fighting, Branson finally emerged victorious in court against his rival.
+example_kr_literal: 수년간의 법적 싸움 후에 브랜슨은 마침내 나타났다 승리자로 법정에서 그의 경쟁자에 대항하여
+
+[Card 12]
+headword: integrity
+part_of_speech: noun
+meaning_kr: 진실성
+definition_en: the quality of being honest and having strong moral principles
+definition_kr_literal: 특성이다 정직하고 강한 도덕적 원칙을 가지는
+example_en: The company's success was proof that maintaining integrity in business is a winning formula.
+example_kr_literal: 그 회사의 성공은 증거였다 증거였다 사업에서 정직함을 유지하는 것이 성공적인 공식이라는
