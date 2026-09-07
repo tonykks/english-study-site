@@ -1,0 +1,89 @@
+[Card 1]
+headword: untouchable
+part_of_speech: adjective
+meaning_kr: 건드릴 수 없는
+definition_en: impossible to influence, hurt, or defeat
+definition_kr_literal: 영향을 주거나, 상처를 주거나, 패배시키기 불가능한.
+example_en: If you control your emotions, you become untouchable to people who try to upset you.
+example_kr_literal: 당신이 감정을 통제하면, 당신을 화나게 하려는 사람들에게 당신은 영향을 받지 않는 존재가 됩니다.
+
+[Card 2]
+headword: manipulate
+part_of_speech: verb
+meaning_kr: 조종하다
+definition_en: to control or influence someone in a clever or dishonest way
+definition_kr_literal: 교묘하거나 부정직한 방식으로 누군가를 통제하거나 조종하는 것.
+example_en: When you react instantly to an insult, you make it easy for others to manipulate your mood.
+example_kr_literal: 모욕에 즉각적으로 반응하면, 당신은 다른 사람들이 당신의 기분을 조종하기 쉽게 만듭니다.
+
+[Card 3]
+headword: regret
+part_of_speech: noun
+meaning_kr: 후회
+definition_en: a sad or unhappy feeling about something that you did or did not do
+definition_kr_literal: 무언가를 했거나 하지 않은 것에 대한 슬프거나 불행한 감정.
+example_en: Many people live with the regret of saying things they did not mean during a fight.
+example_kr_literal: 많은 사람들은 싸우는 동안 진심이 아니었던 말을 한 것에 대한 후회를 안고 살아갑니다.
+
+[Card 4]
+headword: respond
+part_of_speech: verb
+meaning_kr: 응대하다
+definition_en: to act or behave in answer to something, usually after thinking
+definition_kr_literal: 보통 생각한 후에, 무언가에 대해 행동하거나 처신하는 것.
+example_en: Strong people take a moment to think and respond calmly instead of reacting quickly.
+example_kr_literal: 강한 사람들은 빠르게 반응하는 대신 잠시 생각하고 침착하게 대응합니다.
+
+[Card 5]
+headword: dignity
+part_of_speech: noun
+meaning_kr: 위엄
+definition_en: a calm and serious manner that deserves respect
+definition_kr_literal: 존중받을 자격이 있는 침착하고 진지한 태도
+example_en: He maintained his dignity by staying silent even when others were saying unkind things about him.
+example_kr_literal: 그는 다른 사람들이 그에 대해 불친절한 말을 할 때에도 침묵을 지킴으로써 자신의 품위를 유지했다.
+
+[Card 6]
+headword: humiliate
+part_of_speech: verb
+meaning_kr: 망신을 주다
+definition_en: to make someone feel ashamed or foolish in front of other people
+definition_kr_literal: 다른 사람들 앞에서 누군가를 부끄럽거나 어리석게 느끼도록 만드는 것
+example_en: The manager tried to humiliate the worker by criticizing him in front of the whole team.
+example_kr_literal: 관리자는 전체 팀원들 앞에서 그 직원을 비난함으로써 그에게 망신을 주려고 했다.
+
+[Card 7]
+headword: expose
+part_of_speech: verb
+meaning_kr: 폭로하다
+definition_en: to show the truth about someone or something that was hidden or dishonest
+definition_kr_literal: 숨겨져 있거나 부정직했던 누군가나 무언가에 대한 진실을 드러내는 것
+example_en: Months later, the truth came out and the person who lied was finally exposed.
+example_kr_literal: 몇 달 후 진실이 밝혀졌고 거짓말을 했던 사람은 마침내 폭로되었다.
+
+[Card 8]
+headword: disrespect
+part_of_speech: verb
+meaning_kr: 무시하다
+definition_en: to treat someone in a rude way that shows no respect
+definition_kr_literal: 존중하지 않는 무례한 방식으로 누군가를 대하는 것
+example_en: When someone tries to disrespect you, the best choice is often to say nothing and walk away.
+example_kr_literal: 누군가가 당신을 무시하려 할 때 가장 좋은 선택은 아무 말도 하지 않고 자리를 뜨는 것이다.
+
+[Card 9]
+headword: deserve
+part_of_speech: verb
+meaning_kr: 받을 자격이 있다
+definition_en: to have earned something because of your actions or qualities
+definition_kr_literal: 자신의 행동이나 자질 때문에 무언가를 얻게 되는 것
+example_en: Not every argument or message deserves your time and energy.
+example_kr_literal: 모든 주장이나 메시지가 당신의 시간과 에너지를 들일 가치가 있는 것은 아닙니다.
+
+[Card 10]
+headword: ego
+part_of_speech: noun
+meaning_kr: 자아
+definition_en: a person's sense of self-importance that often makes them want to be right
+definition_kr_literal: 흔히 자신이 옳기를 바라는 마음을 갖게 만드는 사람의 자의식
+example_en: If you want to find peace, you must learn to put your ego aside.
+example_kr_literal: 평화를 찾고 싶다면 자아를 내려놓는 법을 배워야 합니다.

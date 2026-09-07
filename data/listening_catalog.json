@@ -16,6 +16,22 @@
         "신규"
       ],
       "status": "published"
+    },
+    {
+      "video_id": "DuykqNkPgUo",
+      "title": "The Power of Not Reacting || Graded Reader || Improve Your English Fluency ✅️",
+      "level": 2,
+      "source_url": "https://youtu.be/DuykqNkPgUo",
+      "channel": "English Avenue",
+      "content_path": "pages/listening/content/DuykqNkPgUo",
+      "page_path": "pages/listening/content/DuykqNkPgUo/DuykqNkPgUo.html",
+      "href": "./content/DuykqNkPgUo/DuykqNkPgUo.html",
+      "introEn": "This lesson teaches you how to stop reacting emotionally to difficult situations and instead gain control over your life. By learning the power of the 'pause,' you can avoid deep regrets, protect your peace, and respond to others with strength and clarity.",
+      "tags": [
+        "Level 2",
+        "신규"
+      ],
+      "status": "published"
     }
   ]
 }

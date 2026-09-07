@@ -1,0 +1,131 @@
+{
+  "version": 1,
+  "video_id": "DuykqNkPgUo",
+  "items": [
+    {
+      "id": "h01",
+      "source_sentence": "You will become the kind of person who becomes untouchable.",
+      "kr_hint": "당신은 누구도 함부로 대할 수 없는 사람이 될 것입니다.",
+      "correct_chunks": [
+        "You",
+        "will become",
+        "the kind",
+        "of person",
+        "who becomes untouchable"
+      ],
+      "distractors": [
+        "would become",
+        "become"
+      ],
+      "grammar_focus": {
+        "type": "verb_tense",
+        "answer": "will become",
+        "alternatives": [
+          "would become",
+          "become"
+        ],
+        "note": "modal verb"
+      },
+      "final_punctuation": "."
+    },
+    {
+      "id": "h04",
+      "source_sentence": "Most reactions become regrets.",
+      "kr_hint": "대부분의 반응은 후회로 남는다.",
+      "correct_chunks": [
+        "Most reactions",
+        "become",
+        "regrets"
+      ],
+      "distractors": [
+        "regreted",
+        "has regreted"
+      ],
+      "grammar_focus": {
+        "type": "verb_tense",
+        "answer": "regrets",
+        "alternatives": [
+          "regreted",
+          "has regreted"
+        ],
+        "note": "simple present"
+      },
+      "final_punctuation": "."
+    },
+    {
+      "id": "h07",
+      "source_sentence": "Silence is a superpower.",
+      "kr_hint": "침묵은 초능력이다.",
+      "correct_chunks": [
+        "Silence",
+        "is",
+        "a superpower"
+      ],
+      "distractors": [
+        "was",
+        "has been"
+      ],
+      "grammar_focus": {
+        "type": "verb_tense",
+        "answer": "is",
+        "alternatives": [
+          "was",
+          "has been"
+        ],
+        "note": "simple present"
+      },
+      "final_punctuation": "."
+    },
+    {
+      "id": "h08",
+      "source_sentence": "Use silence as a weapon, not a weakness.",
+      "kr_hint": "침묵을 약점이 아닌 무기로 삼으세요.",
+      "correct_chunks": [
+        "Use",
+        "silence",
+        "as",
+        "a weapon",
+        "not",
+        "a weakness"
+      ],
+      "distractors": [
+        "used",
+        "has used"
+      ],
+      "grammar_focus": {
+        "type": "verb_tense",
+        "answer": "Use",
+        "alternatives": [
+          "used",
+          "has used"
+        ],
+        "note": "simple present"
+      },
+      "final_punctuation": "."
+    },
+    {
+      "id": "h10",
+      "source_sentence": "The one who stays calm wins.",
+      "kr_hint": "침착함을 유지하는 사람이 이깁니다.",
+      "correct_chunks": [
+        "The one",
+        "who stays calm",
+        "wins"
+      ],
+      "distractors": [
+        "won",
+        "has won"
+      ],
+      "grammar_focus": {
+        "type": "verb_tense",
+        "answer": "wins",
+        "alternatives": [
+          "won",
+          "has won"
+        ],
+        "note": "simple present"
+      },
+      "final_punctuation": "."
+    }
+  ]
+}
