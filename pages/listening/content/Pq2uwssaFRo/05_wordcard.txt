@@ -1,0 +1,89 @@
+[Card 1]
+headword: exist
+part_of_speech: verb
+meaning_kr: 존재하다
+definition_en: to be real or alive
+definition_kr_literal: 되다/이다 실제이거나 살아있는
+example_en: Are you really living or are you just existing?
+example_kr_literal: 당신은 ~인가 정말로 살고 있는 아니면 당신은 ~인가 그저 존재하고 있는
+
+[Card 2]
+headword: destroy
+part_of_speech: verb
+meaning_kr: 파괴하다
+definition_en: to damage something so badly that it does not exist anymore
+definition_kr_literal: 손상시키다 무언가를 너무 심하게 ~하도록 그것이 더 이상 존재하지 않게
+example_en: You are destroying pieces of your life by wasting time.
+example_kr_literal: 당신은 파괴하고 있다 당신 삶의 조각들을 시간을 낭비함으로써
+
+[Card 3]
+headword: responsibility
+part_of_speech: noun
+meaning_kr: 책임
+definition_en: the state of being in charge of something
+definition_kr_literal: 상태이다 무언가를 책임지고 있는
+example_en: Your life is your own responsibility.
+example_kr_literal: 당신의 삶은 이다 당신 자신의 책임
+
+[Card 4]
+headword: comfort
+part_of_speech: noun
+meaning_kr: 안락
+definition_en: a state of being relaxed and without pain or stress
+definition_kr_literal: 상태이다 편안하고 고통이나 스트레스가 없는
+example_en: Your comfort zone is killing your dreams because there is no growth in comfort.
+example_kr_literal: 당신의 안락 지대는 죽이고 있다 당신의 꿈들을 왜냐하면 성장이 없기 때문이다 안락함 속에는
+
+[Card 5]
+headword: laziness
+part_of_speech: noun
+meaning_kr: 게으름
+definition_en: the habit of not wanting to work or do anything
+definition_kr_literal: 그 습관은 아니다 원하지 않는 일하기를 또는 어떤 것도 하기를
+example_en: Saying you will do it later is the voice of laziness.
+example_kr_literal: 나중에 할 것이라고 말하는 것은 이다 게으름의 목소리
+
+[Card 6]
+headword: overthink
+part_of_speech: verb
+meaning_kr: 지나치게 생각하다
+definition_en: to think about something too much
+definition_kr_literal: 생각하는 것이다 어떤 것에 대해 너무 많이
+example_en: Overthinking is destroying your life.
+example_kr_literal: 과도한 생각은 파괴하고 있다 당신의 삶을
+
+[Card 7]
+headword: habit
+part_of_speech: noun
+meaning_kr: 습관
+definition_en: something you do regularly
+definition_kr_literal: 무언가 당신이 하는 정기적으로
+example_en: Let action become your habit.
+example_kr_literal: 행동이 되게 하라 당신의 습관이
+
+[Card 8]
+headword: evolve
+part_of_speech: verb
+meaning_kr: 진화하다
+definition_en: to develop or grow slowly
+definition_kr_literal: 발전시키거나 자라나게 하라 천천히
+example_en: You are here to grow and to evolve.
+example_kr_literal: 당신은 있다 여기에 성장하기 위해서 그리고 진화하기 위해서
+
+[Card 9]
+headword: discipline
+part_of_speech: noun
+meaning_kr: 절제
+definition_en: the ability to control your behavior and work hard
+definition_kr_literal: 능력 당신의 행동을 통제하고 열심히 노력하는
+example_en: Ask yourself what a disciplined man would do today.
+example_kr_literal: 당신 자신에게 물어보라 무엇을 규율 잡힌 사람이 할 것인지를 오늘
+
+[Card 10]
+headword: risk
+part_of_speech: noun
+meaning_kr: 위험
+definition_en: a situation that involves the possibility of danger or failure
+definition_kr_literal: 한 상황인데 포함하는 위험이나 실패의 가능성을
+example_en: You do not get greatness without risk.
+example_kr_literal: 당신은 얻지 못한다 위대함을 위험 없이는

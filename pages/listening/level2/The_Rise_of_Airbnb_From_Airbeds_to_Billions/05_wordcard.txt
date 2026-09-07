@@ -1,0 +1,89 @@
+[Card 1]
+headword: recession
+part_of_speech: noun
+meaning_kr: 경기 침체
+definition_en: a period of temporary economic decline during which trade and industrial activity are reduced
+definition_kr_literal: 일시적인 경제적 쇠퇴의 시기 동안에 무역과 산업 활동이 감소되는
+example_en: Many businesses struggled to survive during the global recession.
+example_kr_literal: 많은 기업들은 고군분투했다 살아남기 위해 경기 침체기 동안에
+
+[Card 2]
+headword: simultaneously
+part_of_speech: adverb
+meaning_kr: 동시에
+definition_en: at the same time
+definition_kr_literal: 동시에
+example_en: Two major problems happened simultaneously, which forced the founders to change their plans.
+example_kr_literal: 두 가지 주요 문제가 발생했다 동시에 그리고 그것은 강요했다 창업자들이 바꾸도록 그들의 계획을
+
+[Card 3]
+headword: listing
+part_of_speech: noun
+meaning_kr: 매물 목록
+definition_en: an entry in a list, especially one that offers a property for rent or sale
+definition_kr_literal: 목록 안의 하나의 항목 특히 제공하는 하나 하나의 부동산을 임대나 판매를 위한
+example_en: The website quickly grew from just a few listings to thousands of available rooms.
+example_kr_literal: 그 웹사이트는 빠르게 성장했다 단지 몇 개의 목록들에서 수천 개의 이용 가능한 방들로
+
+[Card 4]
+headword: generate
+part_of_speech: verb
+meaning_kr: 창출하다
+definition_en: to produce or create something, especially money or energy
+definition_kr_literal: 생산하거나 창출하다 무언가를 특히 돈이나 에너지를
+example_en: The small company was able to generate significant profits by selling unique collector's items.
+example_kr_literal: 그 작은 회사는 가능했다 창출하는 것이 상당한 이익을 판매함으로써 독특한 수집가용 아이템들을
+
+[Card 5]
+headword: grit
+part_of_speech: noun
+meaning_kr: 투지
+definition_en: courage and determination to continue doing something despite difficulties
+definition_kr_literal: 용기와 결단력은 계속하기 위한 무언가를 하는 것을 어려움에도 불구하고
+example_en: It took a lot of grit for the founders to keep working on their business after all the investors said no.
+example_kr_literal: 그것은 필요했다 많은 끈기가 창립자들에게 계속 일하도록 그들의 사업에 모든 투자자들이 아니라고 말한 후에
+
+[Card 6]
+headword: fortuitous
+part_of_speech: adjective
+meaning_kr: 우연한
+definition_en: happening by a lucky chance rather than by intention
+definition_kr_literal: 일어나는 것은 운 좋은 기회에 의해서 의도에 의해서라기보다는
+example_en: The company’s launch during the economic crisis was fortuitous because people needed extra income.
+example_kr_literal: 그 회사의 시작은 경제 위기 동안 우연히 일어난 것이었다 왜냐하면 사람들이 필요했기 때문에 추가적인 수입을
+
+[Card 7]
+headword: liability
+part_of_speech: noun
+meaning_kr: 부채
+definition_en: a person or thing whose presence or behavior is likely to cause embarrassment or disadvantage
+definition_kr_literal: 사람이나 물건은 그 존재나 행동이 야기할 가능성이 있는 당혹감이나 불이익을
+example_en: Airbnb changed the perception of owning a home from a financial liability into a source of income.
+example_kr_literal: 에어비앤비는 바꾸었다 집을 소유한다는 것에 대한 인식을 재정적인 부채로부터 수입의 원천으로
+
+[Card 8]
+headword: pivotal
+part_of_speech: adjective
+meaning_kr: 중추적인
+definition_en: of crucial importance in relation to the development or success of something else
+definition_kr_literal: 중대한 중요성을 가지는 관계 속에서 발전이나 성공과 관련하여 다른 어떤 것의
+example_en: Living in his own rentals was a pivotal moment that helped the founder improve the user experience.
+example_kr_literal: 그가 자신의 임대 숙소에 사는 것은 중대한 순간이었다 도왔던 창립자가 개선하도록 사용자 경험을
+
+[Card 9]
+headword: valuation
+part_of_speech: noun
+meaning_kr: 평가액
+definition_en: an estimation of the worth or price of something
+definition_kr_literal: 하나의 추정 가치나 가격에 대한 무언가의
+example_en: With an estimated valuation of $38 billion, the startup became one of the most valuable in the world.
+example_kr_literal: 380억 달러의 추정 평가액으로 그 스타트업은 되었다 가장 가치 있는 것들 중 하나가 세계에서
+
+[Card 10]
+headword: accommodation
+part_of_speech: noun
+meaning_kr: 숙박 시설
+definition_en: a place where people can live, stay, or work
+definition_kr_literal: 하나의 장소 사람들이 살거나 머물거나 일할 수 있는
+example_en: Travelers now prefer Airbnb over traditional hotel accommodation.
+example_kr_literal: 여행객들은 이제 선호한다 에어비앤비를 전통적인 호텔 숙박 시설보다

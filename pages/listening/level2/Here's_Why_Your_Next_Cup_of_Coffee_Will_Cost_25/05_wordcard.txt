@@ -1,0 +1,89 @@
+[Card 1]
+headword: underpriced
+part_of_speech: adjective
+meaning_kr: 저평가된
+definition_en: sold at a price that is too low compared to its real value
+definition_kr_literal: 팔린다 가격에 너무 낮은 실제 가치와 비교하여
+example_en: Many people do not realize that the coffee they buy is actually underpriced.
+example_kr_literal: 많은 사람들은 깨닫지 못한다 그들이 사는 커피가 사실은 저평가되어 있다는 것을
+
+[Card 2]
+headword: inequality
+part_of_speech: noun
+meaning_kr: 불평등
+definition_en: a situation where some groups have less money or opportunity than others
+definition_kr_literal: 하나의 상황이다 일부 집단들이 더 적은 돈이나 기회를 가지는 다른 이들보다
+example_en: The price of coffee is linked to the economic inequality between rich and poor countries.
+example_kr_literal: 커피의 가격은 연결되어 있다 경제적 불평등과 부유한 나라들과 가난한 나라들 사이의
+
+[Card 3]
+headword: commodity
+part_of_speech: noun
+meaning_kr: 상품
+definition_en: a basic good or raw material that can be bought and sold
+definition_kr_literal: 하나의 기본적인 상품이나 원자재이다 사고팔 수 있는
+example_en: Coffee is a valuable global commodity that is traded in large amounts every day.
+example_kr_literal: 커피는 가치 있는 세계적인 상품이다 거래되는 많은 양으로 매일
+
+[Card 4]
+headword: labour-intensive
+part_of_speech: adjective
+meaning_kr: 노동 집약적인
+definition_en: needing a lot of human work rather than just machines
+definition_kr_literal: 필요로 한다 많은 인간의 노동을 단지 기계들보다는
+example_en: Picking coffee berries by hand is a very labour-intensive process for farmers.
+example_kr_literal: 커피 열매를 손으로 따는 것은 매우 노동 집약적인 과정이다 농부들에게
+
+[Card 5]
+headword: sustain
+part_of_speech: verb
+meaning_kr: 부양하다
+definition_en: to provide enough money or resources for someone to live or continue
+definition_kr_literal: 제공하는 것 돈이나 자원을 충분히 누군가가 살거나 지속할 수 있도록
+example_en: Low coffee prices make it difficult for farmers to sustain their families.
+example_kr_literal: 낮은 커피 가격은 만든다 어렵게 농부들이 부양하기를 그들의 가족을
+
+[Card 6]
+headword: fluctuate
+part_of_speech: verb
+meaning_kr: 변동하다
+definition_en: to change frequently in size, amount, or quality
+definition_kr_literal: 바뀌는 것 빈번하게 크기, 양, 또는 질에 있어서
+example_en: The price of oil and coffee can fluctuate based on global market conditions.
+example_kr_literal: 석유와 커피의 가격은 변동할 수 있다 글로벌 시장 상황에 근거하여
+
+[Card 7]
+headword: consensus
+part_of_speech: noun
+meaning_kr: 합의
+definition_en: a general agreement among a group of people
+definition_kr_literal: 일반적인 합의 사람들 집단 사이의
+example_en: The members could not reach a consensus on how much coffee should be produced.
+example_kr_literal: 그 구성원들은 도달할 수 없었다 합의에 관한 어떻게 커피가 생산되어야 하는지
+
+[Card 8]
+headword: avert
+part_of_speech: verb
+meaning_kr: 방지하다
+definition_en: to prevent something bad from happening
+definition_kr_literal: 막는 것 무언가 나쁜 것이 일어나지 않도록
+example_en: Governments made an agreement to help avert extreme changes in coffee prices.
+example_kr_literal: 정부들은 만들었다 합의를 돕기 위해 막는 것을 극단적인 변화들을 커피 가격의
+
+[Card 9]
+headword: saturated
+part_of_speech: adjective
+meaning_kr: 포화 상태인
+definition_en: full of something so that no more can be added or contained
+definition_kr_literal: 가득 찬 것이다 무언가로 그래서 더 이상 추가되거나 포함될 수 없는
+example_en: The market is saturated with many companies trying to sell the same products.
+example_kr_literal: 시장은 포화 상태이다 많은 기업들로 노력하는 팔려고 같은 제품들을
+
+[Card 10]
+headword: underlying
+part_of_speech: adjective
+meaning_kr: 근본적인
+definition_en: the most important but hidden cause of a problem
+definition_kr_literal: 가장 중요하지만 숨겨진 원인이다 한 문제의
+example_en: Fair trade labels are good, but they do not solve the underlying cause of low wages.
+example_kr_literal: 공정 무역 라벨들은 좋다 하지만 그들은 해결하지 못한다 근본적인 원인을 낮은 임금들의

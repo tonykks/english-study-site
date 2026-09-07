@@ -1,0 +1,243 @@
+{
+  "version": 1,
+  "video_id": "Oj23P0lwM48",
+  "items": [
+    {
+      "id": "h01",
+      "source_sentence": "That was Raj's life, a farmer with a vision that seemed impossible.",
+      "kr_hint": "그것은 불가능해 보이는 비전을 가진 농부인 라즈의 삶이었다.",
+      "correct_chunks": [
+        "That",
+        "was",
+        "Raj's life",
+        "a farmer",
+        "with a vision",
+        "that seemed impossible"
+      ],
+      "distractors": [
+        "is",
+        "has been"
+      ],
+      "grammar_focus": {
+        "type": "verb_tense",
+        "answer": "was",
+        "alternatives": [
+          "is",
+          "has been"
+        ],
+        "note": "simple past"
+      }
+    },
+    {
+      "id": "h03",
+      "source_sentence": "Yet, unlike his father, Raj also dreamed of opportunity beyond what the soil could offer.",
+      "kr_hint": "그러나 아버지와 달리 라즈는 땅이 줄 수 있는 것 너머의 기회도 꿈꿨다.",
+      "correct_chunks": [
+        "Yet",
+        "unlike his father",
+        "Raj",
+        "also dreamed",
+        "of opportunity",
+        "beyond what the soil could offer"
+      ],
+      "distractors": [
+        "dreams",
+        "has dreamed"
+      ],
+      "grammar_focus": {
+        "type": "verb_tense",
+        "answer": "dreamed",
+        "alternatives": [
+          "dreams",
+          "has dreamed"
+        ],
+        "note": "simple past"
+      }
+    },
+    {
+      "id": "h09",
+      "source_sentence": "The family's collective effort allowed Raj to balance the risks of his new business with the daily responsibilities of farming.",
+      "kr_hint": "가족의 공동 노력 덕분에 라즈는 새 사업의 위험과 농사일의 일상적인 책임 사이에서 균형을 잡을 수 있었다.",
+      "correct_chunks": [
+        "The family's collective effort",
+        "allowed",
+        "Raj",
+        "to balance",
+        "the risks",
+        "of his new business",
+        "with the daily responsibilities",
+        "of farming"
+      ],
+      "distractors": [
+        "allows",
+        "has allowed"
+      ],
+      "grammar_focus": {
+        "type": "verb_tense",
+        "answer": "allowed",
+        "alternatives": [
+          "allows",
+          "has allowed"
+        ],
+        "note": "simple past"
+      }
+    },
+    {
+      "id": "h11",
+      "source_sentence": "He began imagining a network of farmers working together, sharing knowledge and opportunities.",
+      "kr_hint": "그는 함께 일하며 지식과 기회를 나누는 농부들의 네트워크를 상상하기 시작했다.",
+      "correct_chunks": [
+        "He",
+        "began",
+        "imagining a network",
+        "of farmers",
+        "working together",
+        "sharing knowledge and opportunities"
+      ],
+      "distractors": [
+        "begins",
+        "has begun"
+      ],
+      "grammar_focus": {
+        "type": "verb_tense",
+        "answer": "began",
+        "alternatives": [
+          "begins",
+          "has begun"
+        ],
+        "note": "simple past"
+      }
+    },
+    {
+      "id": "h13",
+      "source_sentence": "When he arrived, the buyer inspected the produce carefully.",
+      "kr_hint": "그가 도착하자 구매자는 농산물을 신중하게 검사했다.",
+      "correct_chunks": [
+        "When he arrived",
+        "the buyer",
+        "inspected",
+        "the produce",
+        "carefully"
+      ],
+      "distractors": [
+        "inspects",
+        "has inspected"
+      ],
+      "grammar_focus": {
+        "type": "verb_tense",
+        "answer": "inspected",
+        "alternatives": [
+          "inspects",
+          "has inspected"
+        ],
+        "note": "simple past"
+      }
+    },
+    {
+      "id": "h17",
+      "source_sentence": "Raj welcomed them sharing what he had learned about selecting crops, approaching buyers, and planning carefully.",
+      "kr_hint": "라즈는 그들을 환영하며 작물 고르기, 구매자 접근, 신중한 계획에 대해 배운 것을 나누었다.",
+      "correct_chunks": [
+        "Raj",
+        "welcomed",
+        "them",
+        "sharing what he had learned",
+        "about selecting crops approaching buyers and planning carefully"
+      ],
+      "distractors": [
+        "welcomes",
+        "has welcomed"
+      ],
+      "grammar_focus": {
+        "type": "verb_tense",
+        "answer": "welcomed",
+        "alternatives": [
+          "welcomes",
+          "has welcomed"
+        ],
+        "note": "simple past"
+      }
+    },
+    {
+      "id": "h18",
+      "source_sentence": "The cooperative allowed other farmers to access larger markets, increasing both profits and quality of life for the village community.",
+      "kr_hint": "협동조합 덕분에 다른 농부들은 더 큰 시장에 접근할 수 있었고, 마을 공동체의 수익과 삶의 질이 함께 높아졌다.",
+      "correct_chunks": [
+        "The cooperative",
+        "allowed",
+        "other farmers",
+        "to access",
+        "larger markets",
+        "increasing both profits and quality",
+        "of life",
+        "for the village community"
+      ],
+      "distractors": [
+        "allows",
+        "has allowed"
+      ],
+      "grammar_focus": {
+        "type": "verb_tense",
+        "answer": "allowed",
+        "alternatives": [
+          "allows",
+          "has allowed"
+        ],
+        "note": "simple past"
+      }
+    },
+    {
+      "id": "h19",
+      "source_sentence": "Farmers worked together, supporting one another, sharing knowledge, and building trust.",
+      "kr_hint": "농부들은 서로를 돕고 지식을 나누며 신뢰를 쌓으면서 함께 일했다.",
+      "correct_chunks": [
+        "Farmers",
+        "worked together",
+        "supporting one another",
+        "sharing knowledge",
+        "and building trust"
+      ],
+      "distractors": [
+        "works",
+        "has worked"
+      ],
+      "grammar_focus": {
+        "type": "verb_tense",
+        "answer": "worked",
+        "alternatives": [
+          "works",
+          "has worked"
+        ],
+        "note": "simple past"
+      }
+    },
+    {
+      "id": "h20",
+      "source_sentence": "His journey from a struggling farmer to a community leader and entrepreneur had taught him that persistence, integrity, and vision could overcome even the most difficult circumstances.",
+      "kr_hint": "어렵게 농사짓던 농부에서 공동체 지도자이자 사업가가 되기까지의 여정은 인내와 정직과 비전이 아무리 어려운 상황도 이겨 낼 수 있다는 것을 그에게 가르쳐 주었다.",
+      "correct_chunks": [
+        "His journey",
+        "from a struggling farmer",
+        "to a community leader and entrepreneur",
+        "had taught",
+        "him",
+        "that persistence integrity and vision",
+        "could overcome",
+        "even the most difficult circumstances"
+      ],
+      "distractors": [
+        "taught",
+        "has taught"
+      ],
+      "grammar_focus": {
+        "type": "verb_tense",
+        "answer": "had taught",
+        "alternatives": [
+          "taught",
+          "has taught"
+        ],
+        "note": "past perfect"
+      }
+    }
+  ]
+}

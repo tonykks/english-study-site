@@ -1,0 +1,89 @@
+[Card 1]
+headword: inspire
+part_of_speech: verb
+meaning_kr: 영감을 주다
+definition_en: to fill someone with the urge or ability to do or feel something, especially to do something creative
+definition_kr_literal: 누군가에게 어떤 것을 하거나 느끼는 욕구나 능력을 주어주는 것, 특히 창조적인 일을 하는 데
+example_en: The story of Colonel Sanders inspired me to never give up on my dreams.
+example_kr_literal: 커넬 샌더스의 이야기는 나에게 꿈을 포기하지 않기 위한 영감을 주었습니다.
+
+[Card 2]
+headword: resilience
+part_of_speech: noun
+meaning_kr: 회복력
+definition_en: the capacity to recover quickly from difficulties; toughness
+definition_kr_literal: 어려움에서 빠르게 회복하는 능력; 강인함
+example_en: Harland's early life shaped his resilience and determination to succeed.
+example_kr_literal: 하란드의 어린 시절은 그의 회복력과 성공에 대한 결단력을 형성했습니다.
+
+[Card 3]
+headword: struggle
+part_of_speech: noun
+meaning_kr: 투쟁, 고난
+definition_en: a difficult effort to overcome problems
+definition_kr_literal: 문제를 극복하기 위한 어려운 노력
+example_en: His journey was full of struggles, failures, and setbacks.
+example_kr_literal: 그의 여정은 고난, 실패, 좌절로 가득했다.
+
+[Card 4]
+headword: failure
+part_of_speech: noun
+meaning_kr: 실패
+definition_en: lack of success
+definition_kr_literal: 성공하지 못함
+example_en: He failed many times; he lost businesses, jobs, and money.
+example_kr_literal: 그는 여러 번 실패했고, 사업과 직업과 돈을 잃었다.
+
+[Card 5]
+headword: persistence
+part_of_speech: noun
+meaning_kr: 끈기
+definition_en: continued effort despite difficulty
+definition_kr_literal: 어려움에도 불구하고 계속하는 노력
+example_en: It's about hope, courage, persistence, and believing in yourself.
+example_kr_literal: 그것은 희망, 용기, 끈기, 그리고 자신을 믿는 것에 관한 것이다.
+
+[Card 6]
+headword: opportunity
+part_of_speech: noun
+meaning_kr: 기회
+definition_en: a situation that makes something possible
+definition_kr_literal: 어떤 것을 가능하게 하는 상황
+example_en: He looked for another opportunity.
+example_kr_literal: 그는 또 다른 기회를 찾았다.
+
+[Card 7]
+headword: reject
+part_of_speech: verb
+meaning_kr: 거절하다
+definition_en: to refuse to accept
+definition_kr_literal: 받아들이기를 거부하다
+example_en: In fact, 1,009 people said no to Harland Sanders.
+example_kr_literal: 실제로 1,009명이 할랜드 샌더스에게 거절했다.
+
+[Card 8]
+headword: belief
+part_of_speech: noun
+meaning_kr: 믿음
+definition_en: trust or confidence in something
+definition_kr_literal: 어떤 것에 대한 신뢰나 확신
+example_en: He still believed in his fried chicken recipe.
+example_kr_literal: 그는 여전히 자신의 프라이드 치킨 레시피를 믿었다.
+
+[Card 9]
+headword: recipe
+part_of_speech: noun
+meaning_kr: 요리법
+definition_en: instructions for preparing food
+definition_kr_literal: 음식을 준비하는 방법
+example_en: He had developed his own special recipe for fried chicken.
+example_kr_literal: 그는 자신만의 특별한 프라이드 치킨 요리법을 개발했다.
+
+[Card 10]
+headword: achieve
+part_of_speech: verb
+meaning_kr: 달성하다
+definition_en: to successfully reach a goal
+definition_kr_literal: 목표에 성공적으로 도달하다
+example_en: You can still reach your dreams.
+example_kr_literal: 당신은 여전히 꿈에 도달할 수 있다.

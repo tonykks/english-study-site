@@ -1,0 +1,333 @@
+{
+  "version": 1,
+  "video_id": "Pq2uwssaFRo",
+  "items": [
+    {
+      "id": "h01",
+      "source_sentence": "Am I really living or am I just existing?",
+      "kr_hint": "나는 정말로 살고 있는 걸까, 아니면 그저 존재하는 것일까?",
+      "correct_chunks": [
+        "Am I really",
+        "living or",
+        "am I just",
+        "existing"
+      ],
+      "distractors": [
+        "is",
+        "was",
+        "has been"
+      ],
+      "grammar_focus": {
+        "type": "verb_tense",
+        "answer": "Am I",
+        "alternatives": [
+          "is",
+          "was",
+          "has been"
+        ],
+        "note": "verb form"
+      }
+    },
+    {
+      "id": "h02",
+      "source_sentence": "You are destroying pieces of your life, because your time is your life.",
+      "kr_hint": "시간은 곧 당신의 인생이기 때문에, 당신은 자신의 삶을 조금씩 파괴하고 있는 것입니다.",
+      "correct_chunks": [
+        "You",
+        "are destroying",
+        "pieces",
+        "of your life",
+        "because your time is",
+        "your life"
+      ],
+      "distractors": [
+        "were destroying",
+        "will be destroying"
+      ],
+      "grammar_focus": {
+        "type": "verb_tense",
+        "answer": "are destroying",
+        "alternatives": [
+          "were destroying",
+          "will be destroying"
+        ],
+        "note": "present progressive"
+      }
+    },
+    {
+      "id": "h04",
+      "source_sentence": "Your comfort zone is killing your dreams silently, because there is no growth in comfort.",
+      "kr_hint": "안락함 속에서는 성장이 일어나지 않기에, 당신의 안전지대는 당신의 꿈을 소리 없이 죽이고 있습니다.",
+      "correct_chunks": [
+        "Your comfort zone",
+        "is killing",
+        "your dreams",
+        "silently",
+        "because there is",
+        "no growth",
+        "in comfort"
+      ],
+      "distractors": [
+        "was killing",
+        "will be killing"
+      ],
+      "grammar_focus": {
+        "type": "verb_tense",
+        "answer": "is killing",
+        "alternatives": [
+          "was killing",
+          "will be killing"
+        ],
+        "note": "present progressive"
+      }
+    },
+    {
+      "id": "h05",
+      "source_sentence": "Lesson four, I'll do it later is the biggest lie you're telling yourself.",
+      "kr_hint": "나중에 하겠다'는 말은 당신이 스스로에게 하는 가장 큰 거짓말입니다.",
+      "correct_chunks": [
+        "Lesson four",
+        "I'll",
+        "do",
+        "it later",
+        "is",
+        "the biggest",
+        "lie",
+        "you're",
+        "telling yourself"
+      ],
+      "distractors": [
+        "did",
+        "has done"
+      ],
+      "grammar_focus": {
+        "type": "verb_tense",
+        "answer": "do",
+        "alternatives": [
+          "did",
+          "has done"
+        ],
+        "note": "simple present"
+      }
+    },
+    {
+      "id": "h07",
+      "source_sentence": "Be the guy who does what others don't.",
+      "kr_hint": "남들이 하지 않는 일을 하는 사람이 되어라.",
+      "correct_chunks": [
+        "Be",
+        "the guy",
+        "who does what",
+        "others",
+        "don't"
+      ],
+      "distractors": [
+        "was",
+        "has been"
+      ],
+      "grammar_focus": {
+        "type": "verb_tense",
+        "answer": "Be",
+        "alternatives": [
+          "was",
+          "has been"
+        ],
+        "note": "simple present"
+      }
+    },
+    {
+      "id": "h08",
+      "source_sentence": "This is war, and it's you versus you.",
+      "kr_hint": "이것은 전쟁이며, 너와 너 자신의 싸움이다.",
+      "correct_chunks": [
+        "This",
+        "is",
+        "war and it's",
+        "you",
+        "versus",
+        "you"
+      ],
+      "distractors": [
+        "was",
+        "has been"
+      ],
+      "grammar_focus": {
+        "type": "verb_tense",
+        "answer": "is",
+        "alternatives": [
+          "was",
+          "has been"
+        ],
+        "note": "simple present"
+      }
+    },
+    {
+      "id": "h09",
+      "source_sentence": "Because the day you master your willpower is the day you take control of your life.",
+      "kr_hint": "당신이 의지력을 정복하는 날이 바로 당신의 삶을 주도하게 되는 날이기 때문입니다.",
+      "correct_chunks": [
+        "Because the day you master",
+        "your willpower",
+        "is",
+        "the day",
+        "you",
+        "take",
+        "control",
+        "of your life"
+      ],
+      "distractors": [
+        "was",
+        "has been"
+      ],
+      "grammar_focus": {
+        "type": "verb_tense",
+        "answer": "is",
+        "alternatives": [
+          "was",
+          "has been"
+        ],
+        "note": "simple present"
+      }
+    },
+    {
+      "id": "h11",
+      "source_sentence": "Don't take advice from those who haven't done it.",
+      "kr_hint": "직접 해보지 않은 사람들의 조언은 듣지 마세요.",
+      "correct_chunks": [
+        "Don't",
+        "take",
+        "advice",
+        "from those",
+        "who haven't",
+        "done",
+        "it"
+      ],
+      "distractors": [
+        "does",
+        "did",
+        "has done"
+      ],
+      "grammar_focus": {
+        "type": "verb_tense",
+        "answer": "done",
+        "alternatives": [
+          "does",
+          "did",
+          "has done"
+        ],
+        "note": "verb form"
+      }
+    },
+    {
+      "id": "h14",
+      "source_sentence": "The clock is ticking, and your time is now.",
+      "kr_hint": "시계는 계속 돌아가고 있고 이제 당신의 시간이 왔습니다.",
+      "correct_chunks": [
+        "The clock",
+        "is ticking",
+        "and",
+        "your time",
+        "is",
+        "now"
+      ],
+      "distractors": [
+        "was ticking",
+        "will be ticking"
+      ],
+      "grammar_focus": {
+        "type": "verb_tense",
+        "answer": "is ticking",
+        "alternatives": [
+          "was ticking",
+          "will be ticking"
+        ],
+        "note": "present progressive"
+      }
+    },
+    {
+      "id": "h15",
+      "source_sentence": "Because if nobody cares, then you are free to do whatever the hell you want.",
+      "kr_hint": "아무도 신경 쓰지 않는다면 당신은 마음대로 무슨 짓이든 할 자유가 있으니까요.",
+      "correct_chunks": [
+        "Because if nobody cares",
+        "then",
+        "you",
+        "are",
+        "free to",
+        "do",
+        "whatever",
+        "the hell",
+        "you want"
+      ],
+      "distractors": [
+        "is",
+        "was",
+        "has been"
+      ],
+      "grammar_focus": {
+        "type": "verb_tense",
+        "answer": "are",
+        "alternatives": [
+          "is",
+          "was",
+          "has been"
+        ],
+        "note": "verb form"
+      }
+    },
+    {
+      "id": "h16",
+      "source_sentence": "Now, because if you can take one small step right now, just one, that could be the beginning of a whole new life.",
+      "kr_hint": "지금 당장 아주 작은 한 걸음이라도 내디딜 수 있다면, 그것이 완전히 새로운 삶의 시작이 될 수 있습니다.",
+      "correct_chunks": [
+        "Now",
+        "because if",
+        "you",
+        "can take",
+        "one small step right now",
+        "just one",
+        "that could be",
+        "the beginning",
+        "of a whole new life"
+      ],
+      "distractors": [
+        "could take",
+        "takes"
+      ],
+      "grammar_focus": {
+        "type": "verb_tense",
+        "answer": "can take",
+        "alternatives": [
+          "could take",
+          "takes"
+        ],
+        "note": "modal verb"
+      }
+    },
+    {
+      "id": "h21",
+      "source_sentence": "And I started demanding more from myself.",
+      "kr_hint": "그리고 나는 나 자신에게 더 많은 것을 요구하기 시작했다.",
+      "correct_chunks": [
+        "And",
+        "I",
+        "started",
+        "demanding more",
+        "from myself"
+      ],
+      "distractors": [
+        "starts",
+        "has started"
+      ],
+      "grammar_focus": {
+        "type": "verb_tense",
+        "answer": "started",
+        "alternatives": [
+          "starts",
+          "has started"
+        ],
+        "note": "simple past"
+      }
+    }
+  ]
+}

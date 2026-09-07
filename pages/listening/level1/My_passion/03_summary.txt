@@ -1,0 +1,19 @@
+[Part 1]
+EN: I am learning AI because I want to create things by myself.
+KR: 나는 나 스스로 것들을 만들고 싶기 때문에 AI를 배우고 있다.
+
+[Part 2]
+EN: Drones help me see the world from a new perspective.
+KR: 드론들은 내가 세상을 새로운 관점에서 보도록 돕는다.
+
+[Part 3]
+EN: Digital machines help me turn my ideas into real products.
+KR: 디지털 기계들은 내가 나의 아이디어들을 실제 제품들로 바꾸도록 돕는다.
+
+[Part 4]
+EN: AI helps me make difficult work easier and more efficient.
+KR: AI는 내가 어려운 작업을 더 쉽고 더 효율적으로 만들도록 돕는다.
+
+[Part 5]
+EN: My dream is to create meaningful souvenirs and help local people run small businesses.
+KR: 나의 꿈은 의미 있는 기념품들을 만들고 지역 사람들이 작은 사업들을 운영하도록 돕는 것이다.

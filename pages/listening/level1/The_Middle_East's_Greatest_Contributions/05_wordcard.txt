@@ -1,0 +1,89 @@
+[Card 1]
+headword: civilization
+part_of_speech: noun
+meaning_kr: 문명
+definition_en: an advanced human society with organized systems and culture
+definition_kr_literal: 조직된 체계와 문화를 가진 발전된 인간 사회
+example_en: The Middle East was one of the first places where human civilization truly began to shine.
+example_kr_literal: 중동은 인류 문명이 진정으로 빛나기 시작한 최초의 장소들 중 하나였다.
+
+[Card 2]
+headword: farming
+part_of_speech: noun
+meaning_kr: 농업
+definition_en: the work of growing crops on land
+definition_kr_literal: 땅에서 작물을 기르는 일
+example_en: When people started farming, their lives slowly became more stable.
+example_kr_literal: 사람들이 농사를 짓기 시작했을 때, 그들의 삶은 천천히 더 안정되기 시작했다.
+
+[Card 3]
+headword: stable
+part_of_speech: adjective
+meaning_kr: 안정된
+definition_en: steady and not easily changing
+definition_kr_literal: 안정적이고 쉽게 변하지 않는
+example_en: When people started farming, their lives slowly became more stable.
+example_kr_literal: 사람들이 농사를 짓기 시작했을 때, 그들의 삶은 천천히 더 안정되기 시작했다.
+
+[Card 4]
+headword: writing
+part_of_speech: noun
+meaning_kr: 문자
+definition_en: the system or act of recording words and information
+definition_kr_literal: 단어와 정보를 기록하는 체계 또는 행위
+example_en: The Sumerians created one of the first writing systems in history.
+example_kr_literal: 수메르인들은 역사상 최초의 문자 체계 중 하나를 만들었다.
+
+[Card 5]
+headword: religion
+part_of_speech: noun
+meaning_kr: 종교
+definition_en: belief in a god or gods and the practices connected to that belief
+definition_kr_literal: 신 또는 신들에 대한 믿음과 그 믿음에 연결된 실천
+example_en: Religion was also very important in Mesopotamia.
+example_kr_literal: 종교는 또한 메소포타미아에서 매우 중요했다.
+
+[Card 6]
+headword: trade
+part_of_speech: noun
+meaning_kr: 무역
+definition_en: the activity of buying, selling, and exchanging goods
+definition_kr_literal: 물건을 사고팔고 교환하는 활동
+example_en: Trade connected Egypt and Mesopotamia with other regions.
+example_kr_literal: 무역은 이집트와 메소포타미아를 다른 지역들과 연결했다.
+
+[Card 7]
+headword: faith
+part_of_speech: noun
+meaning_kr: 믿음
+definition_en: strong belief and trust, especially in religion
+definition_kr_literal: 특히 종교에서의 강한 믿음과 신뢰
+example_en: Faith gave people hope when life was difficult.
+example_kr_literal: 삶이 어려울 때 믿음은 사람들에게 희망을 주었다.
+
+[Card 8]
+headword: empire
+part_of_speech: noun
+meaning_kr: 제국
+definition_en: a group of lands ruled by one power or leader
+definition_kr_literal: 하나의 권력이나 지도자에 의해 지배되는 땅들의 집합
+example_en: Later, the Persian Empire became very large and powerful.
+example_kr_literal: 나중에 페르시아 제국은 매우 크고 강력해졌다.
+
+[Card 9]
+headword: scholar
+part_of_speech: noun
+meaning_kr: 학자
+definition_en: a person who studies deeply and works with knowledge
+definition_kr_literal: 깊이 공부하고 지식으로 일하는 사람
+example_en: Scholars from different cultures worked together, creating one of the most vibrant periods in history.
+example_kr_literal: 서로 다른 문화의 학자들은 함께 일했고, 역사상 가장 활기찬 시기들 중 하나를 만들어 냈다.
+
+[Card 10]
+headword: challenge
+part_of_speech: noun
+meaning_kr: 도전
+definition_en: a difficult problem or situation
+definition_kr_literal: 어려운 문제 또는 상황
+example_en: Many countries gained independence, but new challenges appeared.
+example_kr_literal: 많은 나라들이 독립을 얻었지만, 새로운 도전들이 나타났다.

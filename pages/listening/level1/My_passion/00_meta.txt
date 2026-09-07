@@ -1,0 +1,8 @@
+title: My Passion for Drones, Making, and AI Learning
+level: Level 1
+source: user story
+video_url: none
+video_id: none
+channel: none
+thumbnail_image: images/My_passion.jpg
+notes: no YouTube video; use local image images/My_passion.jpg in the video/thumbnail area; literal Korean translation; full script preserved; formatted for webpage automation

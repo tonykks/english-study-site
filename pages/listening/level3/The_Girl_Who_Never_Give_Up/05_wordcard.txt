@@ -1,0 +1,80 @@
+[Card 1]
+headword: dream
+part_of_speech: noun
+meaning_kr: 꿈
+definition_en: something you strongly hope to do or become in the future
+definition_kr_literal: 미래에 하거나 이루고 싶다고 강하게 바라는 것
+example_en: Maya kept her dream mostly to herself because she was afraid to say it out loud.
+example_kr_literal: 마야는 그것을 소리 내어 말하는 것이 두려워서 자신의 꿈을 대부분 혼자만 간직했다.
+[Card 2]
+headword: sketchbook
+part_of_speech: noun
+meaning_kr: 스케치북
+definition_en: a book of blank pages used for drawing
+definition_kr_literal: 그림을 그리는 데 쓰는 빈 페이지들의 책
+example_en: Maya felt peaceful whenever she had her sketchbook in her hands.
+example_kr_literal: 마야는 스케치북을 손에 들고 있을 때마다 평화로움을 느꼈다.
+[Card 3]
+headword: artist
+part_of_speech: noun
+meaning_kr: 화가, 예술가
+definition_en: a person who creates art such as drawings or paintings
+definition_kr_literal: 그림이나 회화 같은 예술 작품을 만드는 사람
+example_en: Maya wanted to become an artist, even when she doubted herself.
+example_kr_literal: 마야는 자신을 의심할 때조차 화가가 되고 싶었다.
+[Card 4]
+headword: studio
+part_of_speech: noun
+meaning_kr: 작업실, 스튜디오
+definition_en: a room or place where an artist creates art
+definition_kr_literal: 예술가가 예술 작품을 만드는 방이나 장소
+example_en: In her drawing, Maya imagined a bright studio filled with paintings.
+example_kr_literal: 그녀의 그림에서 마야는 그림들로 가득한 밝은 작업실을 상상했다.
+[Card 5]
+headword: talent
+part_of_speech: noun
+meaning_kr: 재능
+definition_en: a natural ability to do something well
+definition_kr_literal: 어떤 것을 잘할 수 있는 타고난 능력
+example_en: Her teacher told Maya that she had real talent.
+example_kr_literal: 선생님은 마야에게 그녀가 진짜 재능이 있다고 말했다.
+[Card 6]
+headword: competition
+part_of_speech: noun
+meaning_kr: 대회, 경쟁
+definition_en: an event in which people try to do better than others
+definition_kr_literal: 사람들이 다른 이들보다 더 잘하려고 노력하는 행사
+example_en: Maya decided to enter the national art competition even though she was afraid.
+example_kr_literal: 마야는 두려웠지만 전국 미술 대회에 참가하기로 결심했다.
+[Card 7]
+headword: doubt
+part_of_speech: noun
+meaning_kr: 의심
+definition_en: a feeling of not being sure or not fully believing
+definition_kr_literal: 확신하지 못하거나 완전히 믿지 못하는 느낌
+example_en: The comments from her classmates filled Maya with doubt.
+example_kr_literal: 반 친구들의 말은 마야를 의심으로 가득 채웠다.
+[Card 8]
+headword: courage
+part_of_speech: noun
+meaning_kr: 용기
+definition_en: the strength to act even when you are afraid
+definition_kr_literal: 두려울 때에도 행동하게 하는 힘
+example_en: Maya showed courage when she raised her hand and entered the competition.
+example_kr_literal: 마야는 손을 들고 대회에 참가했을 때 용기를 보여 주었다.
+[Card 9]
+headword: confident
+part_of_speech: adjective
+meaning_kr: 자신감 있는
+definition_en: feeling sure about yourself and your ability
+definition_kr_literal: 자신과 자신의 능력에 대해 확신하는
+example_en: In the picture she drew, the young woman looked peaceful and confident.
+example_kr_literal: 그녀가 그린 그림 속에서 그 젊은 여성은 평화롭고 자신감 있어 보였다.
+[Card 10]
+headword: capable
+part_of_speech: adjective
+meaning_kr: 해낼 수 있는, 유능한
+definition_en: able to do something successfully
+definition_kr_literal: 어떤 일을 성공적으로 해낼 수 있는
+example_en: In the end, Maya learned to believe that she was capable.
+example_kr_literal: 결국 마야는 자신이 해낼 수 있다고 믿는 법을 배웠다.
