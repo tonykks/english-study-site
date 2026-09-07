@@ -1,5 +1,5 @@
-const CACHE_NAME = "english-study-hub-v5";
-const DEFAULT_CONTENT = "Crisis_in_Middle_East";
+const CACHE_NAME = "english-study-hub-v7";
+const DEFAULT_CONTENT = "Pq2uwssaFRo";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -7,13 +7,15 @@ const CORE_ASSETS = [
   "./assets/js/main.js",
   "./assets/main.css",
   "./assets/main.js",
-  `./pages/listening/level3/${DEFAULT_CONTENT}/index.html`,
-  `./pages/listening/level3/${DEFAULT_CONTENT}/00_meta.txt`,
-  `./pages/listening/level3/${DEFAULT_CONTENT}/01_intro.txt`,
-  `./pages/listening/level3/${DEFAULT_CONTENT}/02_core.txt`,
-  `./pages/listening/level3/${DEFAULT_CONTENT}/03_summary.txt`,
-  `./pages/listening/level3/${DEFAULT_CONTENT}/04_full_script.txt`,
-  `./pages/listening/level3/${DEFAULT_CONTENT}/05_wordcard.txt`
+  "./pages/listening/index.html",
+  `./pages/listening/content/${DEFAULT_CONTENT}/${DEFAULT_CONTENT}.html`,
+  `./pages/listening/content/${DEFAULT_CONTENT}/00_meta.txt`,
+  `./pages/listening/content/${DEFAULT_CONTENT}/01_intro.txt`,
+  `./pages/listening/content/${DEFAULT_CONTENT}/02_core.txt`,
+  `./pages/listening/content/${DEFAULT_CONTENT}/03_summary.txt`,
+  `./pages/listening/content/${DEFAULT_CONTENT}/04_full_script.txt`,
+  `./pages/listening/content/${DEFAULT_CONTENT}/05_wordcard.txt`,
+  `./pages/listening/content/${DEFAULT_CONTENT}/06_hangman.json`
 ];
 
 self.addEventListener("install", (event) => {

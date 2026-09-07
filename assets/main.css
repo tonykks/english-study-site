@@ -422,6 +422,18 @@
   background: #3a2e18;
 }
 
+.hangman-punct-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.45rem;
+}
+
+.hangman-punct-chip {
+  min-width: 2.4rem;
+  font-size: 1.05rem;
+}
+
 .hangman-btn-danger {
   border-color: #7f1d1d;
   background: #3f1111;

@@ -1,95 +1,95 @@
 [Sentence 1]
-EN: Am I / really living / or / am I / just existing?
-KR: 나는 / 정말 살고 있는가 / 아니면 / 나는 / 단지 존재하고 있는가
+EN: Am I really living or am I just existing?
+KR: 나는 정말 살아가고 있는 것인가, 아니면 그저 존재하는 것인가?
 
 [Sentence 2]
-EN: You are / destroying / pieces of your life, / because / your time is your life.
-KR: 당신은 / 파괴하고 있다 / 당신 삶의 조각들을 / 왜냐하면 / 당신의 시간은 당신의 인생이기 때문이다
+EN: You are destroying pieces of your life, because your time is your life.
+KR: 당신은 자신의 삶의 일부를 파괴하고 있는데, 왜냐하면 당신의 시간이 곧 당신의 삶이기 때문입니다.
 
 [Sentence 3]
 EN: Your life is your responsibility.
-KR: 당신의 인생은 당신의 책임이다
+KR: 당신의 삶은 당신의 책임입니다.
 
 [Sentence 4]
-EN: Your comfort zone / is killing / your dreams / silently, / because / there is no growth / in comfort.
-KR: 당신의 안전지대는 / 죽이고 있다 / 당신의 꿈들을 / 조용히 / 왜냐하면 / 없다 성장이 / 편안함 속에는
+EN: Your comfort zone is killing your dreams silently, because there is no growth in comfort.
+KR: 당신의 안락 지대는 당신의 꿈을 조용히 죽이고 있는데, 왜냐하면 안락함 속에서는 성장이 없기 때문입니다.
 
 [Sentence 5]
-EN: Lesson four, / I'll do it later / is / the biggest lie / you're telling / yourself.
-KR: 네 번째 교훈 / 나중에 할게는 / 이다 / 가장 큰 거짓말 / 당신이 하고 있는 / 자기 자신에게
+EN: Lesson four, I'll do it later is the biggest lie you're telling yourself.
+KR: 네 번째 교훈, 나중에 하겠다는 말은 당신이 스스로에게 하는 가장 큰 거짓말입니다.
 
 [Sentence 6]
 EN: Overthinking is destroying your life.
-KR: 과도한 생각은 파괴하고 있다 당신의 인생을
+KR: 과도한 생각은 당신의 삶을 파괴하고 있습니다.
 
 [Sentence 7]
 EN: Be the guy who does what others don't.
-KR: 되어라 그 사람이 어떤 사람 다른 이들이 하지 않는 것을 하는
+KR: 남들이 하지 않는 일을 하는 사람이 되십시오.
 
 [Sentence 8]
-EN: This is / war, / and / it's / you versus you.
-KR: 이것은 / 전쟁이다 / 그리고 / 그것은 / 당신 대 당신이다
+EN: This is war, and it's you versus you.
+KR: 이것은 전쟁이며, 당신과 당신 자신과의 싸움입니다.
 
 [Sentence 9]
-EN: Because / the day you master your willpower / is / the day you take control of your life.
-KR: 왜냐하면 / 날은 당신이 당신의 의지력을 마스터하는 / 바로 그 날이기 때문이다 / 당신이 당신의 삶을 통제하는
+EN: Because the day you master your willpower is the day you take control of your life.
+KR: 당신이 의지력을 마스터하는 날이 곧 당신의 인생을 주도하게 되는 날이기 때문입니다.
 
 [Sentence 10]
 EN: Comparison is killing you.
-KR: 비교는 죽이고 있다 당신을
+KR: 비교가 당신을 죽이고 있습니다.
 
 [Sentence 11]
-EN: Don't take / advice / from those who haven't done it.
-KR: 받지 마라 / 조언을 / 사람들로부터 하지 않은 그 일을
+EN: Don't take advice from those who haven't done it.
+KR: 그것을 해보지 않은 사람들에게 조언을 구하지 마세요.
 
 [Sentence 12]
-EN: I pick myself every single day.".
-KR: 나는 선택한다 나 자신을 매일 매일
+EN: I pick myself every single day..
+KR: 나는 매일 나 자신을 선택합니다.
 
 [Sentence 13]
 EN: You don't get greatness without risk.
-KR: 당신은 얻지 못한다 위대함을 위험 없이는
+KR: 위험을 감수하지 않으면 위대함은 얻을 수 없습니다.
 
 [Sentence 14]
-EN: The clock / is ticking, / and your time / is / now.
-KR: 시계는 / 똑딱거리고 있다 / 그리고 당신의 시간은 / 이다 / 지금
+EN: The clock is ticking, and your time is now.
+KR: 시계는 계속 가고 있고, 당신의 시간은 바로 지금입니다.
 
 [Sentence 15]
-EN: Because if nobody cares, / then you are free / to do whatever the hell you want.
-KR: 왜냐하면 만약 아무도 신경 쓰지 않는다면 / 그러면 당신은 자유롭다 / 하도록 무엇이든 당신이 원하는
+EN: Because if nobody cares, then you are free to do whatever the hell you want.
+KR: 아무도 신경 쓰지 않는다면, 당신은 도대체 무엇이든 원하는 대로 할 자유가 있기 때문입니다.
 
 [Sentence 16]
-EN: Now, / because if you can take / one small step / right now, / just one, / that could be / the beginning of a whole new life.
-KR: 자 이제 / 왜냐하면 만약 당신이 취할 수 있다면 / 한 작은 발걸음을 / 바로 지금 / 단 하나 / 그것은 될 수 있다 / 시작이 완전히 새로운 삶의
+EN: Now, because if you can take one small step right now, just one, that could be the beginning of a whole new life.
+KR: 이제, 만약 당신이 지금 당장 작은 발걸음 하나를 내디딜 수 있다면, 단 하나라도 말이죠, 그것이 완전히 새로운 삶의 시작이 될 수 있기 때문입니다.
 
 [Sentence 17]
-EN: If you don't like / your life, / create / a new version.
-KR: 만약 당신이 좋아하지 않는다면 / 당신의 삶을 / 창조하라 / 새로운 버전을
+EN: If you don't like your life, create a new version.
+KR: 당신의 삶이 마음에 들지 않는다면, 새로운 버전을 만드세요.
 
 [Sentence 18]
-EN: So break / the chains, / drop / the mask, / stop living / for others, / and start living / for you.
-KR: 그러니 끊어라 / 그 사슬들을 / 벗어던져라 / 그 가면을 / 멈춰라 사는 것을 / 다른 사람들을 위해 / 그리고 시작하라 사는 것을 / 당신을 위해
+EN: So break the chains, drop the mask, stop living for others, and start living for you.
+KR: 그러니 사슬을 끊고, 가면을 벗고, 남을 위해 사는 것을 멈추고, 당신 자신을 위해 살기 시작하세요.
 
 [Sentence 19]
 EN: Your pain is your power.
-KR: 당신의 고통은 이다 당신의 힘이
+KR: 당신의 고통이 곧 당신의 힘입니다.
 
 [Sentence 20]
 EN: Start your distractions, feed your focus.
-KR: 시작하라 당신의 주의를 딴 데로 돌리는 것을 연료를 공급하라 당신의 집중력에
+KR: 당신의 주의를 분산시키는 것들을 시작하고, 당신의 집중력에 먹이를 주세요.
 
 [Sentence 21]
-EN: And I started / demanding / more / from myself.
-KR: 그리고 나는 시작했다 / 요구하기를 / 더 많은 것을 / 나 자신으로부터
+EN: And I started demanding more from myself.
+KR: 그리고 나는 나 자신에게 더 많은 것을 요구하기 시작했습니다.
 
 [Sentence 22]
-EN: No matter how broken / you feel, / no matter how long / it takes, / you are not finished / yet / there's more / to your story, / more / to your future, / more inside you / than you've ever imagined.
-KR: 상관없다 얼마나 망가졌다고 / 당신이 느끼는지 / 상관없다 얼마나 오래 / 걸릴지 / 당신은 아니다 끝난 것이 / 아직 / 있다 더 많은 것이 / 당신의 이야기에 / 더 많은 것이 / 당신의 미래에 / 더 많은 것이 당신 내면에 / 당신이 상상해 왔던 것보다
+EN: No matter how broken you feel, no matter how long it takes, you are not finished yet there's more to your story, more to your future, more inside you than you've ever imagined.
+KR: 당신이 아무리 무너진 것처럼 느껴지더라도, 아무리 오랜 시간이 걸리더라도, 당신은 아직 끝나지 않았으며 당신의 이야기에는 더 많은 것이, 당신의 미래에는 더 많은 것이, 당신 안에는 당신이 상상했던 것보다 더 많은 것이 있습니다.
 
 [Sentence 23]
-EN: And I made / it." / So now, / pick up / your heart, / fix / your posture, / clean / your tears, / and start walking / again.
-KR: 그리고 나는 해냈다 / 그것을 / 그러니 이제 / 집어 들어라 / 당신의 마음을 / 바로잡아라 / 당신의 자세를 / 닦아라 / 당신의 눈물을 / 그리고 시작하라 걷기를 / 다시
+EN: And I made it." So now, pick up your heart, fix your posture, clean your tears, and start walking again.
+KR: 그리고 나는 해냈습니다." 그러니 이제 마음을 추스르고, 자세를 바로잡고, 눈물을 닦고, 다시 걷기 시작하세요.
 
 [Sentence 24]
 EN: Take action today, not tomorrow.
-KR: 취하라 행동을 오늘 내일이 아니라
+KR: 내일이 아니라 오늘 행동하세요.

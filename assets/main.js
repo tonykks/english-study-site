@@ -45,12 +45,15 @@ const hangmanState = {
   index: 0,
   selectedWords: [],
   poolWords: [],
+  selectedPunct: "",
   wrongCount: 0,
   score: 0,
   maxSteps: 7,
   finished: false,
   fromBank: false
 };
+
+const HANGMAN_PUNCT_CHOICES = [".", "?", "!"];
 
 function normalizeText(text) {
   return String(text || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
@@ -263,6 +266,16 @@ function hangmanTargetChunks(item) {
   return hangmanMeaningChunks(item.en);
 }
 
+function hangmanNeedsPunct(item) {
+  const punct = item?.final_punctuation;
+  return punct === "." || punct === "?" || punct === "!";
+}
+
+function hangmanLexicalComplete(item) {
+  return hangmanTargetChunks(item).length > 0
+    && hangmanState.selectedWords.length === hangmanTargetChunks(item).length;
+}
+
 function shuffleHangmanPool(entries) {
   const copy = entries.slice();
   for (let i = copy.length - 1; i > 0; i -= 1) {
@@ -297,6 +310,10 @@ function renderHangmanSentence() {
   for (let i = 0; i < targetChunks.length; i += 1) {
     const text = selected[i] || "____";
     html += `<span style="display:inline-block;margin-right:6px;margin-bottom:6px;padding:3px 8px;border:1px dashed #5f76a4;border-radius:8px;">${escapeHtml(text)}</span>`;
+  }
+  if (hangmanNeedsPunct(item)) {
+    const punctText = hangmanState.selectedPunct || "____";
+    html += `<span style="display:inline-block;margin-right:6px;margin-bottom:6px;padding:3px 8px;border:1px dashed #c4a35a;border-radius:8px;">${escapeHtml(punctText)}</span>`;
   }
   sentenceNode.innerHTML = html;
 }
@@ -369,6 +386,64 @@ function renderHangmanWordChips() {
     });
     root.appendChild(btn);
   });
+  renderHangmanPunctButtons();
+}
+
+function ensureHangmanPunctRoot() {
+  let root = document.getElementById("hangman-punct-buttons");
+  if (root) return root;
+  const after = document.getElementById("hangman-word-buttons");
+  if (!after) return null;
+  root = document.createElement("div");
+  root.id = "hangman-punct-buttons";
+  root.className = "hangman-punct-buttons";
+  after.after(root);
+  return root;
+}
+
+function renderHangmanPunctButtons() {
+  const root = ensureHangmanPunctRoot();
+  if (!root) return;
+  root.innerHTML = "";
+  const item = getHangmanCurrentItem();
+  if (!item || !hangmanNeedsPunct(item) || !hangmanLexicalComplete(item) || hangmanState.finished) {
+    return;
+  }
+  HANGMAN_PUNCT_CHOICES.forEach((mark) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "hangman-word-chip hangman-punct-chip";
+    btn.textContent = mark;
+    btn.addEventListener("click", () => {
+      if (hangmanState.finished) return;
+      if (mark === item.final_punctuation) {
+        hangmanState.selectedPunct = mark;
+        playCorrectSfx();
+        setHangmanStatus("문장 끝 문장부호가 맞습니다.");
+        renderHangmanSentence();
+        renderHangmanWordChips();
+        renderHangmanFigure();
+        renderHangmanStats();
+        checkHangmanResult();
+      } else {
+        hangmanState.wrongCount += 1;
+        if (hangmanState.wrongCount >= hangmanState.maxSteps) {
+          playDeathSfx();
+        } else {
+          playWrongSfx();
+        }
+        btn.classList.add("shake-wrong");
+        setHangmanStatus("문장 끝 문장부호가 아닙니다. . ? ! 중에서 다시 고르세요.");
+        setTimeout(() => {
+          renderHangmanWordChips();
+          renderHangmanFigure();
+          renderHangmanStats();
+          checkHangmanResult();
+        }, 180);
+      }
+    });
+    root.appendChild(btn);
+  });
 }
 
 function renderHangmanFigure() {
@@ -398,12 +473,28 @@ function checkHangmanResult() {
   if (!item) return;
   const target = hangmanTargetChunks(item);
   if (hangmanState.selectedWords.length === target.length) {
+    if (hangmanNeedsPunct(item) && hangmanState.selectedPunct !== item.final_punctuation) {
+      if (hangmanState.wrongCount >= hangmanState.maxSteps) {
+        hangmanState.finished = true;
+        setHangmanStatus(`행맨이 완성되어 실패했습니다. 정답: ${target.join(" ")}${item.final_punctuation}`, "lose");
+        saveState();
+        renderHangmanStats();
+        renderHangmanWordChips();
+      } else {
+        setHangmanStatus("Game Chunk를 다 골랐습니다. 마지막 문장부호 . ? ! 를 선택하세요.");
+        renderHangmanPunctButtons();
+      }
+      return;
+    }
     hangmanState.finished = true;
     hangmanState.score += 1;
     playWinSfx();
     const leftover = hangmanState.poolWords.filter((entry) => entry.kind === "distractor");
     const focus = item.grammar_focus || {};
     let message = "정답! 어순이 정확합니다. +1점";
+    if (item.final_punctuation) {
+      message += ` 문장부호 ${item.final_punctuation}`;
+    }
     if (focus.answer) {
       message += ` 동사: ${focus.answer}${focus.note ? ` (${focus.note})` : ""}.`;
     }
@@ -418,7 +509,8 @@ function checkHangmanResult() {
   }
   if (hangmanState.wrongCount >= hangmanState.maxSteps) {
     hangmanState.finished = true;
-    setHangmanStatus(`행맨이 완성되어 실패했습니다. 정답: ${target.join(" ")}`, "lose");
+    const punct = hangmanNeedsPunct(item) ? item.final_punctuation : "";
+    setHangmanStatus(`행맨이 완성되어 실패했습니다. 정답: ${target.join(" ")}${punct}`, "lose");
     saveState();
     renderHangmanStats();
     renderHangmanWordChips();
@@ -430,6 +522,7 @@ function startHangmanRound() {
   if (!item) return;
   hangmanState.poolWords = buildHangmanPool(item);
   hangmanState.selectedWords = [];
+  hangmanState.selectedPunct = "";
   hangmanState.wrongCount = 0;
   hangmanState.finished = false;
   setHangmanStatus(hangmanState.fromBank
@@ -1595,7 +1688,8 @@ async function init() {
           kr: item.kr_hint || item.kr || "",
           correct_chunks: item.correct_chunks,
           distractors: item.distractors || [],
-          grammar_focus: item.grammar_focus || null
+          grammar_focus: item.grammar_focus || null,
+          final_punctuation: item.final_punctuation || ""
         }));
       }
     } catch (hangmanErr) {
