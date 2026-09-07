@@ -2,88 +2,88 @@
 headword: exist
 part_of_speech: verb
 meaning_kr: 존재하다
-definition_en: to be real or alive
-definition_kr_literal: 실제로 존재하거나 살아 있는 것
-example_en: Are you really living or are you just existing?
-example_kr_literal: 당신은 정말로 살아가고 있습니까, 아니면 단지 존재하는 것입니까?
+definition_en: to be alive or real
+definition_kr_literal: 살아 있거나 실재하는 것
+example_en: Ask yourself: am I really living or am I just existing?
+example_kr_literal: 자기 자신에게 물어보세요: 나는 정말로 살고 있는 것인가요, 아니면 그저 존재만 하는 것인가요?
 
 [Card 2]
-headword: destroy
-part_of_speech: verb
-meaning_kr: 파괴하다
-definition_en: to damage something so badly that it does not exist anymore
-definition_kr_literal: 무언가를 더 이상 존재하지 않을 정도로 심하게 손상시키는 것
-example_en: You are destroying pieces of your life by wasting time.
-example_kr_literal: 당신은 시간을 낭비함으로써 삶의 조각들을 파괴하고 있습니다.
+headword: excuse
+part_of_speech: noun
+meaning_kr: 변명
+definition_en: a reason you give to explain why you cannot do something
+definition_kr_literal: 무언가를 할 수 없는 이유를 설명하기 위해 대는 이유
+example_en: Are you still making excuses for why you can't start?
+example_kr_literal: 당신은 여전히 시작할 수 없는 이유에 대해 변명을 늘어놓고 있나요?
 
 [Card 3]
+headword: value
+part_of_speech: verb
+meaning_kr: 소중히 여기다
+definition_en: to think that something is important
+definition_kr_literal: 무언가가 중요하다고 생각하는 것
+example_en: You must start valuing your hours like gold.
+example_kr_literal: 당신은 당신의 시간을 금처럼 소중히 여기기 시작해야 합니다.
+
+[Card 4]
 headword: responsibility
 part_of_speech: noun
 meaning_kr: 책임
-definition_en: the state of being in charge of something
-definition_kr_literal: 무언가를 책임지고 있는 상태
-example_en: Your life is your own responsibility.
-example_kr_literal: 당신의 삶은 당신 자신의 책임입니다.
-
-[Card 4]
-headword: comfort
-part_of_speech: noun
-meaning_kr: 안락
-definition_en: a state of being relaxed and without pain or stress
-definition_kr_literal: 긴장이 풀리고 고통이나 스트레스가 없는 상태
-example_en: Your comfort zone is killing your dreams because there is no growth in comfort.
-example_kr_literal: 안락함 속에서는 성장이 없기 때문에 당신의 안전지대는 당신의 꿈을 죽이고 있습니다.
+definition_en: a duty to deal with something or someone
+definition_kr_literal: 무언가나 누군가를 상대해야 할 의무
+example_en: Your life is your responsibility.
+example_kr_literal: 당신의 인생은 당신의 책임입니다.
 
 [Card 5]
+headword: comfort zone
+part_of_speech: noun
+meaning_kr: 안전지대
+definition_en: a situation where you feel safe and do not have to try new things
+definition_kr_literal: 안전하다고 느끼며 새로운 것을 시도할 필요가 없는 상황
+example_en: Your comfort zone is a trap that stops your growth.
+example_kr_literal: 당신의 안전지대는 당신의 성장을 가로막는 덫입니다.
+
+[Card 6]
+headword: growth
+part_of_speech: noun
+meaning_kr: 성장
+definition_en: the process of becoming better or more developed
+definition_kr_literal: 더 나아지거나 더 발전하게 되는 과정
+example_en: There is no growth in comfort.
+example_kr_literal: 안락함 속에는 성장이 없습니다.
+
+[Card 7]
 headword: laziness
 part_of_speech: noun
 meaning_kr: 게으름
-definition_en: the habit of not wanting to work or do anything
-definition_kr_literal: 일하거나 아무것도 하기 싫어하는 습관
-example_en: Saying you will do it later is the voice of laziness.
-example_kr_literal: 나중에 하겠다고 말하는 것은 게으름의 목소리입니다.
-
-[Card 6]
-headword: overthink
-part_of_speech: verb
-meaning_kr: 지나치게 생각하다
-definition_en: to think about something too much
-definition_kr_literal: 무언가에 대해 너무 많이 생각하는 것
-example_en: Overthinking is destroying your life.
-example_kr_literal: 지나친 생각은 당신의 삶을 망치고 있습니다.
-
-[Card 7]
-headword: habit
-part_of_speech: noun
-meaning_kr: 습관
-definition_en: something you do regularly
-definition_kr_literal: 정기적으로 하는 무언가
-example_en: Let action become your habit.
-example_kr_literal: 행동이 습관이 되게 하세요.
+definition_en: the state of not wanting to work or use energy
+definition_kr_literal: 일하거나 에너지를 사용하고 싶어 하지 않는 상태
+example_en: I'll do it later is the voice of laziness.
+example_kr_literal: 나중에 하겠다는 말은 게으름의 목소리입니다.
 
 [Card 8]
-headword: evolve
-part_of_speech: verb
-meaning_kr: 진화하다
-definition_en: to develop or grow slowly
-definition_kr_literal: 천천히 발달하거나 성장하는 것
-example_en: You are here to grow and to evolve.
-example_kr_literal: 당신은 성장하고 진화하기 위해 여기에 있습니다.
+headword: regret
+part_of_speech: noun
+meaning_kr: 후회
+definition_en: a feeling of sadness about something you did not do
+definition_kr_literal: 하지 않은 어떤 일에 대해 느끼는 슬픈 감정
+example_en: If you wait too long, you will be left with regret.
+example_kr_literal: 너무 오래 기다리면 후회만 남게 될 것입니다.
 
 [Card 9]
-headword: discipline
+headword: momentum
 part_of_speech: noun
-meaning_kr: 절제
-definition_en: the ability to control your behavior and work hard
-definition_kr_literal: 자신의 행동을 통제하고 열심히 노력하는 능력.
-example_en: Ask yourself what a disciplined man would do today.
-example_kr_literal: 절제하는 사람이라면 오늘 무엇을 할지 스스로에게 물어보세요.
+meaning_kr: 추진력
+definition_en: the force that keeps something moving forward
+definition_kr_literal: 무언가가 계속 앞으로 나아가게 하는 힘
+example_en: Take action every day to build momentum.
+example_kr_literal: 추동력을 얻기 위해 매일 행동하세요.
 
 [Card 10]
-headword: risk
-part_of_speech: noun
-meaning_kr: 위험
-definition_en: a situation that involves the possibility of danger or failure
-definition_kr_literal: 위험이나 실패의 가능성이 포함된 상황.
-example_en: You do not get greatness without risk.
-example_kr_literal: 위험 없이는 위대함을 얻을 수 없습니다.
+headword: disciplined
+part_of_speech: adjective
+meaning_kr: 규율 잡힌
+definition_en: showing the ability to control your behavior and work hard
+definition_kr_literal: 자신의 행동을 통제하고 열심히 일하는 능력을 보여주는 것
+example_en: Ask yourself what a disciplined person would do today.
+example_kr_literal: 규율 있는 사람이라면 오늘 무엇을 할지 스스로에게 물어보세요.

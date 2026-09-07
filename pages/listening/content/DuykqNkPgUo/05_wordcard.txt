@@ -1,89 +1,89 @@
 [Card 1]
 headword: untouchable
 part_of_speech: adjective
-meaning_kr: 건드릴 수 없는
-definition_en: impossible to influence, hurt, or defeat
-definition_kr_literal: 영향을 주거나, 상처를 주거나, 패배시키기 불가능한.
-example_en: If you control your emotions, you become untouchable to people who try to upset you.
-example_kr_literal: 당신이 감정을 통제하면, 당신을 화나게 하려는 사람들에게 당신은 영향을 받지 않는 존재가 됩니다.
+meaning_kr: 영향받지 않는
+definition_en: so calm and strong that no one can hurt your feelings or control you
+definition_kr_literal: 너무나 침착하고 강해서 그 누구도 당신의 감정을 상하게 하거나 당신을 조종할 수 없는 상태
+example_en: When you master your emotions, you become untouchable by the negativity of others.
+example_kr_literal: 자신의 감정을 다스릴 줄 알게 되면, 당신은 타인의 부정적인 영향으로부터 자유로워집니다.
 
 [Card 2]
 headword: manipulate
 part_of_speech: verb
 meaning_kr: 조종하다
-definition_en: to control or influence someone in a clever or dishonest way
-definition_kr_literal: 교묘하거나 부정직한 방식으로 누군가를 통제하거나 조종하는 것.
-example_en: When you react instantly to an insult, you make it easy for others to manipulate your mood.
-example_kr_literal: 모욕에 즉각적으로 반응하면, 당신은 다른 사람들이 당신의 기분을 조종하기 쉽게 만듭니다.
+definition_en: to control someone or something in a clever or dishonest way
+definition_kr_literal: 누군가나 무언가를 교묘하거나 부정직한 방식으로 조종하는 것
+example_en: People who react too quickly are often easier to manipulate than those who stay calm.
+example_kr_literal: 너무 성급하게 반응하는 사람들은 침착함을 유지하는 사람들보다 조종하기가 더 쉬운 경우가 많습니다.
 
 [Card 3]
 headword: regret
 part_of_speech: noun
 meaning_kr: 후회
-definition_en: a sad or unhappy feeling about something that you did or did not do
-definition_kr_literal: 무언가를 했거나 하지 않은 것에 대한 슬프거나 불행한 감정.
-example_en: Many people live with the regret of saying things they did not mean during a fight.
-example_kr_literal: 많은 사람들은 싸우는 동안 진심이 아니었던 말을 한 것에 대한 후회를 안고 살아갑니다.
+definition_en: a feeling of sadness or disappointment about something you did or did not do
+definition_kr_literal: 자신이 한 일이나 하지 않은 일에 대해 느끼는 슬픔이나 실망감
+example_en: Responding in anger often leads to deep regret once the moment has passed.
+example_kr_literal: 화가 난 상태로 대응하는 것은 그 순간이 지나고 나면 깊은 후회로 이어지는 경우가 많습니다.
 
 [Card 4]
-headword: respond
-part_of_speech: verb
-meaning_kr: 응대하다
-definition_en: to act or behave in answer to something, usually after thinking
-definition_kr_literal: 보통 생각한 후에, 무언가에 대해 행동하거나 처신하는 것.
-example_en: Strong people take a moment to think and respond calmly instead of reacting quickly.
-example_kr_literal: 강한 사람들은 빠르게 반응하는 대신 잠시 생각하고 침착하게 대응합니다.
+headword: sarcastic
+part_of_speech: adjective
+meaning_kr: 비꼬는
+definition_en: using words that mean the opposite of what you want to say, usually to be funny or to hurt someone
+definition_kr_literal: 주로 재미를 주거나 상대에게 상처를 주기 위해 말하고 싶은 것과 반대되는 의미의 단어를 사용하는 것
+example_en: Her sarcastic comment about his mistake made him feel hurt and defensive.
+example_kr_literal: 그의 실수에 대한 그녀의 냉소적인 발언은 그가 상처받고 방어적인 태도를 보이게 만들었습니다.
 
 [Card 5]
-headword: dignity
-part_of_speech: noun
-meaning_kr: 위엄
-definition_en: a calm and serious manner that deserves respect
-definition_kr_literal: 존중받을 자격이 있는 침착하고 진지한 태도
-example_en: He maintained his dignity by staying silent even when others were saying unkind things about him.
-example_kr_literal: 그는 다른 사람들이 그에 대해 불친절한 말을 할 때에도 침묵을 지킴으로써 자신의 품위를 유지했다.
-
-[Card 6]
 headword: humiliate
 part_of_speech: verb
-meaning_kr: 망신을 주다
+meaning_kr: 굴욕감을 주다
 definition_en: to make someone feel ashamed or foolish in front of other people
 definition_kr_literal: 다른 사람들 앞에서 누군가를 부끄럽거나 어리석게 느끼도록 만드는 것
-example_en: The manager tried to humiliate the worker by criticizing him in front of the whole team.
-example_kr_literal: 관리자는 전체 팀원들 앞에서 그 직원을 비난함으로써 그에게 망신을 주려고 했다.
+example_en: He felt humiliated when his manager criticized him in front of the whole team.
+example_kr_literal: 그는 팀원 전체 앞에서 상사가 자신을 비판했을 때 굴욕감을 느꼈다.
+
+[Card 6]
+headword: dignity
+part_of_speech: noun
+meaning_kr: 존엄
+definition_en: the quality of being worthy of respect and acting in a calm, serious way
+definition_kr_literal: 존중받을 가치가 있고 차분하며 진지한 방식으로 행동하는 특성
+example_en: Maintaining your dignity means not fighting back when someone tries to provoke you.
+example_kr_literal: 품위를 유지한다는 것은 누군가가 당신을 도발하려 할 때 맞서 싸우지 않는 것을 의미한다.
 
 [Card 7]
-headword: expose
-part_of_speech: verb
-meaning_kr: 폭로하다
-definition_en: to show the truth about someone or something that was hidden or dishonest
-definition_kr_literal: 숨겨져 있거나 부정직했던 누군가나 무언가에 대한 진실을 드러내는 것
-example_en: Months later, the truth came out and the person who lied was finally exposed.
-example_kr_literal: 몇 달 후 진실이 밝혀졌고 거짓말을 했던 사람은 마침내 폭로되었다.
+headword: chaos
+part_of_speech: noun
+meaning_kr: 혼란
+definition_en: a state of total confusion and lack of order
+definition_kr_literal: 완전한 혼란과 질서가 결여된 상태
+example_en: When the world tries to pull you into chaos, remember to pause and breathe.
+example_kr_literal: 세상이 당신을 혼돈 속으로 끌어들이려 할 때, 잠시 멈추고 숨을 쉬는 것을 기억하라.
 
 [Card 8]
-headword: disrespect
-part_of_speech: verb
-meaning_kr: 무시하다
-definition_en: to treat someone in a rude way that shows no respect
-definition_kr_literal: 존중하지 않는 무례한 방식으로 누군가를 대하는 것
-example_en: When someone tries to disrespect you, the best choice is often to say nothing and walk away.
-example_kr_literal: 누군가가 당신을 무시하려 할 때 가장 좋은 선택은 아무 말도 하지 않고 자리를 뜨는 것이다.
+headword: fragile
+part_of_speech: adjective
+meaning_kr: 깨지기 쉬운
+definition_en: easily broken, damaged, or hurt
+definition_kr_literal: 쉽게 부서지거나 손상되거나 상처받기 쉬운
+example_en: An ego is often fragile because it constantly needs to be praised by others.
+example_kr_literal: 자아는 끊임없이 타인에게 칭찬받아야 하기 때문에 종종 깨지기 쉽다.
 
 [Card 9]
-headword: deserve
-part_of_speech: verb
-meaning_kr: 받을 자격이 있다
-definition_en: to have earned something because of your actions or qualities
-definition_kr_literal: 자신의 행동이나 자질 때문에 무언가를 얻게 되는 것
-example_en: Not every argument or message deserves your time and energy.
-example_kr_literal: 모든 주장이나 메시지가 당신의 시간과 에너지를 들일 가치가 있는 것은 아닙니다.
+headword: discipline
+part_of_speech: noun
+meaning_kr: 절제
+definition_en: the ability to control your behavior or work hard to achieve a goal
+definition_kr_literal: 자신의 행동을 통제하거나 목표를 달성하기 위해 열심히 노력하는 능력
+example_en: Staying calm under pressure is a daily discipline that you must practice.
+example_kr_literal: 압박 속에서도 침착함을 유지하는 것은 당신이 반드시 연습해야 할 일상의 훈련입니다.
 
 [Card 10]
-headword: ego
+headword: critic
 part_of_speech: noun
-meaning_kr: 자아
-definition_en: a person's sense of self-importance that often makes them want to be right
-definition_kr_literal: 흔히 자신이 옳기를 바라는 마음을 갖게 만드는 사람의 자의식
-example_en: If you want to find peace, you must learn to put your ego aside.
-example_kr_literal: 평화를 찾고 싶다면 자아를 내려놓는 법을 배워야 합니다.
+meaning_kr: 비평가
+definition_en: someone who expresses disapproval or points out the faults of others
+definition_kr_literal: 다른 사람에게 불만을 표하거나 그들의 잘못을 지적하는 사람
+example_en: You should not waste your energy trying to prove your worth to every critic.
+example_kr_literal: 당신은 모든 비평가에게 자신의 가치를 증명하려고 애쓰며 에너지를 낭비해서는 안 됩니다.
