@@ -3,6 +3,7 @@
   "items": [
     {
       "video_id": "Pq2uwssaFRo",
+      "sequence": 1,
       "title": "Don't Waste Your Life || Learn English Through Motivation 🔥 || Graded Reader || Listening Practice✅️",
       "level": 1,
       "source_url": "https://youtu.be/Pq2uwssaFRo",
@@ -18,7 +19,25 @@
       "status": "published"
     },
     {
+      "video_id": "DuykqNkPgUo",
+      "sequence": 2,
+      "title": "The Power of Not Reacting || Graded Reader || Improve Your English Fluency ✅️",
+      "level": 2,
+      "source_url": "https://youtu.be/DuykqNkPgUo",
+      "channel": "English Avenue",
+      "content_path": "pages/listening/content/DuykqNkPgUo",
+      "page_path": "pages/listening/content/DuykqNkPgUo/DuykqNkPgUo.html",
+      "href": "./content/DuykqNkPgUo/DuykqNkPgUo.html",
+      "introEn": "Many people go through life reacting instantly to insults, lies, and disrespect, often losing their peace and control in the process. This lesson explores why these emotional reactions frequently lead to regret and damaged relationships, acting as a form of emotional slavery. By understanding the difference between reacting like a victim and responding with intentional strength, you can learn to become untouchable. Throughout this talk, we will examine practical tools like the 5-second rule and the power of silence to help you reclaim your energy. You will discover how to let go of your ego and protect your focus so that you no longer let the outside world control your mind. Prepare to listen closely, as this session is designed to help you stop being broken by emotions and finally take your power back.",
+      "tags": [
+        "Level 2",
+        "신규"
+      ],
+      "status": "published"
+    },
+    {
       "video_id": "mpqs1POx3xo",
+      "sequence": 3,
       "title": "10 Tips to Boost Your Communication Skills || Speak Like a Leader 🔥|| Improve Your English Fluency✅️",
       "level": 2,
       "source_url": "https://youtu.be/mpqs1POx3xo",
@@ -35,6 +54,7 @@
     },
     {
       "video_id": "jm_5awLsba0",
+      "sequence": 4,
       "title": "How to Observe Anyone || Graded Reader Level 2 🔥 || Improve Your English Fluency ✅️",
       "level": 2,
       "source_url": "https://youtu.be/jm_5awLsba0",
@@ -50,20 +70,21 @@
       "status": "published"
     },
     {
-      "video_id": "DuykqNkPgUo",
-      "title": "The Power of Not Reacting || Graded Reader || Improve Your English Fluency ✅️",
+      "video_id": "CCr-gNIGzaM",
+      "title": "Educate Yourself Daily || Graded Reader Level 2 || Improve Your English Fluency ✅️ ",
       "level": 2,
-      "source_url": "https://youtu.be/DuykqNkPgUo",
+      "source_url": "https://youtu.be/CCr-gNIGzaM",
       "channel": "English Avenue",
-      "content_path": "pages/listening/content/DuykqNkPgUo",
-      "page_path": "pages/listening/content/DuykqNkPgUo/DuykqNkPgUo.html",
-      "href": "./content/DuykqNkPgUo/DuykqNkPgUo.html",
-      "introEn": "Many people go through life reacting instantly to insults, lies, and disrespect, often losing their peace and control in the process. This lesson explores why these emotional reactions frequently lead to regret and damaged relationships, acting as a form of emotional slavery. By understanding the difference between reacting like a victim and responding with intentional strength, you can learn to become untouchable. Throughout this talk, we will examine practical tools like the 5-second rule and the power of silence to help you reclaim your energy. You will discover how to let go of your ego and protect your focus so that you no longer let the outside world control your mind. Prepare to listen closely, as this session is designed to help you stop being broken by emotions and finally take your power back.",
+      "content_path": "pages/listening/content/CCr-gNIGzaM",
+      "page_path": "pages/listening/content/CCr-gNIGzaM/CCr-gNIGzaM.html",
+      "href": "./content/CCr-gNIGzaM/CCr-gNIGzaM.html",
+      "introEn": "Most people stop learning once they finish school, which is why many feel stuck, distracted, and unprepared for the challenges of the real world. This lesson explores why daily self-education is not just a hobby, but a vital survival strategy for those who want to be unstoppable. By dedicating just one hour a day to learning, you can gain the financial, digital, and emotional intelligence needed to control your own future. We will examine how to build a system for constant growth and why becoming a problem-solver is the ultimate path to success. Listen closely as we break down the exact strategies to move beyond average and transform your life through deliberate, daily study.",
       "tags": [
         "Level 2",
         "신규"
       ],
-      "status": "published"
+      "status": "published",
+      "sequence": 5
     }
   ]
 }
