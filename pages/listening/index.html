@@ -161,16 +161,19 @@
         href: ""
       }));
       const allCards = [...filtered, ...placeholders];
+      const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      })[char]);
       grid.innerHTML = allCards.map((item) => {
-        const tagHtml = item.tags.map((tag) => `<span class="lesson-tag">${tag}</span>`).join("");
+        const tagHtml = item.tags.map((tag) => `<span class="lesson-tag">${escapeHtml(tag)}</span>`).join("");
         const cardBody = `
           <div class="mb-2 flex flex-wrap gap-1">${tagHtml}</div>
-          <h3 class="mb-2 text-base font-extrabold text-gray-900">${item.title}</h3>
-          <p class="lesson-preview">${item.introEn}</p>
+          <h3 class="mb-2 text-base font-extrabold text-gray-900">${escapeHtml(item.title)}</h3>
+          <p class="lesson-preview">${escapeHtml(item.introEn)}</p>
         `;
         if (item.href) {
           return `
-            <a href="${item.href}" class="lesson-card is-link">
+            <a href="${escapeHtml(item.href)}" class="lesson-card is-link">
               ${cardBody}
             </a>
           `;
