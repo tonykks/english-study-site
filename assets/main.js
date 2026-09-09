@@ -886,8 +886,77 @@ function renderVideo(meta) {
   }
 
   const title = meta.title || "English Lesson Video";
-  const src = `https://www.youtube.com/embed/${encodeURIComponent(videoId)}?rel=0&modestbranding=1`;
   const watchUrl = `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`;
+
+  const isEmbedRestricted =
+    String(meta.playable_in_embed || "").trim().toLowerCase() === "false" ||
+    meta.playable_in_embed === false ||
+    ["8d3MJxMLqJg", "ASz6qGbcCGg", "5AQ6r--swqI", "2Mybtc2KmVo", "ePww7lXOfwo"].includes(videoId);
+
+  if (isEmbedRestricted) {
+    label.textContent = "외부 재생 제한 영상 · YouTube에서 시청 가능";
+    channelNode.innerHTML = `
+      <span>Channel: ${escapeHtml(meta.channel || "-")}</span>
+      <a href="${watchUrl}" target="_blank" rel="noopener noreferrer" class="ml-2 inline-flex items-center gap-1 font-bold text-red-600 hover:text-red-800 underline" title="YouTube 원본 영상 새 창으로 열기">
+        <span>YouTube에서 보기</span> ↗
+      </a>
+    `;
+
+    const thumbUrl = `https://img.youtube.com/vi/${encodeURIComponent(videoId)}/hqdefault.jpg`;
+    wrap.innerHTML = `
+      <div class="relative w-full h-full flex items-center justify-center overflow-hidden bg-stone-900 group">
+        <img
+          src="${thumbUrl}"
+          alt="${escapeHtml(title)}"
+          class="absolute inset-0 w-full h-full object-cover filter brightness-[0.40] contrast-105 transition-transform duration-500 group-hover:scale-105"
+          loading="lazy"
+          onerror="this.style.display='none'"
+        />
+        <div class="relative z-10 flex flex-col items-center justify-center text-center p-4 max-w-lg mx-auto">
+          <div class="w-14 h-14 rounded-full bg-red-600/95 text-white flex items-center justify-center text-2xl mb-3 shadow-xl group-hover:bg-red-600 group-hover:scale-110 transition-all">
+            ▶
+          </div>
+          <p class="text-white text-base md:text-lg font-bold mb-1.5 drop-shadow-md">
+            이 영상은 YouTube 설정으로 사이트 안에서 재생할 수 없습니다.
+          </p>
+          <p class="text-stone-200 text-xs md:text-sm mb-4 drop-shadow">
+            아래 버튼을 눌러 YouTube 원본 창을 띄우고, 본 페이지의 대본·단어카드·게임과 함께 학습하세요.
+          </p>
+          <a
+            href="${watchUrl}"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-3 text-sm md:text-base shadow-xl transition-all transform hover:scale-105"
+          >
+            <span>YouTube에서 보기</span>
+            <span>↗</span>
+          </a>
+        </div>
+      </div>
+    `;
+
+    let fallbackNote = document.getElementById("video-playback-notice");
+    if (!fallbackNote && wrap.parentNode) {
+      fallbackNote = document.createElement("div");
+      fallbackNote.id = "video-playback-notice";
+      fallbackNote.className = "mt-3 flex items-center justify-between flex-wrap gap-2 text-xs text-stone-600 bg-stone-50 border border-stone-200 rounded-xl p-3";
+      wrap.parentNode.appendChild(fallbackNote);
+    }
+    if (fallbackNote) {
+      fallbackNote.innerHTML = `
+        <div class="flex items-center gap-2">
+          <span class="text-base">💡</span>
+          <span>새 창에서 영상을 재생한 상태로 아래의 <strong>Full Script</strong> 대본이나 <strong>Word Cards</strong>, <strong>Hangman Game</strong>을 함께 이용하시면 더욱 효과적입니다.</span>
+        </div>
+        <a href="${watchUrl}" target="_blank" rel="noopener noreferrer" class="font-semibold text-indigo-600 hover:text-indigo-800 underline">
+          YouTube 원본 열기 ↗
+        </a>
+      `;
+    }
+    return;
+  }
+
+  const src = `https://www.youtube.com/embed/${encodeURIComponent(videoId)}?rel=0&modestbranding=1`;
   label.textContent = meta.duration ? `Duration: ${meta.duration}` : "YouTube embedded lesson";
 
   channelNode.innerHTML = `
