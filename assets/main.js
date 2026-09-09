@@ -887,7 +887,16 @@ function renderVideo(meta) {
 
   const title = meta.title || "English Lesson Video";
   const src = `https://www.youtube.com/embed/${encodeURIComponent(videoId)}?rel=0&modestbranding=1`;
+  const watchUrl = `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`;
   label.textContent = meta.duration ? `Duration: ${meta.duration}` : "YouTube embedded lesson";
+
+  channelNode.innerHTML = `
+    <span>Channel: ${escapeHtml(meta.channel || "-")}</span>
+    <a href="${watchUrl}" target="_blank" rel="noopener noreferrer" class="ml-2 inline-flex items-center gap-1 font-bold text-indigo-600 hover:text-indigo-800 underline" title="YouTube 원본 영상 새 창으로 열기">
+      <span>YouTube 원본 열기</span> ↗
+    </a>
+  `;
+
   wrap.innerHTML = `
     <iframe
       src="${src}"
@@ -898,6 +907,25 @@ function renderVideo(meta) {
       allowfullscreen
     ></iframe>
   `;
+
+  let fallbackNote = document.getElementById("video-playback-notice");
+  if (!fallbackNote && wrap.parentNode) {
+    fallbackNote = document.createElement("div");
+    fallbackNote.id = "video-playback-notice";
+    fallbackNote.className = "mt-3 flex items-center justify-between flex-wrap gap-2 text-xs text-gray-600 bg-amber-50/80 border border-amber-200 rounded-xl p-3";
+    wrap.parentNode.appendChild(fallbackNote);
+  }
+  if (fallbackNote) {
+    fallbackNote.innerHTML = `
+      <div class="flex items-center gap-2">
+        <span class="text-base">⚠️</span>
+        <span>영상 소유자의 설정으로 웹사이트 내 재생이 제한될 경우, 원본 영상 창을 띄워두고 아래 학습 자료(대본·단어카드·게임)를 이용하세요.</span>
+      </div>
+      <a href="${watchUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 rounded-lg border border-amber-300 bg-white px-3 py-1.5 font-semibold text-amber-900 shadow-sm transition hover:bg-amber-100">
+        <span>YouTube 원본 영상 새 창으로 열기</span> ↗
+      </a>
+    `;
+  }
 }
 
 function normalizeCoverAudioScript(text) {
@@ -1038,7 +1066,15 @@ function setHeroMeta(meta) {
   document.title = meta.title || "English Story Study";
   document.getElementById("hero-title").textContent = meta.title || "English Story Study";
   document.getElementById("hero-level").textContent = `Level: ${meta.level || "-"}`;
-  document.getElementById("hero-source").textContent = meta.source ? `Source: ${meta.source}` : "Source: -";
+  const heroSource = document.getElementById("hero-source");
+  if (heroSource) {
+    const vId = (meta.video_id || "").trim();
+    if (vId) {
+      heroSource.innerHTML = `<a href="https://www.youtube.com/watch?v=${encodeURIComponent(vId)}" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:underline">Source: YouTube (${escapeHtml(vId)}) ↗</a>`;
+    } else {
+      heroSource.textContent = meta.source ? `Source: ${meta.source}` : "Source: -";
+    }
+  }
   document.getElementById("hero-desc").textContent = meta.description || "영어 쉐도잉 학습을 위한 자동 생성 페이지입니다.";
   const breadcrumbLevel = document.getElementById("breadcrumb-level");
   const breadcrumbTitle = document.getElementById("breadcrumb-title");
