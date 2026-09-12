@@ -527,6 +527,40 @@
       ],
       "status": "published",
       "sequence": 31
+    },
+    {
+      "video_id": "gEZPVCbIuR0",
+      "title": "Train Your Brain to Speak English || Improve Your English || Listen And Practice || Graded Reader",
+      "level": 1,
+      "source_url": "https://youtu.be/gEZPVCbIuR0",
+      "channel": "Learn English With Listening",
+      "content_path": "pages/listening/content/gEZPVCbIuR0_Train_Your_Brain_to_Speak_English_Improve_Your_E",
+      "page_path": "pages/listening/content/gEZPVCbIuR0_Train_Your_Brain_to_Speak_English_Improve_Your_E/gEZPVCbIuR0_Train_Your_Brain_to_Speak_English_Improve_Your_E.html",
+      "href": "./content/gEZPVCbIuR0_Train_Your_Brain_to_Speak_English_Improve_Your_E/gEZPVCbIuR0_Train_Your_Brain_to_Speak_English_Improve_Your_E.html",
+      "introEn": "Many students often feel discouraged because they can understand English well but struggle to speak it when the time comes. This lesson explores why your brain might be relying on old habits, such as translating every word, instead of processing English directly. You will learn how your brain functions like a garden, needing regular, simple practice to grow strong connections. We will look at why perfectionism can hinder your progress and how small, daily actions create better results than long study sessions. By the end of this talk, you will have practical exercises to train your brain to think in English and build natural fluency. Please pay close attention to the stories shared, as they reveal why consistency is the true secret to becoming a more confident speaker.",
+      "tags": [
+        "Level 1",
+        "신규"
+      ],
+      "status": "published",
+      "sequence": 32
+    },
+    {
+      "video_id": "vphrAO7xBrI",
+      "title": "Talk To People In English Beginner level || Graded Reader || Improve Your English || Listen English",
+      "level": 2,
+      "source_url": "https://youtu.be/vphrAO7xBrI",
+      "channel": "Learn English With Listening",
+      "content_path": "pages/listening/content/vphrAO7xBrI_Talk_To_People_In_English_Beginner_level_Graded",
+      "page_path": "pages/listening/content/vphrAO7xBrI_Talk_To_People_In_English_Beginner_level_Graded/vphrAO7xBrI_Talk_To_People_In_English_Beginner_level_Graded.html",
+      "href": "./content/vphrAO7xBrI_Talk_To_People_In_English_Beginner_level_Graded/vphrAO7xBrI_Talk_To_People_In_English_Beginner_level_Graded.html",
+      "introEn": "Many language learners believe they need perfect grammar and a massive vocabulary before they can start speaking English, but this talk explains why that is a misconception. Through the story of a student named Elena, you will learn how one trip to London and the simple act of talking transformed her confidence. You will discover why the fear of making mistakes is often much larger than the actual challenge of communicating with others. This lesson also provides three practical, low-pressure strategies to help you begin speaking today, regardless of your current level. By the end of this talk, you will understand why focusing on your message rather than perfection is the real key to achieving fluency.",
+      "tags": [
+        "Level 2",
+        "신규"
+      ],
+      "status": "published",
+      "sequence": 33
     }
   ]
 }
