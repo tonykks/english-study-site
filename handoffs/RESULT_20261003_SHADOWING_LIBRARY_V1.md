@@ -130,7 +130,31 @@ python run.py
 | **5. 공개 README 내용** | 제품 기능 중심이고 내부 에이전트 대화가 없는지 | **적합** | 쉐도잉 학습자용 사용법 및 기능 소개만 포함된 깔끔한 README 작성 완료 |
 
 ### 배포 대기 대상 제안
-- **대상 Public Repo**: `https://github.com/tonykks/tony-english-shadowing`
+- **대상 Public Repo**: [`tonykks/tony-english-shadowing`](https://github.com/tonykks/tony-english-shadowing)
 - **배포 방식**: GitHub Pages (Branch: `main`, Root: `/`)
+- **Owner 승인 결과**: `handoffs/PUBLIC_DEPLOYMENT_APPROVED_20261004.md` 승인 완료.
 
-위 Checklist를 확인하신 후 배포 진행 승인을 주시면 즉시 Public 저장소 생성 및 GitHub Pages 배포를 마무리하겠습니다.
+---
+
+## 7. Public 배포 및 라이브 검증 완료
+
+Owner의 승인에 따라 Public 배포와 라이브 검증을 성공적으로 완결하였습니다.
+
+- **공개 배포 URL**: [`https://tonykks.github.io/tony-english-shadowing/`](https://tonykks.github.io/tony-english-shadowing/)
+- **공개 저장소**: [`tonykks/tony-english-shadowing`](https://github.com/tonykks/tony-english-shadowing)
+- **공개 배포 Commit SHA**: `75dd5a2` (`feat: initial public release of Tony's English Shadowing Library`)
+- **GitHub Pages 빌드**: Workflow Run ID `37132337015` (Status: `completed`, Conclusion: `success`)
+
+### 라이브 검증 결과
+| 검증 항목 | 판정 | 실측 세부 내용 |
+|---|---|---|
+| **1. 홈 페이지 로드** | **PASS** | HTTP 200 OK (`https://tonykks.github.io/tony-english-shadowing/`), HTML 9,152 바이트 정상 렌더 |
+| **2. 총 편수 표시 (39편)** | **PASS** | `shadowing_catalog.json`의 `total_count: 39` 및 39개 아이템 전수 수신, 상단 뱃지 39편 연동 확인 |
+| **3. 실시간 동적 검색** | **PASS** | 제목, 채널, 화자, 키워드 debounce 검색 정상 작동 |
+| **4. 채널별 탐색 뷰** | **PASS** | 5개 채널(English Avenue, Learn English With Listening, This Day in English Plus, Professional English, Stanford) 정상 분할 및 카드 그리드 연동 |
+| **5. 화자별 탐색 뷰** | **PASS** | Steve Jobs 단독 강연 룸 정상 노출 (일반 학습 콘텐츠 제외 원칙 준수) |
+| **6. 기존 학습 룸 진입** | **PASS** | `Pq2uwssaFRo.html` HTTP 200 OK (상대 경로 리소스 및 플레이어 정상 로드) |
+| **7. 신규 스티브 잡스 학습 룸 진입** | **PASS** | `UF8uR6Z6KLc_Steve_Jobs_2005_Stanford_Commencement_Address.html` HTTP 200 OK (8개 섹션, 10개 단어카드, 행맨 퀴즈 정상 로드) |
+| **8. Local Admin 공용 노출 차단** | **PASS** | GitHub Pages 정적 환경에서 `open-admin-btn` 및 `admin-modal`의 `hidden` 속성 불변 유지 (외부 노출 0건) |
+| **9. 보안 및 내부 파일 감사** | **PASS** | `.env`, `automation/`, `backend/`, `scripts/`, `tests/`, `AGENTS.md`, `STATE.md` 전수 제외 및 Secret 0건 검증 |
+
